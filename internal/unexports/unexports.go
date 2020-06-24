@@ -1,0 +1,101 @@
+package unexports
+
+import (
+	"errors"
+	"fmt"
+	"git.code.oa.com/goom/mocker/errortype"
+	"git.code.oa.com/goom/mocker/internal/hack"
+	"git.code.oa.com/goom/mocker/internal/logger"
+	"reflect"
+	"runtime"
+	"unsafe"
+)
+
+const PTR_MAX = (1<<31 - 1) * 100
+
+// FindFuncByName searches through the moduledata table created by the linker
+// and returns the function's code pointer. If the function was not found, it
+// returns an error. Since the data structures here are not exported, we copy
+// them below (and they need to stay in sync or else things will fail
+// catastrophically).
+func FindFuncByName(name string) (uintptr, error) {
+	for moduleData := &hack.Firstmoduledata; moduleData != nil; moduleData = moduleData.Next {
+		for _, ftab := range moduleData.Ftab {
+			f := (*runtime.Func)(unsafe.Pointer(&moduleData.Pclntable[ftab.Funcoff]))
+			if f == nil {
+				continue
+			}
+			if f.Entry() > (uintptr(PTR_MAX)) {
+				continue
+			}
+			fName := getFuncName(f)
+
+			if fName == name {
+				return f.Entry(), nil
+			}
+		}
+	}
+	logger.LogDebugf("FindFuncByName not found %s", name)
+	return 0, errortype.NewFuncNotFoundError(name)
+}
+
+func getFuncName(f *runtime.Func) string {
+	defer func() {
+		if err := recover(); err != nil {
+			var buf = make([]byte, 1024)
+			runtime.Stack(buf, true)
+			logger.LogErrorf("getFuncName error:[%+v]\n%s", err, buf)
+		}
+	}()
+	var fName = f.Name()
+	return fName
+}
+
+// FindFuncByPtr 根据地址函数
+func FindFuncByPtr(ptr uintptr) (*runtime.Func, string, error) {
+	for moduleData := &hack.Firstmoduledata; moduleData != nil; moduleData = moduleData.Next {
+		for _, ftab := range moduleData.Ftab {
+			f := (*runtime.Func)(unsafe.Pointer(&moduleData.Pclntable[ftab.Funcoff]))
+			if f == nil {
+				continue
+			}
+			if f.Entry() > (uintptr(PTR_MAX)) {
+				continue
+			}
+			fName := getFuncName(f)
+			if f.Entry() == ptr {
+				return f, fName,  nil
+			}
+		}
+	}
+	//common.LogDebugf("FindFuncByName not found %d\n", ptr)
+	return nil, "", fmt.Errorf("Invalid function ptr: %d", ptr)
+}
+
+
+// CreateFuncForCodePtr is given a code pointer and creates a function value
+// that uses that pointer. The outFun argument should be a pointer to a function
+// of the proper type (e.g. the address of a local variable), and will be set to
+// the result function value.
+func CreateFuncForCodePtr(outFuncPtr interface{}, codePtr uintptr) (*hack.Func, error) {
+	outFunc := reflect.ValueOf(outFuncPtr)
+	if outFunc.Kind() != reflect.Ptr {
+		return nil, errors.New("func param must be ptr")
+	}
+	outFuncVal := outFunc.Elem()
+	// Use reflect.MakeGlobalFunc to create a well-formed function value that's
+	// guaranteed to be of the right type and guaranteed to be on the heap
+	// (so that we can modify it). We give a nil delegate function because
+	// it will never actually be called.
+	newFuncVal := reflect.MakeFunc(outFuncVal.Type(), nil)
+	// Use reflection on the reflect.Value (yep!) to grab the underling
+	// function value pointer. Trying to call newFuncVal.Pointer() wouldn't
+	// work because it gives the code pointer rather than the function value
+	// pointer. The function value is a struct that starts with its code
+	// pointer, so we can swap out the code pointer with our desired value.
+	funcValuePtr := reflect.ValueOf(newFuncVal).FieldByName("ptr").Pointer()
+	funcPtr := (*hack.Func)(unsafe.Pointer(funcValuePtr))
+	funcPtr.CodePtr = codePtr
+	outFuncVal.Set(newFuncVal)
+	return funcPtr, nil
+}

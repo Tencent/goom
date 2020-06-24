@@ -1,12 +1,21 @@
 package mocker
 
+import (
+	"git.code.oa.com/goom/mocker/internal/patch"
+	"git.code.oa.com/goom/mocker/internal/proxy"
+)
+
 // Mocker 对函数或方法进行mock
 // 能支持到私有函数、私有类型的方法的Mock
 type Mocker struct {
 	funcname string
 	funcdef interface{}
 	callback interface{}
+	origin interface{}
 	pkgname string
+
+	guard *patch.PatchGuard
+	err error
 }
 
 // Callback 指定mock执行的回调函数
@@ -19,15 +28,36 @@ func (m *Mocker) Callback(callback interface{}) *Mocker {
 
 // Apply 应用Mock
 func (m *Mocker) Apply() *Mocker {
+	if m.funcdef != nil {
+		m.guard, m.err = proxy.StaticProxyByFunc(m.funcdef, m.callback, m.origin)
+		return m.apply()
+	}
+	if m.funcname != "" {
+		m.guard, m.err = proxy.StaticProxyByName(m.funcname, m.callback, m.origin)
+		return m.apply()
+	}
+	return m
+}
+
+func (m *Mocker) apply() *Mocker {
+	if m.guard != nil {
+		m.guard.Apply()
+	}
 	return m
 }
 
 // Cancel 取消Mock
 func (m *Mocker) Cancel() *Mocker {
+	if m.guard != nil {
+		m.guard.UnpatchWithLock()
+	}
 	return m
 }
 
-// ReApply 查询应用Mock
+// ReApply 重新应用Mock
 func (m *Mocker) ReApply() *Mocker {
+	if m.guard != nil {
+		m.guard.Restore()
+	}
 	return m
 }

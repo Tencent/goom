@@ -9,6 +9,7 @@ import (
 // MockerBuilder Mock构建器
 type MockerBuilder struct {
 	pkgname string
+	mockers []*Mocker
 }
 
 // FuncName 指定函数名称, 支持私有函数
@@ -20,6 +21,7 @@ func (m *MockerBuilder) FuncName(funcname string) *Mocker {
 	mocker := &Mocker{
 		funcname: fullFuncName,
 	}
+	m.mockers = append(m.mockers, mocker)
 	return mocker
 }
 
@@ -30,7 +32,32 @@ func (m *MockerBuilder) FuncDef(funcdef interface{}) *Mocker {
 	mocker := &Mocker{
 		funcdef: funcdef,
 	}
+	m.mockers = append(m.mockers, mocker)
 	return mocker
+}
+
+// ApplyAll 全部应用package下所有的Mock, @see MockerBuilder.pkgname
+func (m *MockerBuilder) ApplyAll() *MockerBuilder {
+	for _, mocker := range m.mockers {
+		mocker.Apply()
+	}
+	return m
+}
+
+// CancelAll 取消package下的所有Mock, @see MockerBuilder.pkgname
+func (m *MockerBuilder) CancelAll() *MockerBuilder {
+	for _, mocker := range m.mockers {
+		mocker.Cancel()
+	}
+	return m
+}
+
+// ReApplyAll 全部应用package下所有的Mock, @see MockerBuilder.pkgname
+func (m *MockerBuilder) ReApplyAll() *MockerBuilder {
+	for _, mocker := range m.mockers {
+		mocker.ReApply()
+	}
+	return m
 }
 
 // Create 创建Mock构建起

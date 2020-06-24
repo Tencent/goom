@@ -60,7 +60,7 @@ func (m *MockerBuilder) ReApplyAll() *MockerBuilder {
 	return m
 }
 
-// Create 创建Mock构建起
+// Create 创建Mock构建器
 // pkgname string 包路径, 默认取当前包
 func Create(pkgname string) *MockerBuilder {
 	if pkgname == "" {
@@ -80,7 +80,7 @@ func CurrentPackage() string {
 func currentPackage(skip int) string {
 	pc, _, _, _ := runtime.Caller(skip)
 	callerName := runtime.FuncForPC(pc).Name()
-	if i := strings.Index(callerName, ".(");i > -1 {
+	if i := strings.Index(callerName, ".("); i > -1 {
 		return callerName[:i]
 	}
 	if i := strings.LastIndex(callerName, "."); i > -1 {

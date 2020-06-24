@@ -1,8 +1,5 @@
-module git.code.oa.com/gomonkey_plus/gomonkey_plus
+module git.code.oa.com/goom/mocker
 
 go 1.11
 
-require (
-	github.com/pkg/profile v1.5.0
-	github.com/stretchr/testify v1.4.0
-)
+require github.com/stretchr/testify v1.4.0

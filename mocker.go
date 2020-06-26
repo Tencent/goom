@@ -15,7 +15,7 @@ type Mocker interface {
 	// Proxy 代理方法实现
 	Proxy(imp interface{})
 	// Return 代理方法返回
-	Return()
+	Return(args ...interface{})
 	// Cancel 取消代理
 	Cancel()
 }
@@ -55,7 +55,7 @@ func (m *MethodMocker) Proxy(imp interface{}) {
 }
 
 // Return 代理方法返回
-func (m *MethodMocker) Return() {
+func (m *MethodMocker) Return(args ...interface{}) {
 	panic("not implements")
 }
 
@@ -94,7 +94,7 @@ func (m *FuncMocker) Proxy(imp interface{}) {
 }
 
 // Return 代理方法返回
-func (m *FuncMocker) Return() {
+func (m *FuncMocker) Return(args ...interface{}) {
 	panic("not implements")
 }
 
@@ -137,7 +137,7 @@ func (m *DefMocker) Proxy(imp interface{}) {
 }
 
 // Return 代理方法返回
-func (m *DefMocker) Return() {
+func (m *DefMocker) Return(args ...interface{}) {
 	panic("not implements")
 }
 

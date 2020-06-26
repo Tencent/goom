@@ -1,68 +1,79 @@
 package mocker_test
 
 import (
-	"git.code.oa.com/goom/mocker/internal/logger"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 
 	"git.code.oa.com/goom/mocker"
 )
 
-// TestBuilderFunc 测试私有方法mock
-func TestBuilderFunc(t *testing.T) {
-	mb := mocker.Create("")
-	mb.Func("fun1").Proxy(func(i int) int {
-		return i * 3
-	})
-
-	mb.Func("fun2").Proxy(func(i int) int {
-		return i * 3
-	})
-
-	assert.Equal(t, 3, fun1(1), "fun1 mock apply check")
-	assert.Equal(t, 3, fun2(1), "fun2 mock apply check")
-
-	mb.Reset()
-
-	assert.Equal(t, 1, fun1(1), "fun1 mock cancel check")
-	assert.Equal(t, 2, fun2(1), "fun1 mock cancel check")
+// TestUnitBuilderTestSuite 测试入口
+func TestUnitBuilderTestSuite(t *testing.T) {
+	suite.Run(t, new(BuilderTestSuite))
 }
 
-// TestMockUnexportedMethod 测试结构体的私有方法mock
-func TestBuilderStruct(t *testing.T) {
-	mb := mocker.Create("")
-	mb.Struct("fake").Method("call").Proxy(func(_ *fake, i int) int {
-		return i * 2
-	})
-
-	f := &fake{}
-
-	assert.Equal(t, 2, f.call(1), "call mock apply check")
-
-	mb.Reset()
-
-	assert.Equal(t, 1, f.call(1), "call mock cancel check")
+// BuilderTestSuite Builder测试套件
+type BuilderTestSuite struct {
+	suite.Suite
 }
 
-// TestBuilderFuncDef 测试函数定义的mock
-func TestBuilderFuncDef(t *testing.T) {
-	logger.LogLevel = logger.DebugLevel
-	logger.Log2Console(true)
+// TestUnitFunc 测试私有方法mock
+func (s *BuilderTestSuite) TestUnitFunc() {
+	s.Run("success", func() {
+		mb := mocker.Create("")
+		mb.Func("fun1").Proxy(func(i int) int {
+			return i * 3
+		})
 
-	mb := mocker.Create("")
-	mb.FuncDef((&fake{}).call).Proxy(func(_ *fake, i int) int {
-		return i * 2
+		mb.Func("fun2").Proxy(func(i int) int {
+			return i * 3
+		})
+
+		s.Equal(3, fun1(1), "fun1 mock check")
+		s.Equal(3, fun2(1), "fun2 mock check")
+
+		mb.Reset()
+
+		s.Equal(1, fun1(1), "fun1 mock reset check")
+		s.Equal(2, fun2(1), "fun1 mock reset check")
 	})
+}
 
+// TestUnitMethod 测试结构体的私有方法mock
+func (s *BuilderTestSuite) TestUnitMethod() {
+	s.Run("success", func() {
+		mb := mocker.Create("")
+		mb.Struct("fake").Method("call").Proxy(func(_ *fake, i int) int {
+			return i * 2
+		})
 
-	f := &fake{}
+		f := &fake{}
 
-	assert.Equal(t, 2, f.call(1), "call mock apply check")
+		s.Equal(2, f.call(1), "call mock check")
 
-	mb.Reset()
+		mb.Reset()
 
-	assert.Equal(t, 1, f.call(1), "call mock cancel check")
+		s.Equal(1, f.call(1), "call mock reset check")
+	})
+}
+
+// TestUnitFuncDef 测试函数定义的mock
+func (s *BuilderTestSuite) TestUnitFuncDef() {
+	s.Run("success", func() {
+		mb := mocker.Create("")
+		mb.FuncDef((&fake{}).call).Proxy(func(_ *fake, i int) int {
+			return i * 2
+		})
+
+		f := &fake{}
+
+		s.Equal(2, f.call(1), "call mock check")
+
+		mb.Reset()
+
+		s.Equal(1, f.call(1), "call mock reset check")
+	})
 }
 
 //go:noinline

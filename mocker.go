@@ -2,10 +2,8 @@ package mocker
 
 import (
 	"fmt"
-	"git.code.oa.com/goom/mocker/errortype"
 	"git.code.oa.com/goom/mocker/internal/unexports"
 	"reflect"
-	"strconv"
 	"strings"
 
 	"git.code.oa.com/goom/mocker/internal/patch"
@@ -23,13 +21,19 @@ type Mocker interface {
 // ExportedMocker 导出函数mock接口
 type ExportedMocker interface {
 	Mocker
-	// Return 代理方法返回
-	Return(args ...interface{})
+	// When 指定条件匹配
+	When(args ...interface{}) *When
+	// Return 执行返回值
+	Return(args ...interface{}) *When
+	// 指定Mock之后的原函数, orign签名和mock的函数一致
+	Origin(orign interface{}) ExportedMocker
 }
 
 // UnexportedMocker 未导出函数mock接口
 type UnexportedMocker interface {
 	Mocker
+	// 指定Mock之后的原函数, orign签名和mock的函数一致
+	Origin(orign interface{}) UnexportedMocker
 }
 
 
@@ -74,27 +78,8 @@ func (m *MethodMocker) applyByMethod(structDef interface{}, method string, imp i
 }
 
 // returns 指定的返回值
-func (m *baseMocker) returns(funcdef interface{}, args ...interface{}) (err error) {
-	impTyp := reflect.TypeOf(funcdef)
-	if len(args) < impTyp.NumOut() {
-		return errortype.NewIllegalParamError(strconv.Itoa(len(args) + 1), "'empty'")
-	}
-
-	m.imp = reflect.MakeFunc(impTyp, func(args1 []reflect.Value) (results []reflect.Value) {
-		for i, r := range args {
-			v := reflect.ValueOf(r)
-			if r == nil &&
-				(impTyp.Out(i).Kind() == reflect.Interface || impTyp.Out(i).Kind() == reflect.Ptr) {
-				v = reflect.Zero(reflect.SliceOf(impTyp.Out(i)).Elem())
-			} else if r != nil && impTyp.Out(i).Kind() == reflect.Interface {
-				ptr := reflect.New(impTyp.Out(i))
-				ptr.Elem().Set(v)
-				v = ptr.Elem()
-			}
-			results = append(results, v)
-		}
-		return results
-	}).Interface()
+func (m *baseMocker) returns(when *When) (err error) {
+	m.imp = reflect.MakeFunc(when.funTyp, when.invoke).Interface()
 	return
 }
 
@@ -104,6 +89,7 @@ func (m *baseMocker) Cancel() {
 		m.guard.UnpatchWithLock()
 	}
 }
+
 
 // MethodMocker 对结构体函数或方法进行mock
 // 能支持到私有函数、私有类型的方法的Mock
@@ -139,19 +125,53 @@ func (m *MethodMocker) Apply(imp interface{}) {
 	m.applyByMethod(m.structDef, m.method, imp)
 }
 
-// Return 代理方法返回
-func (m *MethodMocker) Return(args ...interface{}) {
+// When 指定条件匹配
+func (m *MethodMocker) When(args ...interface{}) *When {
 	sTyp := reflect.TypeOf(m.structDef)
 	methodIns, ok := sTyp.MethodByName(m.method)
 	if !ok {
 		panic("method " + m.method + " not found on " + sTyp.String())
 	}
-	if err := m.returns(methodIns.Func.Interface(), args...); err != nil {
+
+	var when *When
+	var err error
+	if when, err = CreateWhen(m, methodIns.Func.Interface(), args, nil); err != nil {
+		panic(err)
+	}
+	if err := m.returns(when); err != nil {
 		panic(err)
 	}
 	m.Apply(m.imp)
+	return when
 }
 
+// Return 代理方法返回
+func (m *MethodMocker) Return(returns ...interface{}) *When {
+	sTyp := reflect.TypeOf(m.structDef)
+	methodIns, ok := sTyp.MethodByName(m.method)
+	if !ok {
+		panic("method " + m.method + " not found on " + sTyp.String())
+	}
+
+	var when *When
+	var err error
+	if when, err = CreateWhen(m, methodIns.Func.Interface(), nil, returns); err != nil {
+		panic(err)
+	}
+	if err := m.returns(when); err != nil {
+		panic(err)
+	}
+	m.Apply(m.imp)
+	return when
+}
+
+
+
+// Origin 调用原函数
+func (m *MethodMocker) Origin(orign interface{}) ExportedMocker {
+	m.origin = orign
+	return m
+}
 
 // MethodMocker 对结构体函数或方法进行mock
 // 能支持到未导出类型、未导出类型的方法的Mock
@@ -186,6 +206,11 @@ func (m *UnexportedMethodMocker) Apply(imp interface{}) {
 	m.applyByName(mname, imp)
 }
 
+// Origin 调用原函数
+func (m *UnexportedMethodMocker) Origin(orign interface{}) UnexportedMocker {
+	m.origin = orign
+	return m
+}
 
 // DefMocker 对函数或方法进行mock，使用函数定义筛选
 type DefMocker struct {
@@ -209,14 +234,39 @@ func (m *DefMocker) Apply(imp interface{}) {
 	}
 }
 
-// Return 代理方法返回
-func (m *DefMocker) Return(args ...interface{}) {
-	if err := m.returns(m.funcdef, args...); err != nil {
+// When 指定条件匹配
+func (m *DefMocker) When(args ...interface{}) *When {
+	var when *When
+	var err error
+	if when, err = CreateWhen(m, m.funcdef, args, nil); err != nil {
+		panic(err)
+	}
+	if err := m.returns(when); err != nil {
 		panic(err)
 	}
 	m.Apply(m.imp)
+	return when
 }
 
+// Return 代理方法返回
+func (m *DefMocker) Return(returns ...interface{}) *When {
+	var when *When
+	var err error
+	if when, err = CreateWhen(m, m.funcdef, nil, returns); err != nil {
+		panic(err)
+	}
+	if err := m.returns(when); err != nil {
+		panic(err)
+	}
+	m.Apply(m.imp)
+	return when
+}
+
+// Origin 调用原函数
+func (m *DefMocker) Origin(orign interface{}) ExportedMocker {
+	m.origin = orign
+	return m
+}
 
 
 // UnexportMocker 对函数或方法进行mock
@@ -234,4 +284,10 @@ func (m *UnexportMocker) Apply(imp interface{}) {
 		panic("func name is empty")
 	}
 	m.applyByName(m.name, imp)
+}
+
+// Origin 调用原函数
+func (m *UnexportMocker) Origin(orign interface{}) UnexportedMocker {
+	m.origin = orign
+	return m
 }

@@ -15,7 +15,7 @@ import (
 // return 跳板函数(即原函数调用入口指针)
 func fixOriginFuncToTrampoline(from uintptr, trampoline uintptr, jumpInstSize int) (uintptr, error) {
 	// get origin func size
-	funcSize, err := GetFuncSize(64, from, true)
+	funcSize, err := GetFuncSize(64, from, false)
 	if err != nil {
 		logger.LogError("GetFuncSize error", err)
 		funcSize = 1024

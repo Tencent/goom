@@ -1,6 +1,9 @@
 package hack
 
-import _ "unsafe"
+import (
+	"unsafe"
+	_ "unsafe"
+)
 
 // TODO 兼容不同go版本
 //go:linkname Firstmoduledata runtime.firstmoduledata
@@ -72,3 +75,10 @@ type textsect struct {
 }
 
 type typeOff int32 // offset to an *rtype
+
+// TODO 不同go版本兼容
+type Value struct {
+	Typ *uintptr
+	Ptr unsafe.Pointer
+	Flag uintptr
+}

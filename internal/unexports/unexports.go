@@ -99,3 +99,12 @@ func CreateFuncForCodePtr(outFuncPtr interface{}, codePtr uintptr) (*hack.Func, 
 	outFuncVal.Set(newFuncVal)
 	return funcPtr, nil
 }
+
+// NewFuncWithCodePtr 构造全局函数,函数可长期保留
+func NewFuncWithCodePtr(typ reflect.Type, codePtr uintptr) reflect.Value {
+	var ptr2Ptr *uintptr = &codePtr
+	pointer := unsafe.Pointer(ptr2Ptr)
+	funcVal :=  reflect.NewAt(typ, unsafe.Pointer(pointer)).Elem()
+	(*hack.Value)(unsafe.Pointer(&funcVal)).Flag = uintptr(reflect.Func)
+	return funcVal
+}

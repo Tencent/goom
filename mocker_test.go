@@ -10,17 +10,17 @@ import (
 
 // TestUnitBuilderTestSuite 测试入口
 func TestUnitBuilderTestSuite(t *testing.T) {
-	suite.Run(t, new(BuilderTestSuite))
+	suite.Run(t, new(MockerTestSuite))
 }
 
-// BuilderTestSuite Builder测试套件
-type BuilderTestSuite struct {
+// MockerTestSuite Builder测试套件
+type MockerTestSuite struct {
 	suite.Suite
 }
 
 
 // TestUnitFunc 测试函数mock return
-func (s *BuilderTestSuite) TestUnitFunc() {
+func (s *MockerTestSuite) TestUnitFunc() {
 	s.Run("success", func() {
 		mb := mocker.Create("")
 		mb.Func(fun1).Return(3)
@@ -34,7 +34,7 @@ func (s *BuilderTestSuite) TestUnitFunc() {
 }
 
 // TestUnitMethod 测试结构体的方法mock return
-func (s *BuilderTestSuite) TestUnitMethod() {
+func (s *MockerTestSuite) TestUnitMethod() {
 	s.Run("success", func() {
 		mb := mocker.Create("")
 		mb.Struct(&fake{}).Method("Call").Return(5)
@@ -51,7 +51,7 @@ func (s *BuilderTestSuite) TestUnitMethod() {
 
 
 // TestUnitUnexportMethod 测试结构体的未导出方法mock apply
-func (s *BuilderTestSuite) TestUnitUnexportMethod() {
+func (s *MockerTestSuite) TestUnitUnexportMethod() {
 	s.Run("success", func() {
 		mb := mocker.Create("")
 		mb.Struct(&fake{}).UnexportedMethod("call").Apply(func(_ *fake, i int) int {
@@ -69,7 +69,7 @@ func (s *BuilderTestSuite) TestUnitUnexportMethod() {
 }
 
 // TestUnitFunc 测试未导出函数mock
-func (s *BuilderTestSuite) TestUnitUnexportedFunc() {
+func (s *MockerTestSuite) TestUnitUnexportedFunc() {
 	s.Run("success", func() {
 		mb := mocker.Create("git.code.oa.com/goom/mocker_test")
 
@@ -92,7 +92,7 @@ func (s *BuilderTestSuite) TestUnitUnexportedFunc() {
 }
 
 // TestUnitUnexportMethod 测试未导出结构体的方法mock apply
-func (s *BuilderTestSuite) TestUnitUnexportStruct() {
+func (s *MockerTestSuite) TestUnitUnexportStruct() {
 	s.Run("success", func() {
 		// 指定包名
 		mb := mocker.Create("git.code.oa.com/goom/mocker_test")
@@ -111,7 +111,7 @@ func (s *BuilderTestSuite) TestUnitUnexportStruct() {
 }
 
 // TestUnitAny 测试任意函数定义的mock
-func (s *BuilderTestSuite) TestUnitAny() {
+func (s *MockerTestSuite) TestUnitAny() {
 	s.Run("success", func() {
 		mb := mocker.Create("")
 		// 指定: &fake{}).call,此方式不支持return

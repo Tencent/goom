@@ -1,12 +1,12 @@
 package mocker_test
 
 import (
+	"git.code.oa.com/goom/mocker/internal/logger"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
 	"git.code.oa.com/goom/mocker"
-	"git.code.oa.com/goom/mocker/internal/logger"
 )
 
 // TestBuilderFunc 测试私有方法mock
@@ -47,12 +47,14 @@ func TestBuilderStruct(t *testing.T) {
 
 // TestBuilderFuncDef 测试函数定义的mock
 func TestBuilderFuncDef(t *testing.T) {
+	logger.LogLevel = logger.DebugLevel
+	logger.Log2Console(true)
+
 	mb := mocker.Create("")
 	mb.FuncDef((&fake{}).call).Proxy(func(_ *fake, i int) int {
 		return i * 2
 	})
 
-	logger.Log2Console(true)
 
 	f := &fake{}
 

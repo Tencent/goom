@@ -2,6 +2,9 @@ package mocker
 
 import (
 	"fmt"
+	"reflect"
+	"runtime"
+	"strings"
 
 	"git.code.oa.com/goom/mocker/internal/patch"
 	"git.code.oa.com/goom/mocker/internal/proxy"
@@ -117,10 +120,17 @@ func (m *DefMocker) Proxy(imp interface{}) {
 	}
 
 	var err error
-
-	m.guard, err = proxy.StaticProxyByFunc(m.funcdef, imp, m.origin)
-	if err != nil {
-		panic(fmt.Sprintf("proxy func definition error: %v", err))
+	var funcname = getFunctionName(m.funcdef)
+	if strings.HasSuffix(funcname, "-fm") {
+		m.guard, err = proxy.StaticProxyByName(strings.TrimRight(funcname, "-fm"), imp, m.origin)
+		if err != nil {
+			panic(fmt.Sprintf("proxy func definition error: %v", err))
+		}
+	} else {
+		m.guard, err = proxy.StaticProxyByFunc(m.funcdef, imp, m.origin)
+		if err != nil {
+			panic(fmt.Sprintf("proxy func definition error: %v", err))
+		}
 	}
 
 	m.guard.Apply()
@@ -136,4 +146,9 @@ func (m *DefMocker) Cancel() {
 	if m.guard != nil {
 		m.guard.UnpatchWithLock()
 	}
+}
+
+// getFunctionName 获取函数名称
+func getFunctionName(i interface{}) string {
+	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
 }

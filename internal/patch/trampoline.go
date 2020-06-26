@@ -43,8 +43,8 @@ func fixOriginFuncToTrampoline(from uintptr, trampoline uintptr, jumpInstSize in
 		// 追加跳转到原函数指令到修复后指令的末尾
 		// append jump back to origin func position where next to the broken instructions
 		jumpBackData := jmpToOriginFunctionValue(
-			trampoline + uintptr(len(firstFewIns)),
-			from + (uintptr(replaceSize)))
+			trampoline+uintptr(len(firstFewIns)),
+			from+(uintptr(replaceSize)))
 		fixOrigin = append(firstFewIns, jumpBackData...)
 	}
 
@@ -57,15 +57,15 @@ func fixOriginFuncToTrampoline(from uintptr, trampoline uintptr, jumpInstSize in
 
 	logger.LogDebug("trampoline func size is", trampolineFuncSize)
 
-
 	if len(fixOrigin) > trampolineFuncSize {
-		logger.LogErrorf("fixOriginSize[%d] is bigger than trampoline FuncSize[%d], please add your trampoline func code", len(fixOrigin), trampolineFuncSize)
+		logger.LogErrorf("fixOriginSize[%d] is bigger than trampoline FuncSize[%d], please add your "+
+			"trampoline func code", len(fixOrigin), trampolineFuncSize)
 		ShowInst("trampoline inst > ", trampoline, 35, logger.InfoLevel)
-		return 0, errors.New(fmt.Sprintf("fixOriginSize[%d] is bigger than trampoline FuncSize[%d], please add your trampoline func code", len(fixOrigin), trampolineFuncSize))
+		return 0, errors.New(fmt.Sprintf("fixOriginSize[%d] is bigger than trampoline FuncSize[%d], "+
+			"please add your trampoline func code", len(fixOrigin), trampolineFuncSize))
 	} else {
 		ShowInst("trampoline inst > ", trampoline, 35, logger.DebugLevel)
 	}
-
 
 	showInst("fixed inst >>>>> ", trampoline, fixOrigin, logger.DebugLevel)
 

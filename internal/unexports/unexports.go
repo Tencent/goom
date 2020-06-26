@@ -3,15 +3,16 @@ package unexports
 import (
 	"errors"
 	"fmt"
-	"git.code.oa.com/goom/mocker/errortype"
-	"git.code.oa.com/goom/mocker/internal/hack"
-	"git.code.oa.com/goom/mocker/internal/logger"
 	"reflect"
 	"runtime"
 	"unsafe"
+
+	"git.code.oa.com/goom/mocker/errortype"
+	"git.code.oa.com/goom/mocker/internal/hack"
+	"git.code.oa.com/goom/mocker/internal/logger"
 )
 
-const PTR_MAX = (1<<31 - 1) * 100
+const PtrMax = (1<<31 - 1) * 100
 
 // FindFuncByName searches through the moduledata table created by the linker
 // and returns the function's code pointer. If the function was not found, it
@@ -25,7 +26,7 @@ func FindFuncByName(name string) (uintptr, error) {
 			if f == nil {
 				continue
 			}
-			if f.Entry() > (uintptr(PTR_MAX)) {
+			if f.Entry() > (uintptr(PtrMax)) {
 				continue
 			}
 			fName := getFuncName(f)
@@ -59,19 +60,18 @@ func FindFuncByPtr(ptr uintptr) (*runtime.Func, string, error) {
 			if f == nil {
 				continue
 			}
-			if f.Entry() > (uintptr(PTR_MAX)) {
+			if f.Entry() > (uintptr(PtrMax)) {
 				continue
 			}
 			fName := getFuncName(f)
 			if f.Entry() == ptr {
-				return f, fName,  nil
+				return f, fName, nil
 			}
 		}
 	}
 	//common.LogDebugf("FindFuncByName not found %d\n", ptr)
 	return nil, "", fmt.Errorf("Invalid function ptr: %d", ptr)
 }
-
 
 // CreateFuncForCodePtr is given a code pointer and creates a function value
 // that uses that pointer. The outFun argument should be a pointer to a function

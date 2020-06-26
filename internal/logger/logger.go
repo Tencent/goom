@@ -19,11 +19,8 @@ var ShowError2Console = false
 // level总共分5个级别：debug < info< warning< error< critical
 var LogLevel = 6
 
-// logger 独立日志文件
+// Logger 独立日志文件
 var Logger io.Writer = os.Stdout
-
-// Log2Console 打印到控制台
-var log2Console = false
 
 // EnableLogColor 开启并发日志染色
 var EnableLogColor = false
@@ -65,8 +62,6 @@ func Log2Console(b bool) {
 	}
 }
 
-
-
 // SetLogColor 设置日志染色
 func SetLogColor(enable bool, getter func() string) {
 	if enable && getter != nil {
@@ -85,14 +80,14 @@ func LogTraceEnable() bool {
 // LogTrace 打印trace日志
 func LogTrace(v ...interface{}) {
 	if LogLevel >= TraceLevel {
-		Logger.Write(withPrefix("trace", v))
+		_, _ = Logger.Write(withPrefix("trace", v))
 	}
 }
 
 // LogTracef 打印trace日志
 func LogTracef(format string, a ...interface{}) {
 	if LogLevel >= TraceLevel {
-		Logger.Write(withPrefixStr("trace", format, a...))
+		_, _ = Logger.Write(withPrefixStr("trace", format, a...))
 	}
 }
 
@@ -104,14 +99,14 @@ func LogDebugEnable() bool {
 // LogDebug 打印debug日志
 func LogDebug(v ...interface{}) {
 	if LogLevel >= DebugLevel {
-		Logger.Write(withPrefix("debug", v))
+		_, _ = Logger.Write(withPrefix("debug", v))
 	}
 }
 
 // LogDebugf 打印debug日志
 func LogDebugf(format string, a ...interface{}) {
 	if LogLevel >= DebugLevel {
-		Logger.Write(withPrefixStr("debug", format, a...))
+		_, _ = Logger.Write(withPrefixStr("debug", format, a...))
 	}
 }
 

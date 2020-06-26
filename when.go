@@ -9,9 +9,9 @@ import (
 // When Mock条件匹配
 type When struct {
 	ExportedMocker
+	funTyp reflect.Type
 	returns []Return
 	defaultReturns []interface{}
-	funTyp reflect.Type
 	// curArgs 当前指定的参数
 	curArgs []interface{}
 }
@@ -43,6 +43,12 @@ func (w *When) When(args ...interface{}) *When {
 
 // Return 指定返回值
 func (w *When) Return(args ...interface{}) *When {
+	// TODO 归档到returns
+	return w
+}
+
+// Return 指定第二次调用返回值,之后的调用以最后一个指定的值返回
+func (w *When) AndReturn(args ...interface{}) *When {
 	// TODO 归档到returns
 	return w
 }

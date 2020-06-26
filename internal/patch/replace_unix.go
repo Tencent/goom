@@ -5,19 +5,19 @@ package patch
 import (
 	"encoding/hex"
 	"fmt"
-	"git.code.oa.com/goom/mocker/internal/logger"
-	"git.code.oa.com/goom/mocker/internal/x86asm"
 	"math"
-	//"gookit/color"
+	// "gookit/color"
 	"strings"
 	"syscall"
+
+	"git.code.oa.com/goom/mocker/internal/logger"
+	"git.code.oa.com/goom/mocker/internal/x86asm"
 )
 
 var (
 	defaultFuncPrologue32 = []byte{0x65, 0x8b, 0x0d, 0x00, 0x00, 0x00, 0x00, 0x8b, 0x89, 0xfc, 0xff, 0xff, 0xff}
 	defaultFuncPrologue64 = []byte{0x65, 0x48, 0x8b, 0x0c, 0x25, 0x30, 0x00, 0x00, 0x00, 0x48}
 )
-
 
 // mprotectCrossPage
 func mprotectCrossPage(addr uintptr, length int, prot int) {
@@ -52,21 +52,25 @@ func copyToLocation(location uintptr, data []byte) error {
 // funcSize 函数字节码整体长度
 // leastSize 要替换的字节长度的最小限制
 // allowCopyCall 是否允许拷贝Call指令
-func replaceRelativeAddr(from uintptr, copyOrigin []byte, placehlder uintptr, funcSize int, leastSize int, allowCopyCall bool) ([]byte, int, error) {
+func replaceRelativeAddr(from uintptr, copyOrigin []byte, placehlder uintptr, funcSize int, leastSize int,
+	allowCopyCall bool) ([]byte, int, error) {
 	replaceOrigin, err := doReplaceRelativeAddr(from, copyOrigin, placehlder, funcSize, leastSize, allowCopyCall)
 	if err != nil {
 		return nil, 0, err
 	}
-	//fmt.Println("replaceOrigin len1:", len(replaceOrigin))
+
 	var replaceNew = replaceOrigin
+
 	if leastSize > 0 {
-		replaceNew, err = doReplaceRelativeAddr(from, replaceOrigin, placehlder, len(replaceOrigin), leastSize, allowCopyCall)
+		replaceNew, err = doReplaceRelativeAddr(from, replaceOrigin, placehlder, len(replaceOrigin), leastSize,
+			allowCopyCall)
 	}
-	//fmt.Println("replaceOrigin len2:", len(replaceNew))
+
 	return replaceNew, len(replaceOrigin), err
 }
 
-func doReplaceRelativeAddr(from uintptr, copyOrigin []byte, placehlder uintptr, funcSize int, leastSize int, allowCopyCall bool) ([]byte, error) {
+func doReplaceRelativeAddr(from uintptr, copyOrigin []byte, placehlder uintptr, funcSize int, leastSize int,
+	allowCopyCall bool) ([]byte, error) {
 	startAddr := (uint64)(from)
 	logger.LogDebug("target fix ins >>>>>")
 	result := make([]byte, 0)
@@ -78,13 +82,14 @@ func doReplaceRelativeAddr(from uintptr, copyOrigin []byte, placehlder uintptr, 
 			panic("replaceRelativeAddr err:" + err.Error())
 		}
 
-		if ins != nil && ins.Opcode != 0  {
+		if ins != nil && ins.Opcode != 0 {
 			if !allowCopyCall && ins.Op.String() == "CALL" {
 				return nil, fmt.Errorf("copy call instruction is not allowed in auto trampoline model. size: %d", leastSize)
 			}
 
 			replaced := replaceIns(ins, pos, copyOrigin, funcSize, startAddr, placehlder)
-			logger.LogDebugf("[%d]>[%d] 0x%x:\t%s\t\t%s\t\t%s", ins.Len, len(replaced), startAddr+(uint64)(pos), ins.Op, ins.String(), hex.EncodeToString(replaced))
+			logger.LogDebugf("[%d]>[%d] 0x%x:\t%s\t\t%s\t\t%s", ins.Len, len(replaced),
+				startAddr+(uint64)(pos), ins.Op, ins.String(), hex.EncodeToString(replaced))
 			result = append(result, replaced...)
 		}
 		pos = pos + ins.Len
@@ -125,7 +130,7 @@ func nextIns(pos int, copyOrigin []byte) (*x86asm.Inst, error) {
 func replaceIns(ins *x86asm.Inst, pos int, copyOrigin []byte, funcSize int, startAddr uint64, placehlder uintptr) []byte {
 	// 需要替换偏移地址
 	if ins.PCRelOff <= 0 {
-		return copyOrigin[pos:pos+ins.Len]
+		return copyOrigin[pos : pos+ins.Len]
 	}
 
 	offset := pos + ins.PCRelOff
@@ -152,7 +157,6 @@ func replaceIns(ins *x86asm.Inst, pos int, copyOrigin []byte, funcSize int, star
 	//	return
 	//}
 
-
 	logger.LogDebug("ins relative:", (int)(relativeAddr)+pos+ins.Len)
 
 	if (isAdd && (int)(relativeAddr)+pos+ins.Len >= funcSize) ||
@@ -162,7 +166,7 @@ func replaceIns(ins *x86asm.Inst, pos int, copyOrigin []byte, funcSize int, star
 			logger.LogDebug((int64)(startAddr)-(int64)(placehlder), startAddr, placehlder, int32(relativeAddr))
 		}
 
-		var encoded = encodeAddress(uint32(ins.Op), copyOrigin[pos: offset], copyOrigin[offset:offset+ins.PCRel], ins.PCRel, relativeAddr, (int)(startAddr)-(int)(placehlder))
+		var encoded = encodeAddress(uint32(ins.Op), copyOrigin[pos:offset], copyOrigin[offset:offset+ins.PCRel], ins.PCRel, relativeAddr, (int)(startAddr)-(int)(placehlder))
 
 		ins, err := x86asm.Decode(copyOrigin[pos:pos+ins.Len], 64)
 		if err == nil {
@@ -181,7 +185,7 @@ func replaceIns(ins *x86asm.Inst, pos int, copyOrigin []byte, funcSize int, star
 		}
 	}
 
-	return copyOrigin[pos:pos+ins.Len]
+	return copyOrigin[pos : pos+ins.Len]
 }
 
 // encodeAddress 写入地址参数到函数字节码
@@ -192,10 +196,10 @@ func encodeAddress(op uint32, ops []byte, addr []byte, addrLen int, val int, add
 	result := make([]byte, 0)
 	if addrLen == 1 {
 		if isByteOverflow((int32)(int8(val)) + (int32)(add)) {
-			if opsNew, ok := OpAddrExpand[uint32(ops[0])];ok {
+			if opsNew, ok := OpAddrExpand[uint32(ops[0])]; ok {
 				addr = make([]byte, 4)
-				LittleEndian.PutInt32(addr, (int32)(int8(val)) + int32(add) -
-					int32(len(addr) -addrLen) - int32(len(opsNew) - len(ops))) // 新增了4个字节,需要减去
+				LittleEndian.PutInt32(addr, (int32)(int8(val))+int32(add)-
+					int32(len(addr)-addrLen)-int32(len(opsNew)-len(ops))) // 新增了4个字节,需要减去
 				ops = opsNew
 			} else {
 				panic("address overflow:" + hex.EncodeToString(ops) + ", addr:" + hex.EncodeToString(addr[:addrLen]))
@@ -205,10 +209,10 @@ func encodeAddress(op uint32, ops []byte, addr []byte, addrLen int, val int, add
 		}
 	} else if addrLen == 2 {
 		if isInt16Overflow((int32)(int8(val)) + (int32)(add)) {
-			if opsNew, ok := OpAddrExpand[uint32(ops[0] << 16 + ops[1])];ok {
+			if opsNew, ok := OpAddrExpand[uint32(ops[0]<<16+ops[1])]; ok {
 				addr = make([]byte, 4)
-				LittleEndian.PutInt32(addr, (int32)(int8(val)) + int32(add) -
-					int32(len(addr) -addrLen) - int32(len(opsNew) - len(ops))) // 新增了4个字节,需要减去
+				LittleEndian.PutInt32(addr, (int32)(int8(val))+int32(add)-
+					int32(len(addr)-addrLen)-int32(len(opsNew)-len(ops))) // 新增了4个字节,需要减去
 				ops = opsNew
 			} else {
 				panic("address overflow:" + hex.EncodeToString(ops) + ", addr:" + hex.EncodeToString(addr[:addrLen]))

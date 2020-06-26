@@ -1,12 +1,13 @@
 package patch_test
 
 import (
-	"git.code.oa.com/goom/mocker/internal/logger"
-	"git.code.oa.com/goom/mocker/internal/patch"
 	"reflect"
 	"runtime"
 	"testing"
 	"time"
+
+	"git.code.oa.com/goom/mocker/internal/logger"
+	"git.code.oa.com/goom/mocker/internal/patch"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -39,7 +40,7 @@ func TestTimePatch(t *testing.T) {
 
 func TestGC(t *testing.T) {
 	value := true
-	patch.Patch(no, func() bool {
+	_, _ = patch.Patch(no, func() bool {
 		return value
 	})
 	defer patch.UnpatchAll()
@@ -49,7 +50,7 @@ func TestGC(t *testing.T) {
 
 func TestSimple(t *testing.T) {
 	assert.False(t, no())
-	patch.Patch(no, yes)
+	_, _ = patch.Patch(no, yes)
 	assert.True(t, no())
 	assert.True(t, patch.Unpatch(no))
 	assert.False(t, no())
@@ -71,7 +72,7 @@ func TestGuard(t *testing.T) {
 
 func TestUnpatchAll(t *testing.T) {
 	assert.False(t, no())
-	patch.Patch(no, yes)
+	_, _ = patch.Patch(no, yes)
 	assert.True(t, no())
 	patch.UnpatchAll()
 	assert.False(t, no())
@@ -98,7 +99,7 @@ func (f *f) No() bool { return false }
 func TestOnInstanceMethod(t *testing.T) {
 	i := &f{}
 	assert.False(t, i.No())
-	patch.PatchInstanceMethod(reflect.TypeOf(i), "No", func(_ *f) bool { return true })
+	_, _ = patch.PatchInstanceMethod(reflect.TypeOf(i), "No", func(_ *f) bool { return true })
 	assert.True(t, i.No())
 	assert.True(t, patch.UnpatchInstanceMethod(reflect.TypeOf(i), "No"))
 	assert.False(t, i.No())

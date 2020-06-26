@@ -3,12 +3,12 @@ package proxy
 import (
 	"errors"
 	"fmt"
+	"reflect"
+
 	"git.code.oa.com/goom/mocker/internal/logger"
 	"git.code.oa.com/goom/mocker/internal/patch"
 	"git.code.oa.com/goom/mocker/internal/unexports"
-	"reflect"
 )
-
 
 // StaticProxyByName 静态代理(函数或方法)
 // @param funcName 函数名称

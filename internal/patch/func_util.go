@@ -4,16 +4,16 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
-	"git.code.oa.com/goom/mocker/internal/logger"
-	"git.code.oa.com/goom/mocker/internal/unexports"
-	"git.code.oa.com/goom/mocker/internal/x86asm"
 	"reflect"
 	"strings"
 	"sync"
 	"syscall"
 	"unsafe"
-)
 
+	"git.code.oa.com/goom/mocker/internal/logger"
+	"git.code.oa.com/goom/mocker/internal/unexports"
+	"git.code.oa.com/goom/mocker/internal/x86asm"
+)
 
 func pageStart(ptr uintptr) uintptr {
 	return ptr & ^(uintptr(syscall.Getpagesize() - 1))
@@ -44,7 +44,7 @@ func GetFuncSize(mode int, start uintptr, minimal bool) (lenth int, err error) {
 	}
 	*/
 
-	int3_found := false
+	int3Found := false
 	curLen := 0
 
 	for {
@@ -58,8 +58,8 @@ func GetFuncSize(mode int, start uintptr, minimal bool) (lenth int, err error) {
 			if minimal {
 				return curLen, nil
 			}
-			int3_found = true
-		} else if int3_found {
+			int3Found = true
+		} else if int3Found {
 			return curLen, nil
 		}
 
@@ -70,16 +70,12 @@ func GetFuncSize(mode int, start uintptr, minimal bool) (lenth int, err error) {
 			return curLen, nil
 		}
 	}
-
-	return 0, nil
 }
-
 
 type value struct {
 	_   uintptr
 	ptr unsafe.Pointer
 }
-
 
 // getPtr 获取函数的调用地址(和函数的指令地址不一样)
 func getPtr(v reflect.Value) unsafe.Pointer {
@@ -127,10 +123,8 @@ func IsPtr(value interface{}) bool {
 		return false
 	}
 	t := reflect.TypeOf(value)
-	if t.Kind() == reflect.Ptr {
-		return true
-	}
-	return false
+
+	return t.Kind() == reflect.Ptr
 }
 
 func LoadUnit(s int64) string {
@@ -149,13 +143,11 @@ func LoadUnit(s int64) string {
 	return fmt.Sprintf("%d%s", b, suffix)
 }
 
-
 func ShowInst(name string, from uintptr, size int, level int) {
 	_, funcName, _ := unexports.FindFuncByPtr(from)
 	instBytes := rawMemoryRead(from, size)
 	showInst(fmt.Sprintf("show [%s = %s] inst>>: ", name, funcName), from, instBytes, level)
 }
-
 
 func minSize(showSize int, fixOrigin []byte) int {
 	if showSize > len(fixOrigin) {
@@ -183,7 +175,7 @@ func showInst(title string, from uintptr, copyOrigin []byte, level int) {
 		ins, err := x86asm.Decode(code, 64)
 
 		if err != nil {
-			logger.LogImportantf("[0] 0x%x: inst decode error:%s", startAddr+(uint64)(pos) , err)
+			logger.LogImportantf("[0] 0x%x: inst decode error:%s", startAddr+(uint64)(pos), err)
 			if ins.Len == 0 {
 				pos = pos + 1
 			} else {
@@ -222,7 +214,7 @@ func showInst(title string, from uintptr, copyOrigin []byte, level int) {
 
 			logger.LogImportantf("[%d] 0x%x:\t%s\t\t%-30s\t\t%s\t\tabs:0x%x", ins.Len,
 				startAddr+(uint64)(pos), ins.Op, ins.String(), hex.EncodeToString(code[:ins.Len]),
-				from + uintptr(pos) + uintptr(relativeAddr) + uintptr(ins.Len))
+				from+uintptr(pos)+uintptr(relativeAddr)+uintptr(ins.Len))
 
 		} else {
 			logger.LogImportantf("[%d] 0x%x:\t%s\t\t%-30s\t\t%s", ins.Len,

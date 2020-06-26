@@ -10,7 +10,6 @@ import (
 	"unsafe"
 )
 
-
 var memoryAccessLock sync.RWMutex
 
 // ReplaceApply 函数调用指针替换执行器
@@ -25,23 +24,22 @@ func rawMemoryAccess(p uintptr, length int) []byte {
 	}))
 }
 
-
 // rawMemoryRead 内存数据读取(线程安全的)
 func rawMemoryRead(p uintptr, length int) []byte {
 	memoryAccessLock.RLock()
 	defer memoryAccessLock.RUnlock()
 
 	data := rawMemoryAccess(p, length)
-	duplucate := make([]byte, length, length)
+	duplucate := make([]byte, length)
 	copy(duplucate, data)
 	return duplucate
 }
 
-
 // from is a pointer to the actual function
 // to is a pointer to a go funcvalue
 // trampoline 跳板函数地址, 不传递用0表示
-func replaceFunction(from, to, proxy, trampoline uintptr) (original []byte, originFunc uintptr, jumpData []byte, err error) {
+func replaceFunction(from, to, proxy, trampoline uintptr) (original []byte, originFunc uintptr,
+	jumpData []byte, err error) {
 	defer func() {
 		if err1 := recover(); err1 != nil {
 			logger.LogErrorf("replaceFunction from=%d to=%d trampoline=%d error:%s", from, to, trampoline, err1)
@@ -59,13 +57,13 @@ func replaceFunction(from, to, proxy, trampoline uintptr) (original []byte, orig
 	// 保存原始指令
 	original = rawMemoryRead(from, len(jumpData))
 	// 判断是否已经被patch过
-	if original[0] == NOP_OPCODE {
+	if original[0] == NopOpcode {
 		err = errors.New(fmt.Sprintf("from:0x%x is already patched", from))
 		return
 	}
 
 	// 检测是否支持自动分配跳板函数
-	if  trampoline > 0 {
+	if trampoline > 0 {
 		// 通过跳板函数实现回调原函数
 		originFunc, err = fixOriginFuncToTrampoline(from, trampoline, len(jumpData))
 		if err != nil {

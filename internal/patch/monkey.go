@@ -13,16 +13,16 @@ import (
 // needed to undo a patch
 type patch struct {
 	originalBytes []byte
-	targetPtr	  uintptr
+	targetPtr     uintptr
 	replacement   *reflect.Value
 	originPtr     uintptr
 }
 
 var (
-	lock = sync.Mutex{}
+	lock      = sync.Mutex{}
 	patches   = make(map[uintptr]patch)
 	ptrholder = make(map[uintptr]interface{})
-	redirect = make(map[uintptr]uintptr)
+	redirect  = make(map[uintptr]uintptr)
 )
 
 // PatchGuard 代理执行控制句柄, 可通过此对象进行代理还原
@@ -31,7 +31,7 @@ type PatchGuard struct {
 	replacement reflect.Value
 	originFunc  uintptr
 	jumpData    []byte
-	applied		bool
+	applied     bool
 }
 
 func PatchLock() {
@@ -72,7 +72,7 @@ func (g *PatchGuard) UnpatchWithLock() {
 // Restore 重新应用代理
 func (g *PatchGuard) Restore() {
 	if g != nil && g.applied {
-		PatchPtr(g.target, g.replacement)
+		_, _ = PatchPtr(g.target, g.replacement)
 	}
 }
 
@@ -113,11 +113,6 @@ func UnsafePatchTrampoline(target, replacement interface{}, trampoline interface
 	t := reflect.ValueOf(target)
 	r := reflect.ValueOf(replacement)
 
-	// 外部手动check(使用signature包) modified by @jake
-	//if target.Type() != reflect.TypeOf(trampoline).Elem() {
-	//	return 0, errors.New(fmt.Sprintf("target and trampoline have to have the same type %s != %s", target.Type(), trampolineElemType))
-	//}
-
 	trampolinePtr, err := getTrampolinePtr(trampoline)
 	if err != nil {
 		return nil, err
@@ -132,7 +127,6 @@ func UnsafePatchTrampoline(target, replacement interface{}, trampoline interface
 	return &PatchGuard{t.Pointer(), r, originFunc, jumpData, false}, nil
 }
 
-
 // patchValue 对value进行应用代理
 func patchValue(target, replacement reflect.Value, trampoline interface{}) (uintptr, []byte, error) {
 
@@ -140,7 +134,6 @@ func patchValue(target, replacement reflect.Value, trampoline interface{}) (uint
 	//if target.Type() != replacement.Type() {
 	//	return 0, errors.New(fmt.Sprintf("target and replacement have to have the same type %s != %s", target.Type(), replacement.Type()))
 	//}
-
 
 	// 外部手动check(使用signature包) modified by @jake
 	//if target.Type() != reflect.TypeOf(trampoline).Elem() {
@@ -155,7 +148,6 @@ func patchValue(target, replacement reflect.Value, trampoline interface{}) (uint
 	ptrholder[trampolinePtr] = trampoline
 	return unsafePatchValue(target, replacement, trampolinePtr)
 }
-
 
 // unsafePatchValue 不做类型检查
 func unsafePatchValue(target, replacement reflect.Value, trampoline uintptr) (uintptr, []byte, error) {
@@ -175,13 +167,13 @@ func unsafePatchValue(target, replacement reflect.Value, trampoline uintptr) (ui
 	bytes, originFunc, jumpData, err := replaceFunction(targetPointer, (uintptr)(getPtr(replacement)), replacement.Pointer(), trampoline)
 	if err != nil {
 		if strings.Contains(err.Error(), "already patched") {
-			if patch, ok := patches[targetPointer]; ok {
-				showInst("origin bytes", targetPointer, patch.originalBytes, logger.WarningLevel)
+			if p, ok := patches[targetPointer]; ok {
+				showInst("origin bytes", targetPointer, p.originalBytes, logger.WarningLevel)
 			}
 		}
 		return 0, nil, err
 	}
-	patches[targetPointer] = patch{bytes, targetPointer,  &replacement, originFunc}
+	patches[targetPointer] = patch{bytes, targetPointer, &replacement, originFunc}
 	redirect[originFunc] = targetPointer
 
 	return originFunc, jumpData, nil
@@ -201,8 +193,8 @@ func PatchPtr(targetPtr uintptr, replacement interface{}) (*PatchGuard, error) {
 // replacement 代理函数
 // trampoline 跳板函数地址(可不指定,传nil)
 func PatchPtrTrampoline(targetPtr uintptr, replacement, trampoline interface{}) (*PatchGuard, error) {
-	if patch, ok := patches[targetPtr]; ok {
-		unpatch(targetPtr, patch)
+	if p, ok := patches[targetPtr]; ok {
+		unpatch(targetPtr, p)
 	}
 
 	replacementVal := reflect.ValueOf(replacement)
@@ -231,8 +223,8 @@ func PatchPtrTrampoline(targetPtr uintptr, replacement, trampoline interface{}) 
 // proxy 代理函数地址
 // trampoline 跳板函数地址(可不指定,传0)
 func PatchPtr2Ptr(targetPtr, replacement, proxy, trampoline uintptr) (*PatchGuard, error) {
-	if patch, ok := patches[targetPtr]; ok {
-		unpatch(targetPtr, patch)
+	if p, ok := patches[targetPtr]; ok {
+		unpatch(targetPtr, p)
 	}
 	bytes, originFunc, jumpData, err := replaceFunction(targetPtr, replacement, proxy, trampoline)
 	if err != nil {
@@ -259,7 +251,8 @@ func PatchInstanceMethod(target reflect.Type, methodName string, replacement int
 
 // PatchInstanceMethod replaces an instance method methodName for the type target with replacement
 // Replacement should expect the receiver (of type target) as the first argument
-func PatchInstanceMethodTrampoline(target reflect.Type, methodName string, replacement interface{}, trampoline interface{}) (*PatchGuard, error) {
+func PatchInstanceMethodTrampoline(target reflect.Type, methodName string, replacement interface{},
+	trampoline interface{}) (*PatchGuard, error) {
 	m, ok := target.MethodByName(methodName)
 	if !ok {
 		return nil, errors.New(fmt.Sprintf("unknown method %s", methodName))
@@ -273,7 +266,6 @@ func PatchInstanceMethodTrampoline(target reflect.Type, methodName string, repla
 
 	return &PatchGuard{m.Func.Pointer(), r, originFunc, jumpData, false}, nil
 }
-
 
 // UnpatchAll removes all applied monkeypatches
 func UnpatchAll() {
@@ -298,7 +290,7 @@ func unpatchValue(target uintptr) bool {
 }
 
 func unpatch(target uintptr, p patch) {
-	copyToLocation(target, p.originalBytes)
+	_ = copyToLocation(target, p.originalBytes)
 	ShowInst(fmt.Sprintf("unpatch copy to 0x%x", target), target, 20, logger.DebugLevel)
 }
 

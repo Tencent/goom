@@ -22,11 +22,12 @@ type BuilderTestSuite struct {
 func (s *BuilderTestSuite) TestUnitFunc() {
 	s.Run("success", func() {
 		mb := mocker.Create("")
-		mb.Func("fun1").Proxy(func(i int) int {
+
+		mb.Func("fun1").Apply(func(i int) int {
 			return i * 3
 		})
 
-		mb.Func("fun2").Proxy(func(i int) int {
+		mb.Func("fun2").Apply(func(i int) int {
 			return i * 3
 		})
 
@@ -44,7 +45,7 @@ func (s *BuilderTestSuite) TestUnitFunc() {
 func (s *BuilderTestSuite) TestUnitMethod() {
 	s.Run("success", func() {
 		mb := mocker.Create("")
-		mb.Struct("fake").Method("call").Proxy(func(_ *fake, i int) int {
+		mb.Struct("fake").Method("call").Apply(func(_ *fake, i int) int {
 			return i * 2
 		})
 
@@ -62,7 +63,7 @@ func (s *BuilderTestSuite) TestUnitMethod() {
 func (s *BuilderTestSuite) TestUnitFuncDef() {
 	s.Run("success", func() {
 		mb := mocker.Create("")
-		mb.FuncDef((&fake{}).call).Proxy(func(_ *fake, i int) int {
+		mb.FuncDec((&fake{}).call).Apply(func(_ *fake, i int) int {
 			return i * 2
 		})
 

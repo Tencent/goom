@@ -2,10 +2,11 @@ package mocker
 
 import (
 	"fmt"
-	"git.code.oa.com/goom/mocker/internal/unexports"
 	"reflect"
 	"runtime"
 	"strings"
+
+	"git.code.oa.com/goom/mocker/internal/unexports"
 
 	"git.code.oa.com/goom/mocker/internal/patch"
 	"git.code.oa.com/goom/mocker/internal/proxy"
@@ -13,8 +14,8 @@ import (
 
 // Mocker mock接口
 type Mocker interface {
-	// Proxy 代理方法实现
-	Proxy(imp interface{})
+	// Apply 代理方法实现
+	Apply(imp interface{})
 	// Return 代理方法返回
 	Return(args ...interface{})
 	// Cancel 取消代理
@@ -39,10 +40,10 @@ func (m *MethodMocker) Method(name string) Mocker {
 	return m
 }
 
-// Proxy 指定mock执行的回调函数
+// Apply 指定mock执行的回调函数
 // mock回调函数, 需要和mock模板函数的签名保持一致
 // 方法的参数签名写法比如: func(s *Struct, arg1, arg2 type), 其中第一个参数必须是接收体类型
-func (m *MethodMocker) Proxy(imp interface{}) {
+func (m *MethodMocker) Apply(imp interface{}) {
 	if m.name == "" && m.namep == "" {
 		panic("method name is empty")
 	}
@@ -83,10 +84,10 @@ type FuncMocker struct {
 	guard *patch.PatchGuard
 }
 
-// Proxy 指定mock执行的回调函数
+// Apply 指定mock执行的回调函数
 // mock回调函数, 需要和mock模板函数的签名保持一致
 // 方法的参数签名写法比如: func(s *Struct, arg1, arg2 type), 其中第一个参数必须是接收体类型
-func (m *FuncMocker) Proxy(imp interface{}) {
+func (m *FuncMocker) Apply(imp interface{}) {
 	if m.name == "" {
 		panic("func name is empty")
 	}
@@ -121,8 +122,8 @@ type DefMocker struct {
 	guard *patch.PatchGuard
 }
 
-// Proxy 代理方法实现
-func (m *DefMocker) Proxy(imp interface{}) {
+// Apply 代理方法实现
+func (m *DefMocker) Apply(imp interface{}) {
 	if m.funcdef == nil {
 		panic("funcdef is empty")
 	}

@@ -16,8 +16,8 @@ type Builder struct {
 // 比如需要mock结构体函数 (*conn).Write(b []byte)，则name="conn"
 func (m *Builder) Struct(name string) *MethodMocker {
 	mocker := &MethodMocker{
-		name: fmt.Sprintf("%s.%s", m.pkgname, name),
-		namep:fmt.Sprintf("%s.(*%s)", m.pkgname, name)}
+		name:  fmt.Sprintf("%s.%s", m.pkgname, name),
+		namep: fmt.Sprintf("%s.(*%s)", m.pkgname, name)}
 	m.mockers = append(m.mockers, mocker)
 
 	return mocker
@@ -32,10 +32,10 @@ func (m *Builder) Func(name string) *FuncMocker {
 	return mocker
 }
 
-// FuncDef 指定函数定义, 支持私有函数
+// FuncDec 指定函数定义, 支持私有函数
 // funcdef 函数，比如 foo
 // 方法的mock, 比如 &Struct{}.method
-func (m *Builder) FuncDef(funcdef interface{}) *DefMocker {
+func (m *Builder) FuncDec(funcdef interface{}) *DefMocker {
 	mocker := &DefMocker{funcdef: funcdef}
 	m.mockers = append(m.mockers, mocker)
 

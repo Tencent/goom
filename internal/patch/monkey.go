@@ -152,11 +152,11 @@ func patchValue(target, replacement reflect.Value, trampoline interface{}) (uint
 // unsafePatchValue 不做类型检查
 func unsafePatchValue(target, replacement reflect.Value, trampoline uintptr) (uintptr, []byte, error) {
 	if target.Kind() != reflect.Func {
-		return 0, nil, errors.New("target has to be a Func")
+		return 0, nil, errors.New("target has to be a UnexportF")
 	}
 
 	if replacement.Kind() != reflect.Func {
-		return 0, nil, errors.New("replacement has to be a Func")
+		return 0, nil, errors.New("replacement has to be a UnexportF")
 	}
 
 	targetPointer := target.Pointer()

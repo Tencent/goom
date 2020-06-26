@@ -2,8 +2,6 @@ package mocker
 
 import (
 	"fmt"
-	"reflect"
-	"runtime"
 	"strings"
 
 	"git.code.oa.com/goom/mocker/internal/unexports"
@@ -22,21 +20,51 @@ type Mocker interface {
 	Cancel()
 }
 
+// baseMocker mocker基础类型
+type baseMocker struct {
+	origin interface{}
+	guard *patch.PatchGuard
+}
+
+// applyByName 根据函数名称应用mock
+func (m *baseMocker) applyByName(funcname string, imp interface{}) (err error) {
+	m.guard, err = proxy.StaticProxyByName(funcname, imp, m.origin)
+	if err != nil {
+		panic(fmt.Sprintf("proxy func definition error: %v", err))
+	}
+	m.guard.Apply()
+	return
+}
+
+// applyByFunc 根据函数应用mock
+func (m *baseMocker) applyByFunc(funcdef interface{}, imp interface{}) (err error) {
+	m.guard, err = proxy.StaticProxyByFunc(funcdef, imp, m.origin)
+	if err != nil {
+		panic(fmt.Sprintf("proxy func definition error: %v", err))
+	}
+	m.guard.Apply()
+	return
+}
+
+// Cancel 取消Mock
+func (m *baseMocker) Cancel() {
+	if m.guard != nil {
+		m.guard.UnpatchWithLock()
+	}
+}
+
 // MethodMocker 对结构体函数或方法进行mock
 // 能支持到私有函数、私有类型的方法的Mock
 type MethodMocker struct {
+	*baseMocker
 	name   string
 	namep  string
-	origin interface{}
-
-	guard *patch.PatchGuard
 }
 
 // Method 设置结构体的方法名
 func (m *MethodMocker) Method(name string) Mocker {
 	m.name = fmt.Sprintf("%s.%s", m.name, name)
 	m.namep = fmt.Sprintf("%s.%s", m.namep, name)
-
 	return m
 }
 
@@ -55,12 +83,7 @@ func (m *MethodMocker) Apply(imp interface{}) {
 		mname = m.namep
 	}
 
-	m.guard, err = proxy.StaticProxyByName(mname, imp, m.origin)
-	if err != nil {
-		panic(fmt.Sprintf("proxy method error: %v", err))
-	}
-
-	m.guard.Apply()
+	m.applyByName(mname, imp)
 }
 
 // Return 代理方法返回
@@ -68,20 +91,12 @@ func (m *MethodMocker) Return(args ...interface{}) {
 	panic("not implements")
 }
 
-// Cancel 取消Mock
-func (m *MethodMocker) Cancel() {
-	if m.guard != nil {
-		m.guard.UnpatchWithLock()
-	}
-}
 
 // FuncMocker 对函数或方法进行mock
 // 能支持到私有函数、私有类型的方法的Mock
 type FuncMocker struct {
+	*baseMocker
 	name   string
-	origin interface{}
-
-	guard *patch.PatchGuard
 }
 
 // Apply 指定mock执行的回调函数
@@ -91,15 +106,7 @@ func (m *FuncMocker) Apply(imp interface{}) {
 	if m.name == "" {
 		panic("func name is empty")
 	}
-
-	var err error
-
-	m.guard, err = proxy.StaticProxyByName(m.name, imp, m.origin)
-	if err != nil {
-		panic(fmt.Sprintf("proxy func error: %v", err))
-	}
-
-	m.guard.Apply()
+	m.applyByName(m.name, imp)
 }
 
 // Return 代理方法返回
@@ -107,17 +114,12 @@ func (m *FuncMocker) Return(args ...interface{}) {
 	panic("not implements")
 }
 
-// Cancel 取消Mock
-func (m *FuncMocker) Cancel() {
-	if m.guard != nil {
-		m.guard.UnpatchWithLock()
-	}
-}
+
 
 // DefMocker 对函数或方法进行mock，使用函数定义筛选
 type DefMocker struct {
+	*baseMocker
 	funcdef interface{}
-	origin  interface{}
 
 	guard *patch.PatchGuard
 }
@@ -128,36 +130,15 @@ func (m *DefMocker) Apply(imp interface{}) {
 		panic("funcdef is empty")
 	}
 
-	var err error
 	var funcname = getFunctionName(m.funcdef)
 	if strings.HasSuffix(funcname, "-fm") {
-		m.guard, err = proxy.StaticProxyByName(strings.TrimRight(funcname, "-fm"), imp, m.origin)
-		if err != nil {
-			panic(fmt.Sprintf("proxy func definition error: %v", err))
-		}
+		m.applyByName(strings.TrimRight(funcname, "-fm"), imp)
 	} else {
-		m.guard, err = proxy.StaticProxyByFunc(m.funcdef, imp, m.origin)
-		if err != nil {
-			panic(fmt.Sprintf("proxy func definition error: %v", err))
-		}
+		m.applyByFunc(m.funcdef, imp)
 	}
-
-	m.guard.Apply()
 }
 
 // Return 代理方法返回
 func (m *DefMocker) Return(args ...interface{}) {
 	panic("not implements")
-}
-
-// Cancel 取消Mock
-func (m *DefMocker) Cancel() {
-	if m.guard != nil {
-		m.guard.UnpatchWithLock()
-	}
-}
-
-// getFunctionName 获取函数名称
-func getFunctionName(i interface{}) string {
-	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
 }

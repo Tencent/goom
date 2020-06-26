@@ -44,7 +44,7 @@ func (m *Builder) UnexportedStruct(name string) *UnexportedMethodMocker {
 	return mocker
 }
 
-// UnexportF 指定函数或方法名称, 支持私有函数或私有方法
+// UnexportF 指定任意函数或方法名称, 支持私有函数或私有方法
 // 比如需要mock函数 foo()， 则name="pkgname.foo"
 // 比如需要mock方法, pkgname.(*struct_name).method_name
 // name string foo或者(*struct_name).method_name
@@ -58,7 +58,7 @@ func (m *Builder) UnexportF(name string) *UnexportMocker {
 }
 
 
-// Reset 取消package下的所有Mock, @see Builder.pkgname
+// Reset 取消当前builder的所有Mock
 func (m *Builder) Reset() *Builder {
 	for _, mocker := range m.mockers {
 		mocker.Cancel()

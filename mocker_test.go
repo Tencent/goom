@@ -114,6 +114,7 @@ func (s *BuilderTestSuite) TestUnitUnexportStruct() {
 func (s *BuilderTestSuite) TestUnitAny() {
 	s.Run("success", func() {
 		mb := mocker.Create("")
+		// 指定: &fake{}).call,此方式不支持return
 		mb.Func((&fake{}).call).Apply(func(_ *fake, i int) int {
 			return i * 2
 		})
@@ -145,7 +146,6 @@ type fake struct{}
 func (f *fake) Call(i int) int {
 	return i
 }
-
 
 //go:noinline
 func (f *fake) call(i int) int {

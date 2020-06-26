@@ -15,7 +15,9 @@ type Builder struct {
 // Struct 指定结构体名称
 // 比如需要mock结构体函数 (*conn).Write(b []byte)，则name="conn"
 func (m *Builder) Struct(name string) *MethodMocker {
-	mocker := &MethodMocker{name: fmt.Sprintf("%s.(*%s)", m.pkgname, name)}
+	mocker := &MethodMocker{
+		name: fmt.Sprintf("%s.%s", m.pkgname, name),
+		namep:fmt.Sprintf("%s.(*%s)", m.pkgname, name)}
 	m.mockers = append(m.mockers, mocker)
 
 	return mocker

@@ -2,6 +2,7 @@ package mocker
 
 import (
 	"fmt"
+	"git.code.oa.com/goom/mocker/internal/unexports"
 	"reflect"
 	"runtime"
 	"strings"
@@ -24,6 +25,7 @@ type Mocker interface {
 // 能支持到私有函数、私有类型的方法的Mock
 type MethodMocker struct {
 	name   string
+	namep  string
 	origin interface{}
 
 	guard *patch.PatchGuard
@@ -32,6 +34,7 @@ type MethodMocker struct {
 // Method 设置结构体的方法名
 func (m *MethodMocker) Method(name string) Mocker {
 	m.name = fmt.Sprintf("%s.%s", m.name, name)
+	m.namep = fmt.Sprintf("%s.%s", m.namep, name)
 
 	return m
 }
@@ -40,13 +43,18 @@ func (m *MethodMocker) Method(name string) Mocker {
 // mock回调函数, 需要和mock模板函数的签名保持一致
 // 方法的参数签名写法比如: func(s *Struct, arg1, arg2 type), 其中第一个参数必须是接收体类型
 func (m *MethodMocker) Proxy(imp interface{}) {
-	if m.name == "" {
+	if m.name == "" && m.namep == "" {
 		panic("method name is empty")
 	}
 
 	var err error
+	var mname = m.name
+	_, err = unexports.FindFuncByName(m.name)
+	if err != nil {
+		mname = m.namep
+	}
 
-	m.guard, err = proxy.StaticProxyByName(m.name, imp, m.origin)
+	m.guard, err = proxy.StaticProxyByName(mname, imp, m.origin)
 	if err != nil {
 		panic(fmt.Sprintf("proxy method error: %v", err))
 	}

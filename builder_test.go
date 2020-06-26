@@ -77,6 +77,20 @@ func (s *BuilderTestSuite) TestUnitFuncDef() {
 	})
 }
 
+// TestUnitFuncReturn 测试私有方法mock return
+func (s *BuilderTestSuite) TestUnitFuncReturn() {
+	s.Run("success", func() {
+		mb := mocker.Create("")
+		mb.FuncDec(fun1).Return(3)
+
+		s.Equal(3, fun1(1), "fun1 mock check")
+
+		mb.Reset()
+
+		s.Equal(1, fun1(1), "fun1 mock reset check")
+	})
+}
+
 //go:noinline
 func fun1(i int) int {
 	return i * 1

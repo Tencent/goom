@@ -2,6 +2,9 @@ package mocker
 
 import (
 	"fmt"
+	"git.code.oa.com/goom/mocker/errortype"
+	"reflect"
+	"strconv"
 	"strings"
 
 	"git.code.oa.com/goom/mocker/internal/unexports"
@@ -24,6 +27,7 @@ type Mocker interface {
 type baseMocker struct {
 	origin interface{}
 	guard *patch.PatchGuard
+	imp interface{}
 }
 
 // applyByName 根据函数名称应用mock
@@ -33,6 +37,7 @@ func (m *baseMocker) applyByName(funcname string, imp interface{}) (err error) {
 		panic(fmt.Sprintf("proxy func definition error: %v", err))
 	}
 	m.guard.Apply()
+	m.imp = imp
 	return
 }
 
@@ -43,6 +48,32 @@ func (m *baseMocker) applyByFunc(funcdef interface{}, imp interface{}) (err erro
 		panic(fmt.Sprintf("proxy func definition error: %v", err))
 	}
 	m.guard.Apply()
+	m.imp = imp
+	return
+}
+
+// returns 指定的返回值
+func (m *baseMocker) returns(funcdef interface{}, args ...interface{}) (err error) {
+	impTyp := reflect.TypeOf(funcdef)
+	if len(args) < impTyp.NumOut() {
+		return errortype.NewIllegalParamError(strconv.Itoa(len(args) + 1), "'empty'")
+	}
+
+	m.imp = reflect.MakeFunc(impTyp, func(args1 []reflect.Value) (results []reflect.Value) {
+		for i, r := range args {
+			v := reflect.ValueOf(r)
+			if r == nil &&
+				(impTyp.Out(i).Kind() == reflect.Interface || impTyp.Out(i).Kind() == reflect.Ptr) {
+				v = reflect.Zero(reflect.SliceOf(impTyp.Out(i)).Elem())
+			} else if r != nil && impTyp.Out(i).Kind() == reflect.Interface {
+				ptr := reflect.New(impTyp.Out(i))
+				ptr.Elem().Set(v)
+				v = ptr.Elem()
+			}
+			results = append(results, v)
+		}
+		return results
+	}).Interface()
 	return
 }
 
@@ -140,5 +171,8 @@ func (m *DefMocker) Apply(imp interface{}) {
 
 // Return 代理方法返回
 func (m *DefMocker) Return(args ...interface{}) {
-	panic("not implements")
+	if err := m.returns(m.funcdef, args...); err != nil {
+		panic(err)
+	}
+	m.Apply(m.imp)
 }

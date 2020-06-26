@@ -19,7 +19,7 @@ type BuilderTestSuite struct {
 }
 
 
-// TestUnitFunc 测试私有方法mock return
+// TestUnitFunc 测试函数mock return
 func (s *BuilderTestSuite) TestUnitFunc() {
 	s.Run("success", func() {
 		mb := mocker.Create("")
@@ -33,7 +33,7 @@ func (s *BuilderTestSuite) TestUnitFunc() {
 	})
 }
 
-// TestUnitMethod 测试结构体的私有方法mock return
+// TestUnitMethod 测试结构体的方法mock return
 func (s *BuilderTestSuite) TestUnitMethod() {
 	s.Run("success", func() {
 		mb := mocker.Create("")
@@ -68,7 +68,7 @@ func (s *BuilderTestSuite) TestUnitUnexportMethod() {
 	})
 }
 
-// TestUnitFunc 测试私有方法mock
+// TestUnitFunc 测试未导出函数mock
 func (s *BuilderTestSuite) TestUnitUnexportedFunc() {
 	s.Run("success", func() {
 		mb := mocker.Create("git.code.oa.com/goom/mocker_test")
@@ -91,7 +91,7 @@ func (s *BuilderTestSuite) TestUnitUnexportedFunc() {
 	})
 }
 
-// TestUnitUnexportMethod 测试结构体的未导出方法mock apply
+// TestUnitUnexportMethod 测试未导出结构体的方法mock apply
 func (s *BuilderTestSuite) TestUnitUnexportStruct() {
 	s.Run("success", func() {
 		// 指定包名

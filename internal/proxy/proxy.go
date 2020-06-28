@@ -25,7 +25,7 @@ func StaticProxyByName(funcName string, proxyFunc interface{}, trampolineFunc in
 	if trampolineFunc != nil {
 		if reflect.ValueOf(trampolineFunc).Kind() != reflect.Func &&
 			reflect.ValueOf(trampolineFunc).Elem().Kind() != reflect.Func {
-			return nil, errors.New("trampolineFunc has to be a UnexportedFunc")
+			return nil, errors.New("trampolineFunc has to be a ExportFunc")
 		}
 	}
 

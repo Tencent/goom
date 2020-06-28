@@ -32,9 +32,9 @@ func (m *Builder) Func(funcdef interface{}) *DefMocker {
 	return mocker
 }
 
-// UnexportedStruct 指定结构体名称
+// ExportStruct 导出私有结构体
 // 比如需要mock结构体函数 (*conn).Write(b []byte)，则name="conn"
-func (m *Builder) UnexportedStruct(name string) *UnexportedMethodMocker {
+func (m *Builder) ExportStruct(name string) *UnexportedMethodMocker {
 	mocker := &UnexportedMethodMocker{
 		baseMocker: &baseMocker{},
 		name:       fmt.Sprintf("%s.%s", m.pkgname, name),
@@ -44,11 +44,15 @@ func (m *Builder) UnexportedStruct(name string) *UnexportedMethodMocker {
 	return mocker
 }
 
-// UnexportedFunc 指定任意函数或方法名称, 支持私有函数或私有方法
+// ExportFunc 导出私有函数
 // 比如需要mock函数 foo()， 则name="pkgname.foo"
 // 比如需要mock方法, pkgname.(*struct_name).method_name
 // name string foo或者(*struct_name).method_name
-func (m *Builder) UnexportedFunc(name string) *UnexportedFuncMocker {
+func (m *Builder) ExportFunc(name string) *UnexportedFuncMocker {
+	if name == "" {
+		panic("func name is empty")
+	}
+
 	mocker := &UnexportedFuncMocker{
 		baseMocker: &baseMocker{},
 		name:       fmt.Sprintf("%s.%s", m.pkgname, name)}
@@ -67,12 +71,19 @@ func (m *Builder) Reset() *Builder {
 }
 
 // Create 创建Mock构建器
+func Create() *Builder {
+	pkgname := currentPackage(2)
+	return &Builder{
+		pkgname: pkgname,
+	}
+}
+
+// Create 创建Mock构建器
 // pkgname string 包路径,默认取当前包
-func Create(pkgname string) *Builder {
+func Package(pkgname string) *Builder {
 	if pkgname == "" {
 		pkgname = currentPackage(2)
 	}
-
 	return &Builder{
 		pkgname: pkgname,
 	}

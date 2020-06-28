@@ -22,7 +22,7 @@ type OriginTestSuite struct {
 // TestUnitFunc 测试调用原函数mock return
 func (s *OriginTestSuite) TestCallOrigin() {
 	s.Run("success", func() {
-		mb := mocker.Create("")
+		mb := mocker.Create()
 
 		// 定义原函数,用于占位,实际不会执行该函数体
 		var origin = func(i int) int {

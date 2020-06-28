@@ -15,12 +15,15 @@ func CurrentPackage() string {
 func currentPackage(skip int) string {
 	pc, _, _, _ := runtime.Caller(skip)
 	callerName := runtime.FuncForPC(pc).Name()
+
 	if i := strings.Index(callerName, ".("); i > -1 {
 		return callerName[:i]
 	}
+
 	if i := strings.LastIndex(callerName, "."); i > -1 {
 		return callerName[:i]
 	}
+
 	return callerName
 }
 
@@ -30,9 +33,10 @@ func getFunctionName(i interface{}) string {
 }
 
 func getTypeName(val interface{}) string {
-	if t := reflect.TypeOf(val); t.Kind() == reflect.Ptr {
+	t := reflect.TypeOf(val)
+	if t.Kind() == reflect.Ptr {
 		return "*" + t.Elem().Name()
-	} else {
-		return t.Name()
 	}
+
+	return t.Name()
 }

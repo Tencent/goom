@@ -2,12 +2,13 @@ package proxy
 
 import (
 	"fmt"
-	"git.code.oa.com/goom/mocker/internal/logger"
 	"log"
 	"math/rand"
 	"runtime"
 	"strings"
 	"testing"
+
+	"git.code.oa.com/goom/mocker/internal/logger"
 )
 
 // 测试用例数据
@@ -21,20 +22,20 @@ var testCases = []*TestCase{
 			Caller(1000)
 		},
 		evalMakeFunc: func(makefunc interface{}) {
-			makefunc.(func (i int) int)(5)
+			makefunc.(func(i int) int)(5)
 		},
-		trampoline: func () interface{} {
-			var result = func (i int) int {
+		trampoline: func() interface{} {
+			var result = func(i int) int {
 				fmt.Println("trampoline")
 				fmt.Println("trampoline1")
 				return i + 10
 			}
 			return &result
 		},
-		proxy: func (origin interface{}) interface{} {
-			return func (i int) int {
+		proxy: func(origin interface{}) interface{} {
+			return func(i int) int {
 				logger.LogDebug("proxy Caller called, args", i)
-				originFunc := origin.(*func (i int) int)
+				originFunc := origin.(*func(i int) int)
 				return (*originFunc)(i)
 			}
 		},
@@ -46,21 +47,21 @@ var testCases = []*TestCase{
 			Caller1(5)
 		},
 		evalMakeFunc: func(makefunc interface{}) {
-			makefunc.(func (i int) int)(5)
+			makefunc.(func(i int) int)(5)
 		},
 		trampoline: func() interface{} {
-			var result = func (i int) int {
+			var result = func(i int) int {
 				fmt.Println("trampoline")
 				fmt.Println("trampoline1")
-				return i +20
+				return i + 20
 			}
 			return &result
 		},
 		proxy: func(origin interface{}) interface{} {
 			var origin1 = origin
-			return func (i int) int {
+			return func(i int) int {
 				logger.LogTrace("proxy Caller1 called, args", i)
-				originFunc := origin1.(*func (i int) int)
+				originFunc := origin1.(*func(i int) int)
 				return (*originFunc)(i)
 			}
 		},
@@ -72,10 +73,10 @@ var testCases = []*TestCase{
 			Caller2(5)
 		},
 		evalMakeFunc: func(makefunc interface{}) {
-			makefunc.(func (i int) int)(5)
+			makefunc.(func(i int) int)(5)
 		},
 		trampoline: func() interface{} {
-			var result = func (i int) int {
+			var result = func(i int) int {
 				fmt.Println("trampoline")
 				fmt.Println("trampoline1")
 				return i + 30
@@ -84,9 +85,9 @@ var testCases = []*TestCase{
 		},
 		proxy: func(origin interface{}) interface{} {
 			var origin1 = origin
-			return func (i int) int {
+			return func(i int) int {
 				logger.LogTrace("proxy Caller2 called, args", i)
-				originFunc := origin1.(*func (i int) int)
+				originFunc := origin1.(*func(i int) int)
 				return (*originFunc)(i)
 			}
 		},
@@ -102,13 +103,13 @@ var testCases = []*TestCase{
 			})
 		},
 		evalMakeFunc: func(makefunc interface{}) {
-			makefunc.(func (arg Arg) int)(Arg{
+			makefunc.(func(arg Arg) int)(Arg{
 				field1: field1,
 				field2: nil,
 			})
 		},
 		trampoline: func() interface{} {
-			var result = func (arg Arg) int {
+			var result = func(arg Arg) int {
 				fmt.Println("trampoline")
 				fmt.Println("trampoline1")
 				return 40
@@ -117,9 +118,9 @@ var testCases = []*TestCase{
 		},
 		proxy: func(origin interface{}) interface{} {
 			var origin1 = origin
-			return func (arg Arg) int {
+			return func(arg Arg) int {
 				logger.LogTrace("proxy Caller3 called, args", arg)
-				originFunc := origin1.(*func (arg Arg) int)
+				originFunc := origin1.(*func(arg Arg) int)
 				return (*originFunc)(arg)
 			}
 		},
@@ -127,15 +128,15 @@ var testCases = []*TestCase{
 	{
 		funcName: "Caller4",
 		funcDef:  Caller4,
-		eval: Caller4Eval,
+		eval:     Caller4Eval,
 		evalMakeFunc: func(makefunc interface{}) {
-			makefunc.(func (arg *Arg) int)(&Arg{
+			makefunc.(func(arg *Arg) int)(&Arg{
 				field1: field1,
 				field2: nil,
 			})
 		},
 		trampoline: func() interface{} {
-			var result = func (arg *Arg) int {
+			var result = func(arg *Arg) int {
 				fmt.Println("trampoline")
 				fmt.Println("trampoline1")
 				return 50
@@ -144,9 +145,9 @@ var testCases = []*TestCase{
 		},
 		proxy: func(origin interface{}) interface{} {
 			var origin1 = origin
-			return func (arg *Arg) int {
+			return func(arg *Arg) int {
 				logger.LogTrace("proxy Caller4 called, args", arg)
-				originFunc := origin1.(*func (arg *Arg) int)
+				originFunc := origin1.(*func(arg *Arg) int)
 				return (*originFunc)(arg)
 			}
 		},
@@ -158,10 +159,10 @@ var testCases = []*TestCase{
 			Caller5()
 		},
 		evalMakeFunc: func(makefunc interface{}) {
-			makefunc.(func () int)()
+			makefunc.(func() int)()
 		},
 		trampoline: func() interface{} {
-			var result = func () int {
+			var result = func() int {
 				fmt.Println("trampoline1")
 				return 60 + rand.Int()
 			}
@@ -169,9 +170,9 @@ var testCases = []*TestCase{
 		},
 		proxy: func(origin interface{}) interface{} {
 			var origin1 = origin
-			return func () int {
+			return func() int {
 				logger.LogTrace("proxy Caller5 called, no args")
-				originFunc := origin1.(*func () int)
+				originFunc := origin1.(*func() int)
 				return (*originFunc)()
 			}
 		},
@@ -186,7 +187,7 @@ var testCases = []*TestCase{
 			makefunc.(func(a int) func() int)(3)()
 		},
 		trampoline: func() interface{} {
-			var result = func (a int) func() int {
+			var result = func(a int) func() int {
 				return func() int {
 					fmt.Println("trampoline1")
 					return a + 70
@@ -196,9 +197,9 @@ var testCases = []*TestCase{
 		},
 		proxy: func(origin interface{}) interface{} {
 			var origin1 = origin
-			return func (a int) func() int {
+			return func(a int) func() int {
 				logger.LogTrace("proxy Caller6 called, args", a)
-				originFunc := origin1.(*func (a int) func() int)
+				originFunc := origin1.(*func(a int) func() int)
 				return (*originFunc)(a)
 			}
 		},
@@ -213,7 +214,7 @@ var testCases = []*TestCase{
 			makefunc.(func(a int))(2)
 		},
 		trampoline: func() interface{} {
-			var result = func (i int) {
+			var result = func(i int) {
 				fmt.Println("trampoline")
 				fmt.Println("trampoline1")
 			}
@@ -221,16 +222,16 @@ var testCases = []*TestCase{
 		},
 		proxy: func(origin interface{}) interface{} {
 			var origin1 = origin
-			return func (i int) {
+			return func(i int) {
 				logger.LogTrace("proxy Caller7 called, args", i)
-				originFunc := origin1.(*func (i int))
+				originFunc := origin1.(*func(i int))
 				(*originFunc)(i)
 			}
 		},
 	},
 	{
-		funcName:"Caller8",
-		funcDef: Caller8,
+		funcName: "Caller8",
+		funcDef:  Caller8,
 		eval: func() {
 			j := Caller8(5).inner.j
 			if j < 0 {
@@ -238,16 +239,16 @@ var testCases = []*TestCase{
 			}
 		},
 		evalMakeFunc: func(makefunc interface{}) {
-			makefunc.(func (i int) *Result)(5)
+			makefunc.(func(i int) *Result)(5)
 		},
 		trampoline: func() interface{} {
-			var result = func (i int) *Result {
+			var result = func(i int) *Result {
 				fmt.Println("trampoline")
 				fmt.Println("trampoline1")
 				return &Result{
-					i:     i*100,
+					i: i * 100,
 					inner: &InnerResult{
-						j: i * 2*100,
+						j: i * 2 * 100,
 					},
 					m: make(map[string]int, 2),
 				}
@@ -256,16 +257,16 @@ var testCases = []*TestCase{
 		},
 		proxy: func(origin interface{}) interface{} {
 			var origin1 = origin
-			return func (i int) *Result {
+			return func(i int) *Result {
 				logger.LogTrace("proxy Caller8 called, args", i)
-				originFunc := origin1.(*func (i int) *Result)
+				originFunc := origin1.(*func(i int) *Result)
 				return (*originFunc)(i)
 			}
 		},
 	},
 	{
-		funcName:"Caller9",
-		funcDef: Caller9,
+		funcName: "Caller9",
+		funcDef:  Caller9,
 		eval: func() {
 			j := Caller9(5).m
 			if len(j) > 0 {
@@ -273,16 +274,16 @@ var testCases = []*TestCase{
 			}
 		},
 		evalMakeFunc: func(makefunc interface{}) {
-			makefunc.(func (i int) Result)(5)
+			makefunc.(func(i int) Result)(5)
 		},
 		trampoline: func() interface{} {
-			var result = func (i int) Result {
+			var result = func(i int) Result {
 				fmt.Println("trampoline")
 				fmt.Println("trampoline1")
 				return Result{
-					i:     i*100,
+					i: i * 100,
 					inner: &InnerResult{
-						j: i * 2*100,
+						j: i * 2 * 100,
 					},
 					m: make(map[string]int, 2),
 				}
@@ -291,15 +292,14 @@ var testCases = []*TestCase{
 		},
 		proxy: func(origin interface{}) interface{} {
 			var origin1 = origin
-			return func (i int) Result {
+			return func(i int) Result {
 				logger.LogTrace("proxy Caller9 called, args", i)
-				originFunc := origin1.(*func (i int) Result)
+				originFunc := origin1.(*func(i int) Result)
 				return (*originFunc)(i)
 			}
 		},
 	},
 }
-
 
 // TestTestStaticProxy 测试静态代理
 func TestTestStaticProxy(t *testing.T) {
@@ -326,7 +326,7 @@ func TestTestStaticProxy(t *testing.T) {
 func BenchmarkStaticProxy(b *testing.B) {
 	logger.LogLevel = logger.TraceLevel
 	logger.Log2Console(true)
-	for i := 0;i <b.N; i++ {
+	for i := 0; i < b.N; i++ {
 		for _, tc := range testCases {
 
 			trampoline := tc.trampoline()
@@ -344,7 +344,6 @@ func BenchmarkStaticProxy(b *testing.B) {
 		}
 	}
 }
-
 
 // TestStaticProxyConcurrent 测试并发支持
 func TestStaticProxyConcurrent(t *testing.T) {
@@ -381,8 +380,6 @@ func TestStaticProxyConcurrent(t *testing.T) {
 
 }
 
-
-
 // TestConcurrent 测试运行中patch并发支持
 func TestStaticProxyConcurrent1(t *testing.T) {
 	logger.LogLevel = logger.WarningLevel
@@ -397,7 +394,6 @@ func TestStaticProxyConcurrent1(t *testing.T) {
 			}
 		}()
 	}
-
 
 	for c := 0; c < 1000; c++ {
 		go func() {
@@ -451,7 +447,6 @@ func TestStaticProxyConcurrentOnce(t *testing.T) {
 		}()
 	}
 
-
 	go func() {
 		for _, tc := range testCases {
 			trampoline := tc.trampoline()
@@ -486,7 +481,6 @@ func TestStaticProxyConcurrentOnce(t *testing.T) {
 
 }
 
-
 // CurrentPackage 获取当前调用的包路径
 func CurrentPackage() string {
 	return currentPackage(2)
@@ -496,7 +490,7 @@ func CurrentPackage() string {
 func currentPackage(skip int) string {
 	pc, _, _, _ := runtime.Caller(skip)
 	callerName := runtime.FuncForPC(pc).Name()
-	if i := strings.Index(callerName, ".(");i > -1 {
+	if i := strings.Index(callerName, ".("); i > -1 {
 		return callerName[:i]
 	}
 	if i := strings.LastIndex(callerName, "."); i > -1 {

@@ -12,9 +12,9 @@ type Builder struct {
 // 比如需要mock结构体函数 (*conn).Write(b []byte)，则name="conn"
 func (m *Builder) Struct(s interface{}) *MethodMocker {
 	mocker := &MethodMocker{
-		pkgname: m.pkgname,
+		pkgname:    m.pkgname,
 		baseMocker: &baseMocker{},
-		structDef: s}
+		structDef:  s}
 	m.mockers = append(m.mockers, mocker)
 
 	return mocker
@@ -26,43 +26,43 @@ func (m *Builder) Struct(s interface{}) *MethodMocker {
 func (m *Builder) Func(funcdef interface{}) *DefMocker {
 	mocker := &DefMocker{
 		baseMocker: &baseMocker{},
-		funcdef: funcdef}
+		funcdef:    funcdef}
 	m.mockers = append(m.mockers, mocker)
 
 	return mocker
 }
 
-// Struct 指定结构体名称
+// UnexportedStruct 指定结构体名称
 // 比如需要mock结构体函数 (*conn).Write(b []byte)，则name="conn"
 func (m *Builder) UnexportedStruct(name string) *UnexportedMethodMocker {
 	mocker := &UnexportedMethodMocker{
 		baseMocker: &baseMocker{},
-		name:  fmt.Sprintf("%s.%s", m.pkgname, name),
-		namep: fmt.Sprintf("%s.(*%s)", m.pkgname, name)}
+		name:       fmt.Sprintf("%s.%s", m.pkgname, name),
+		namep:      fmt.Sprintf("%s.(*%s)", m.pkgname, name)}
 	m.mockers = append(m.mockers, mocker)
 
 	return mocker
 }
 
-// UnexportF 指定任意函数或方法名称, 支持私有函数或私有方法
+// UnexportedFunc 指定任意函数或方法名称, 支持私有函数或私有方法
 // 比如需要mock函数 foo()， 则name="pkgname.foo"
 // 比如需要mock方法, pkgname.(*struct_name).method_name
 // name string foo或者(*struct_name).method_name
-func (m *Builder) UnexportF(name string) *UnexportMocker {
-	mocker := &UnexportMocker{
+func (m *Builder) UnexportedFunc(name string) *UnexportedFuncMocker {
+	mocker := &UnexportedFuncMocker{
 		baseMocker: &baseMocker{},
-		name: fmt.Sprintf("%s.%s", m.pkgname, name)}
+		name:       fmt.Sprintf("%s.%s", m.pkgname, name)}
 	m.mockers = append(m.mockers, mocker)
 
 	return mocker
 }
-
 
 // Reset 取消当前builder的所有Mock
 func (m *Builder) Reset() *Builder {
 	for _, mocker := range m.mockers {
 		mocker.Cancel()
 	}
+
 	return m
 }
 
@@ -72,6 +72,7 @@ func Create(pkgname string) *Builder {
 	if pkgname == "" {
 		pkgname = currentPackage(2)
 	}
+
 	return &Builder{
 		pkgname: pkgname,
 	}

@@ -18,7 +18,6 @@ type MockerTestSuite struct {
 	suite.Suite
 }
 
-
 // TestUnitFunc 测试函数mock return
 func (s *MockerTestSuite) TestUnitFunc() {
 	s.Run("success", func() {
@@ -49,7 +48,6 @@ func (s *MockerTestSuite) TestUnitMethod() {
 	})
 }
 
-
 // TestUnitUnexportMethod 测试结构体的未导出方法mock apply
 func (s *MockerTestSuite) TestUnitUnexportMethod() {
 	s.Run("success", func() {
@@ -73,11 +71,11 @@ func (s *MockerTestSuite) TestUnitUnexportedFunc() {
 	s.Run("success", func() {
 		mb := mocker.Create("git.code.oa.com/goom/mocker_test")
 
-		mb.UnexportF("fun1").Apply(func(i int) int {
+		mb.UnexportedFunc("fun1").Apply(func(i int) int {
 			return i * 3
 		})
 
-		mb.UnexportF("fun2").Apply(func(i int) int {
+		mb.UnexportedFunc("fun2").Apply(func(i int) int {
 			return i * 3
 		})
 
@@ -128,7 +126,6 @@ func (s *MockerTestSuite) TestUnitAny() {
 		s.Equal(1, f.call(1), "call mock reset check")
 	})
 }
-
 
 //go:noinline
 func fun1(i int) int {

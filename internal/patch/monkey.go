@@ -3,10 +3,11 @@ package patch
 import (
 	"errors"
 	"fmt"
-	"git.code.oa.com/goom/mocker/internal/logger"
 	"reflect"
 	"strings"
 	"sync"
+
+	"git.code.oa.com/goom/mocker/internal/logger"
 )
 
 // patch is an applied patch
@@ -152,11 +153,11 @@ func patchValue(target, replacement reflect.Value, trampoline interface{}) (uint
 // unsafePatchValue 不做类型检查
 func unsafePatchValue(target, replacement reflect.Value, trampoline uintptr) (uintptr, []byte, error) {
 	if target.Kind() != reflect.Func {
-		return 0, nil, errors.New("target has to be a UnexportF")
+		return 0, nil, errors.New("target has to be a UnexportedFunc")
 	}
 
 	if replacement.Kind() != reflect.Func {
-		return 0, nil, errors.New("replacement has to be a UnexportF")
+		return 0, nil, errors.New("replacement has to be a UnexportedFunc")
 	}
 
 	targetPointer := target.Pointer()

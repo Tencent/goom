@@ -12,5 +12,7 @@ func (t *TypeNotFound) Error() string {
 // NewTypeNotFoundError 创建类型未找到异常
 // typName 类型名称
 func NewTypeNotFoundError(typName string) error {
-	return &TypeNotFound{typName:typName}
+	return &TypeNotFound{
+		typName: typName,
+	}
 }

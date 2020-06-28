@@ -2,9 +2,11 @@ package mocker_test
 
 import (
 	"fmt"
-	"git.code.oa.com/goom/mocker"
-	"github.com/stretchr/testify/suite"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
+
+	"git.code.oa.com/goom/mocker"
 )
 
 // TestUnitOriginTestSuite 测试入口
@@ -23,11 +25,12 @@ func (s *OriginTestSuite) TestCallOrigin() {
 		mb := mocker.Create("")
 
 		// 定义原函数,用于占位,实际不会执行该函数体
-		var origin = func (i int) int {
+		var origin = func(i int) int {
 			fmt.Println("origin func placeholder")
 			return 0 + i
 		}
-		mb.Func(fun1).Origin(&origin).Apply(func (i int) int {
+
+		mb.Func(fun1).Origin(&origin).Apply(func(i int) int {
 			originResult := origin(i)
 			return originResult + 100
 		})

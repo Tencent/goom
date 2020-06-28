@@ -49,7 +49,6 @@ type Moduledata struct {
 	Next *Moduledata
 }
 
-
 type Functab struct {
 	Entry   uintptr
 	Funcoff uintptr
@@ -78,7 +77,7 @@ type typeOff int32 // offset to an *rtype
 
 // TODO 不同go版本兼容
 type Value struct {
-	Typ *uintptr
-	Ptr unsafe.Pointer
+	Typ  *uintptr
+	Ptr  unsafe.Pointer
 	Flag uintptr
 }

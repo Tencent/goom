@@ -104,7 +104,7 @@ func CreateFuncForCodePtr(outFuncPtr interface{}, codePtr uintptr) (*hack.Func, 
 func NewFuncWithCodePtr(typ reflect.Type, codePtr uintptr) reflect.Value {
 	var ptr2Ptr *uintptr = &codePtr
 	pointer := unsafe.Pointer(ptr2Ptr)
-	funcVal :=  reflect.NewAt(typ, unsafe.Pointer(pointer)).Elem()
+	funcVal := reflect.NewAt(typ, unsafe.Pointer(pointer)).Elem()
 	(*hack.Value)(unsafe.Pointer(&funcVal)).Flag = uintptr(reflect.Func)
 	return funcVal
 }

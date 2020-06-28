@@ -2,8 +2,9 @@ package proxy
 
 import (
 	"fmt"
-	"git.code.oa.com/goom/mocker/internal/logger"
 	"runtime/debug"
+
+	"git.code.oa.com/goom/mocker/internal/logger"
 )
 
 //go:noinline
@@ -13,7 +14,6 @@ func Caller(i int) int {
 	}
 	return i * Caller(i-1)
 }
-
 
 //go:noinline
 func Caller1(i int) int {
@@ -32,7 +32,7 @@ func Caller2(i int) int {
 type Arg struct {
 	field1 string
 	field2 map[string]int
-	inner InnerArg
+	inner  InnerArg
 }
 
 var argPtr = &Arg{
@@ -53,7 +53,7 @@ func Caller4Eval() {
 		inner: InnerArg{
 			field1: field1,
 			field2: make([]string, 0),
-			field3:&InnerField{field3:"ok"},
+			field3: &InnerField{field3: "ok"},
 		},
 	}
 	Caller4(arg)
@@ -89,12 +89,10 @@ func Caller7(i int) {
 	logger.LogTrace("Caller 7 called")
 }
 
-
-
 type Result struct {
-	i int
+	i     int
 	inner *InnerResult
-	m map[string]int
+	m     map[string]int
 }
 
 type InnerResult struct {
@@ -104,7 +102,7 @@ type InnerResult struct {
 //go:noinline
 func Caller8(i int) *Result {
 	return &Result{
-		i:     i,
+		i: i,
 		inner: &InnerResult{
 			j: i * 2,
 		},
@@ -115,14 +113,13 @@ func Caller8(i int) *Result {
 //go:noinline
 func Caller9(i int) Result {
 	return Result{
-		i:     i,
+		i: i,
 		inner: &InnerResult{
 			j: i * 2,
 		},
 		m: make(map[string]int, 2),
 	}
 }
-
 
 type InnerArg struct {
 	field1 string
@@ -142,16 +139,14 @@ func ForceStackExpand(i int) int {
 	return i * ForceStackExpand(i-1)
 }
 
-
 var field1 = "field1"
 
 type TestCase struct {
-	funcName string
-	funcDef  interface{}
-	eval     func()
-	trampoline func () interface{}
-	proxy func (interface{}) interface{}
-	makefunc interface{}
+	funcName     string
+	funcDef      interface{}
+	eval         func()
+	trampoline   func() interface{}
+	proxy        func(interface{}) interface{}
+	makefunc     interface{}
 	evalMakeFunc func(makefunc interface{})
 }
-

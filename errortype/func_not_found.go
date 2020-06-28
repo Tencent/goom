@@ -12,6 +12,5 @@ func (e *FuncNotFound) Error() string {
 // NewFuncNotFoundError 函数未找到
 // funcName 函数名称
 func NewFuncNotFoundError(funcName string) error {
-	return &FuncNotFound{funcName:funcName}
+	return &FuncNotFound{funcName: funcName}
 }
-

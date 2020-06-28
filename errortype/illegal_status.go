@@ -3,7 +3,7 @@ package errortype
 // IllegalStatus 状态错误异常
 type IllegalStatus struct {
 	funcName string
-	msg string
+	msg      string
 }
 
 func (i *IllegalStatus) Error() string {
@@ -14,5 +14,5 @@ func (i *IllegalStatus) Error() string {
 // funcName 函数名
 // msg 信息
 func NewIllegalStatusError(funcName string, msg string) error {
-	return &IllegalStatus{funcName:funcName, msg:msg}
+	return &IllegalStatus{funcName: funcName, msg: msg}
 }

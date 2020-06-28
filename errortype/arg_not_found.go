@@ -5,7 +5,7 @@ import "strconv"
 // ArgNotFound 参数未找到异常
 type ArgNotFound struct {
 	funcName string
-	arg int
+	arg      int
 }
 
 func (e *ArgNotFound) Error() string {
@@ -16,5 +16,5 @@ func (e *ArgNotFound) Error() string {
 // funcName 函数名称
 // index 参数下标
 func NewArgNotFoundError(funcName string, index int) error {
-	return &ArgNotFound{funcName:funcName, arg:index}
+	return &ArgNotFound{funcName: funcName, arg: index}
 }

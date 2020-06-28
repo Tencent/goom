@@ -2,7 +2,7 @@ package errortype
 
 // FieldNotFound 类型没有找到
 type FieldNotFound struct {
-	typName string
+	typName   string
 	fieldName string
 }
 
@@ -14,5 +14,5 @@ func (t *FieldNotFound) Error() string {
 // typName 类型名称
 // fieldName 属性名称
 func NewFieldNotFoundError(typName string, fieldName string) error {
-	return &FieldNotFound{typName:typName, fieldName:fieldName}
+	return &FieldNotFound{typName: typName, fieldName: fieldName}
 }

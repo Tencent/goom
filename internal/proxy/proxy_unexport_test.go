@@ -13,12 +13,12 @@ import (
 )
 
 func TestPrintMock(t *testing.T) {
-	var trampoline = func (a ...interface{}) (n int, err error) {
+	var trampoline = func(a ...interface{}) (n int, err error) {
 		return 0, nil
 	}
 
 	// 静态代理函数
-	patch, err := StaticProxyByName("fmt.Print", func (a ...interface{}) (n int, err error) {
+	patch, err := StaticProxyByName("fmt.Print", func(a ...interface{}) (n int, err error) {
 		// 调用原来的函数
 		return fmt.Println("called fmt.Print, args:", a)
 	}, &trampoline)
@@ -31,7 +31,6 @@ func TestPrintMock(t *testing.T) {
 	fmt.Println("unpatched")
 	fmt.Print("ok", "2")
 }
-
 
 func TestNetConnMock(t *testing.T) {
 

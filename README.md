@@ -71,12 +71,12 @@ mock.Struct(&fake{}).Method("Call").Apply(func(_ *fake, i int) int {
 // mock fake的方法Call并返回1
 mock.Struct(&fake{}).Method("Call").Return(1)
 
-// mock fake的私有方法call，并设置其代理函数
+// mock fake的私有方法call, mock前先调用ExportMethod将其导出，并设置其代理函数
 mock.Struct(&fake{}).ExportMethod("call").Apply(func(_ *fake, i int) int {
     return i * 2
 })
 
-// mock fake的私有方法call，并设置其返回值为1
+// mock fake的私有方法call, mock前先调用ExportMethod将其导出为函数类型，后续支持设置When, Return等
 mock.Struct(&fake{}).ExportMethod("call").As(func(_ *fake, i int) int {
     return i * 2
 }).Return(1)
@@ -86,7 +86,7 @@ mock.Struct(&fake{}).ExportMethod("call").As(func(_ *fake, i int) int {
 #### 函数mock
 ```golang
 // 针对其它包的mock示例
-// 创建当前包的mocker，设置引用路径
+// 创建指定包的mocker，设置引用路径
 mock := mocker.Package("git.code.oa.com/goom/mocker_test")
 
 // mock函数foo1并设置其代理函数
@@ -103,7 +103,7 @@ mock.ExportFunc("foo1").As(func(i int) int {
 #### 结构体方法mock
 ```golang
 // 针对其它包的mock示例
-// 创建当前包的mocker，设置引用路径
+// 创建指定包的mocker，设置引用路径
 mock := mocker.Package("git.code.oa.com/goom/mocker_test")
 
 // mock其它包的私有结构体fake的私有方法call，并设置其代理函数
@@ -123,6 +123,7 @@ mb := mocker.Create()
 
 // 定义原函数,用于占位,实际不会执行该函数体
 var origin = func(i int) int {
+    // 函数体长度必须大于一定值, 所以随意加一些代码进行填充
     fmt.Println("origin func placeholder")
     return 0 + i
 }
@@ -132,7 +133,7 @@ mb.Func(foo1).Origin(&origin).Apply(func(i int) int {
     originResult := origin(i)
 
     // 加入延时逻辑等
-    time.Sleep(time.Seconde)
+    time.Sleep(time.Seconds)
 
     return originResult + 100
 })

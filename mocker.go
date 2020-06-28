@@ -26,16 +26,16 @@ type ExportedMocker interface {
 	When(args ...interface{}) *When
 	// Return 执行返回值
 	Return(args ...interface{}) *When
-	// 指定Mock之后的原函数, orign签名和mock的函数一致
+	// Origin 指定Mock之后的原函数, orign签名和mock的函数一致
 	Origin(orign interface{}) ExportedMocker
 }
 
 // UnexportedMocker 未导出函数mock接口
 type UnexportedMocker interface {
 	Mocker
-	// 将未导出函数(或方法)转换为导出函数(或方法)
+	// As 将未导出函数(或方法)转换为导出函数(或方法)
 	As(funcdef interface{}) ExportedMocker
-	// 指定Mock之后的原函数, orign签名和mock的函数一致
+	// Origin 指定Mock之后的原函数, orign签名和mock的函数一致
 	Origin(orign interface{}) UnexportedMocker
 }
 
@@ -122,7 +122,9 @@ func (m *MethodMocker) Method(name string) ExportedMocker {
 	if !ok {
 		panic("method " + m.method + " not found on " + sTyp.String())
 	}
+
 	m.methodIns = method.Func.Interface()
+
 	return m
 }
 
@@ -244,14 +246,14 @@ func (m *UnexportedMethodMocker) Origin(orign interface{}) UnexportedMocker {
 	return m
 }
 
-// 将未导出函数(或方法)转换为导出函数(或方法)
+// As 将未导出函数(或方法)转换为导出函数(或方法)
 func (m *UnexportedMethodMocker) As(funcdef interface{}) ExportedMocker {
 	if m.name == "" && m.namep == "" {
 		panic("method name is empty")
 	}
 
 	var (
-		err   error
+		err           error
 		originFuncPtr uintptr
 	)
 
@@ -259,11 +261,13 @@ func (m *UnexportedMethodMocker) As(funcdef interface{}) ExportedMocker {
 	if err != nil {
 		originFuncPtr, err = unexports.FindFuncByName(m.namep)
 	}
+
 	if err != nil {
 		panic(err)
 	}
 
 	newFunc := unexports.NewFuncWithCodePtr(reflect.TypeOf(funcdef), originFuncPtr)
+
 	return &DefMocker{
 		baseMocker: m.baseMocker,
 		funcdef:    newFunc.Interface(),
@@ -291,7 +295,7 @@ func (m *UnexportedFuncMocker) Origin(orign interface{}) UnexportedMocker {
 	return m
 }
 
-// 将未导出函数(或方法)转换为导出函数(或方法)
+// As 将未导出函数(或方法)转换为导出函数(或方法)
 func (m *UnexportedFuncMocker) As(funcdef interface{}) ExportedMocker {
 	originFuncPtr, err := unexports.FindFuncByName(m.name)
 	if err != nil {
@@ -299,6 +303,7 @@ func (m *UnexportedFuncMocker) As(funcdef interface{}) ExportedMocker {
 	}
 
 	newFunc := unexports.NewFuncWithCodePtr(reflect.TypeOf(funcdef), originFuncPtr)
+
 	return &DefMocker{
 		baseMocker: m.baseMocker,
 		funcdef:    newFunc.Interface(),

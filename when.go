@@ -41,7 +41,7 @@ func CreateWhen(m ExportedMocker, funcDef interface{}, args []interface{},
 	}, nil
 }
 
-// When当参数符合一定的条件
+// When 当参数符合一定的条件
 func (w *When) When(args ...interface{}) *When {
 	w.curArgs = args
 	return w
@@ -89,5 +89,6 @@ func (w *When) invoke(args1 []reflect.Value) (results []reflect.Value) {
 	return results
 }
 
+// Return ...
 type Return struct {
 }

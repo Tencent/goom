@@ -1,6 +1,7 @@
 package mocker_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -22,13 +23,13 @@ type MockerTestSuite struct {
 func (s *MockerTestSuite) TestUnitFunc() {
 	s.Run("success", func() {
 		mb := mocker.Create()
-		mb.Func(fun1).Return(3)
+		mb.Func(foo1).Return(3)
 
-		s.Equal(3, fun1(1), "fun1 mock check")
+		s.Equal(3, foo1(1), "foo1 mock check")
 
 		mb.Reset()
 
-		s.Equal(1, fun1(1), "fun1 mock reset check")
+		s.Equal(1, foo1(1), "foo1 mock reset check")
 	})
 }
 
@@ -71,21 +72,21 @@ func (s *MockerTestSuite) TestUnitUnexportedFunc() {
 	s.Run("success", func() {
 		mb := mocker.Package("git.code.oa.com/goom/mocker_test")
 
-		mb.ExportFunc("fun1").Apply(func(i int) int {
+		mb.ExportFunc("foo1").Apply(func(i int) int {
 			return i * 3
 		})
 
-		mb.ExportFunc("fun2").Apply(func(i int) int {
+		mb.ExportFunc("foo2").Apply(func(i int) int {
 			return i * 3
 		})
 
-		s.Equal(3, fun1(1), "fun1 mock check")
-		s.Equal(3, fun2(1), "fun2 mock check")
+		s.Equal(3, foo1(1), "foo1 mock check")
+		s.Equal(3, foo2(1), "foo2 mock check")
 
 		mb.Reset()
 
-		s.Equal(1, fun1(1), "fun1 mock reset check")
-		s.Equal(2, fun2(1), "fun1 mock reset check")
+		s.Equal(1, foo1(1), "foo1 mock reset check")
+		s.Equal(2, foo2(1), "foo1 mock reset check")
 	})
 }
 
@@ -132,21 +133,21 @@ func (s *MockerTestSuite) TestUnitExportFunc() {
 	s.Run("success", func() {
 		mb := mocker.Package("git.code.oa.com/goom/mocker_test")
 
-		mb.ExportFunc("fun1").As(func(i int) int {
+		mb.ExportFunc("foo1").As(func(i int) int {
 			return 0
 		}).Return(6)
 
-		mb.ExportFunc("fun2").As(func(i int) int {
+		mb.ExportFunc("foo2").As(func(i int) int {
 			return 0
 		}).Return(6)
 
-		s.Equal(6, fun1(1), "fun1 mock check")
-		s.Equal(6, fun2(1), "fun2 mock check")
+		s.Equal(6, foo1(1), "foo1 mock check")
+		s.Equal(6, foo2(1), "foo2 mock check")
 
 		mb.Reset()
 
-		s.Equal(1, fun1(1), "fun1 mock reset check")
-		s.Equal(2, fun2(1), "fun1 mock reset check")
+		s.Equal(1, foo1(1), "foo1 mock reset check")
+		s.Equal(2, foo2(1), "foo1 mock reset check")
 	})
 }
 
@@ -168,13 +169,37 @@ func (s *MockerTestSuite) TestUnitExportMethod() {
 	})
 }
 
+// TestUnitFunc 测试调用原函数mock return
+func (s *MockerTestSuite) TestCallOrigin() {
+	s.Run("success", func() {
+		mb := mocker.Create()
+
+		// 定义原函数,用于占位,实际不会执行该函数体
+		var origin = func(i int) int {
+			fmt.Println("origin func placeholder")
+			return 0 + i
+		}
+
+		mb.Func(foo1).Origin(&origin).Apply(func(i int) int {
+			originResult := origin(i)
+			return originResult + 100
+		})
+
+		s.Equal(101, foo1(1), "foo1 mock check")
+
+		mb.Reset()
+
+		s.Equal(1, foo1(1), "foo1 mock reset check")
+	})
+}
+
 //go:noinline
-func fun1(i int) int {
+func foo1(i int) int {
 	return i * 1
 }
 
 //go:noinline
-func fun2(i int) int {
+func foo2(i int) int {
 	return i * 2
 }
 

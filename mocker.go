@@ -14,7 +14,7 @@ import (
 // Mocker mock接口
 type Mocker interface {
 	// Apply 代理方法实现
-	Apply(imp interface{}) ExportedMocker
+	Apply(imp interface{})
 	// Cancel 取消代理
 	Cancel()
 }
@@ -142,9 +142,8 @@ func (m *MethodMocker) ExportMethod(name string) UnexportedMocker {
 // Apply 指定mock执行的回调函数
 // mock回调函数, 需要和mock模板函数的签名保持一致
 // 方法的参数签名写法比如: func(s *Struct, arg1, arg2 type), 其中第一个参数必须是接收体类型
-func (m *MethodMocker) Apply(imp interface{}) ExportedMocker {
+func (m *MethodMocker) Apply(imp interface{}) {
 	m.applyByMethod(m.structDef, m.method, imp)
-	return m
 }
 
 // When 指定条件匹配
@@ -220,7 +219,7 @@ func (m *UnexportedMethodMocker) Method(name string) UnexportedMocker {
 // Apply 指定mock执行的回调函数
 // mock回调函数, 需要和mock模板函数的签名保持一致
 // 方法的参数签名写法比如: func(s *Struct, arg1, arg2 type), 其中第一个参数必须是接收体类型
-func (m *UnexportedMethodMocker) Apply(imp interface{}) ExportedMocker {
+func (m *UnexportedMethodMocker) Apply(imp interface{}) {
 	if m.name == "" && m.namep == "" {
 		panic("method name is empty")
 	}
@@ -236,10 +235,6 @@ func (m *UnexportedMethodMocker) Apply(imp interface{}) ExportedMocker {
 	}
 
 	m.applyByName(mname, imp)
-	return &DefMocker{
-		baseMocker: m.baseMocker,
-		funcdef:    imp,
-	}
 }
 
 // Origin 调用原函数
@@ -251,7 +246,28 @@ func (m *UnexportedMethodMocker) Origin(orign interface{}) UnexportedMocker {
 
 // 将未导出函数(或方法)转换为导出函数(或方法)
 func (m *UnexportedMethodMocker) As(funcdef interface{}) ExportedMocker {
-	return m.Apply(funcdef)
+	if m.name == "" && m.namep == "" {
+		panic("method name is empty")
+	}
+
+	var (
+		err   error
+		originFuncPtr uintptr
+	)
+
+	originFuncPtr, err = unexports.FindFuncByName(m.name)
+	if err != nil {
+		originFuncPtr, err = unexports.FindFuncByName(m.namep)
+	}
+	if err != nil {
+		panic(err)
+	}
+
+	newFunc := unexports.NewFuncWithCodePtr(reflect.TypeOf(funcdef), originFuncPtr)
+	return &DefMocker{
+		baseMocker: m.baseMocker,
+		funcdef:    newFunc.Interface(),
+	}
 }
 
 // UnexportedFuncMocker 对函数或方法进行mock
@@ -264,12 +280,8 @@ type UnexportedFuncMocker struct {
 // Apply 指定mock执行的回调函数
 // mock回调函数, 需要和mock模板函数的签名保持一致
 // 方法的参数签名写法比如: func(s *Struct, arg1, arg2 type), 其中第一个参数必须是接收体类型
-func (m *UnexportedFuncMocker) Apply(imp interface{}) ExportedMocker {
+func (m *UnexportedFuncMocker) Apply(imp interface{}) {
 	m.applyByName(m.name, imp)
-	return &DefMocker{
-		baseMocker: m.baseMocker,
-		funcdef:    imp,
-	}
 }
 
 // Origin 调用原函数
@@ -281,7 +293,16 @@ func (m *UnexportedFuncMocker) Origin(orign interface{}) UnexportedMocker {
 
 // 将未导出函数(或方法)转换为导出函数(或方法)
 func (m *UnexportedFuncMocker) As(funcdef interface{}) ExportedMocker {
-	return m.Apply(funcdef)
+	originFuncPtr, err := unexports.FindFuncByName(m.name)
+	if err != nil {
+		panic(err)
+	}
+
+	newFunc := unexports.NewFuncWithCodePtr(reflect.TypeOf(funcdef), originFuncPtr)
+	return &DefMocker{
+		baseMocker: m.baseMocker,
+		funcdef:    newFunc.Interface(),
+	}
 }
 
 // DefMocker 对函数或方法进行mock，使用函数定义筛选
@@ -291,7 +312,7 @@ type DefMocker struct {
 }
 
 // Apply 代理方法实现
-func (m *DefMocker) Apply(imp interface{}) ExportedMocker {
+func (m *DefMocker) Apply(imp interface{}) {
 	if m.funcdef == nil {
 		panic("funcdef is empty")
 	}
@@ -303,7 +324,6 @@ func (m *DefMocker) Apply(imp interface{}) ExportedMocker {
 	} else {
 		m.applyByFunc(m.funcdef, imp)
 	}
-	return m
 }
 
 // When 指定条件匹配

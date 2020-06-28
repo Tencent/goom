@@ -19,22 +19,92 @@ type MockerTestSuite struct {
 	suite.Suite
 }
 
-// TestUnitFunc 测试函数mock return
-func (s *MockerTestSuite) TestUnitFunc() {
+// TestUnitFuncApply 测试函数mock apply
+func (s *MockerTestSuite) TestUnitFuncApply() {
 	s.Run("success", func() {
 		mb := mocker.Create()
-		mb.Func(foo1).Return(3)
 
-		s.Equal(3, foo1(1), "foo1 mock check")
+		mb.Func(foo).Apply(func(int) int {
+			return 3
+		})
+
+		s.Equal(3, foo(1), "foo mock check")
 
 		mb.Reset()
 
-		s.Equal(1, foo1(1), "foo1 mock reset check")
+		s.Equal(1, foo(1), "foo mock reset check")
 	})
 }
 
-// TestUnitMethod 测试结构体的方法mock return
-func (s *MockerTestSuite) TestUnitMethod() {
+// TestUnitFuncReturn 测试函数mock return
+func (s *MockerTestSuite) TestUnitFuncReturn() {
+	s.Run("success", func() {
+		mb := mocker.Create()
+
+		mb.Func(foo).Return(3)
+
+		s.Equal(3, foo(1), "foo mock check")
+
+		mb.Reset()
+
+		s.Equal(1, foo(1), "foo mock reset check")
+	})
+}
+
+// TestUnitUnexportedFuncApply 测试未导出函数mock apply
+func (s *MockerTestSuite) TestUnitUnexportedFuncApply() {
+	s.Run("success", func() {
+		mb := mocker.Package("git.code.oa.com/goom/mocker_test")
+
+		mb.ExportFunc("foo").Apply(func(i int) int {
+			return i * 3
+		})
+
+		s.Equal(3, foo(1), "foo mock check")
+
+		mb.Reset()
+
+		s.Equal(1, foo(1), "foo mock reset check")
+	})
+}
+
+// TestUnitUnexportedFuncReturn 测试未导出函数mock return
+func (s *MockerTestSuite) TestUnitUnexportedFuncReturn() {
+	s.Run("success", func() {
+		mb := mocker.Package("git.code.oa.com/goom/mocker_test")
+
+		mb.ExportFunc("foo").As(func(i int) int {
+			return i * 3
+		}).Return(3)
+
+		s.Equal(3, foo(1), "foo mock check")
+
+		mb.Reset()
+
+		s.Equal(1, foo(1), "foo mock reset check")
+	})
+}
+
+// TestUnitMethodApply 测试结构体的方法mock apply
+func (s *MockerTestSuite) TestUnitMethodApply() {
+	s.Run("success", func() {
+		mb := mocker.Create()
+		mb.Struct(&fake{}).Method("Call").Apply(func(*fake, int) int {
+			return 5
+		})
+
+		f := &fake{}
+
+		s.Equal(5, f.Call(1), "call mock check")
+
+		mb.Reset()
+
+		s.Equal(1, f.Call(1), "call mock reset check")
+	})
+}
+
+// TestUnitMethodReturn 测试结构体的方法mock return
+func (s *MockerTestSuite) TestUnitMethodReturn() {
 	s.Run("success", func() {
 		mb := mocker.Create()
 		mb.Struct(&fake{}).Method("Call").Return(5)
@@ -49,8 +119,8 @@ func (s *MockerTestSuite) TestUnitMethod() {
 	})
 }
 
-// TestUnitUnexportMethod 测试结构体的未导出方法mock apply
-func (s *MockerTestSuite) TestUnitUnexportMethod() {
+// TestUnitUnexportMethodApply 测试结构体的未导出方法mock apply
+func (s *MockerTestSuite) TestUnitUnexportedMethodApply() {
 	s.Run("success", func() {
 		mb := mocker.Create()
 		mb.Struct(&fake{}).ExportMethod("call").Apply(func(_ *fake, i int) int {
@@ -67,30 +137,25 @@ func (s *MockerTestSuite) TestUnitUnexportMethod() {
 	})
 }
 
-// TestUnitFunc 测试未导出函数mock
-func (s *MockerTestSuite) TestUnitUnexportedFunc() {
+// TestUnitUnexportedMethodReturn 测试结构体的未导出方法mock return
+func (s *MockerTestSuite) TestUnitUnexportedMethodReturn() {
 	s.Run("success", func() {
-		mb := mocker.Package("git.code.oa.com/goom/mocker_test")
+		mb := mocker.Package("")
+		mb.Struct(&fake{}).ExportMethod("call").As(func(_ *fake, i int) int {
+			return i * 2
+		}).Return(6)
 
-		mb.ExportFunc("foo1").Apply(func(i int) int {
-			return i * 3
-		})
+		f := &fake{}
 
-		mb.ExportFunc("foo2").Apply(func(i int) int {
-			return i * 3
-		})
-
-		s.Equal(3, foo1(1), "foo1 mock check")
-		s.Equal(3, foo2(1), "foo2 mock check")
+		s.Equal(6, f.call(1), "call mock check")
 
 		mb.Reset()
 
-		s.Equal(1, foo1(1), "foo1 mock reset check")
-		s.Equal(2, foo2(1), "foo1 mock reset check")
+		s.Equal(1, f.call(1), "call mock reset check")
 	})
 }
 
-// TestUnitUnexportMethod 测试未导出结构体的方法mock apply
+// TestUnitUnexportStruct 测试未导出结构体的方法mock apply
 func (s *MockerTestSuite) TestUnitUnexportStruct() {
 	s.Run("success", func() {
 		// 指定包名
@@ -109,67 +174,7 @@ func (s *MockerTestSuite) TestUnitUnexportStruct() {
 	})
 }
 
-// TestUnitAny 测试任意函数定义的mock
-func (s *MockerTestSuite) TestUnitAny() {
-	s.Run("success", func() {
-		mb := mocker.Create()
-		// 指定: &fake{}).call,此方式不支持return
-		mb.Func((&fake{}).call).Apply(func(_ *fake, i int) int {
-			return i * 2
-		})
-
-		f := &fake{}
-
-		s.Equal(2, f.call(1), "call mock check")
-
-		mb.Reset()
-
-		s.Equal(1, f.call(1), "call mock reset check")
-	})
-}
-
-// TestUnitUnexportedReturn 测试未导出函数mock return
-func (s *MockerTestSuite) TestUnitExportFunc() {
-	s.Run("success", func() {
-		mb := mocker.Package("git.code.oa.com/goom/mocker_test")
-
-		mb.ExportFunc("foo1").As(func(i int) int {
-			return 0
-		}).Return(6)
-
-		mb.ExportFunc("foo2").As(func(i int) int {
-			return 0
-		}).Return(6)
-
-		s.Equal(6, foo1(1), "foo1 mock check")
-		s.Equal(6, foo2(1), "foo2 mock check")
-
-		mb.Reset()
-
-		s.Equal(1, foo1(1), "foo1 mock reset check")
-		s.Equal(2, foo2(1), "foo1 mock reset check")
-	})
-}
-
-// TestUnitUnexportMethodReturn 测试结构体的未导出方法mock return
-func (s *MockerTestSuite) TestUnitExportMethod() {
-	s.Run("success", func() {
-		mb := mocker.Package("")
-		mb.Struct(&fake{}).ExportMethod("call").As(func(_ *fake, i int) int {
-			return i * 2
-		}).Return(6)
-
-		f := &fake{}
-
-		s.Equal(6, f.call(1), "call mock check")
-
-		mb.Reset()
-
-		s.Equal(1, f.call(1), "call mock reset check")
-	})
-}
-
-// TestUnitFunc 测试调用原函数mock return
+// TestCallOrigin 测试调用原函数mock return
 func (s *MockerTestSuite) TestCallOrigin() {
 	s.Run("success", func() {
 		mb := mocker.Create()
@@ -180,27 +185,22 @@ func (s *MockerTestSuite) TestCallOrigin() {
 			return 0 + i
 		}
 
-		mb.Func(foo1).Origin(&origin).Apply(func(i int) int {
+		mb.Func(foo).Origin(&origin).Apply(func(i int) int {
 			originResult := origin(i)
 			return originResult + 100
 		})
 
-		s.Equal(101, foo1(1), "foo1 mock check")
+		s.Equal(101, foo(1), "foo mock check")
 
 		mb.Reset()
 
-		s.Equal(1, foo1(1), "foo1 mock reset check")
+		s.Equal(1, foo(1), "foo mock reset check")
 	})
 }
 
 //go:noinline
-func foo1(i int) int {
+func foo(i int) int {
 	return i * 1
-}
-
-//go:noinline
-func foo2(i int) int {
-	return i * 2
 }
 
 type fake struct{}

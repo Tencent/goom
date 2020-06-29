@@ -13,7 +13,7 @@ type Builder struct {
 func (m *Builder) Struct(obj interface{}) *MethodMocker {
 	mocker := &MethodMocker{
 		pkgname:    m.pkgname,
-		baseMocker: &baseMocker{},
+		baseMocker: newBackMocker(),
 		structDef:  obj,
 	}
 	m.mockers = append(m.mockers, mocker)
@@ -26,7 +26,7 @@ func (m *Builder) Struct(obj interface{}) *MethodMocker {
 // 方法的mock, 比如 &Struct{}.method
 func (m *Builder) Func(obj interface{}) *DefMocker {
 	mocker := &DefMocker{
-		baseMocker: &baseMocker{},
+		baseMocker: newBackMocker(),
 		funcdef:    obj,
 	}
 	m.mockers = append(m.mockers, mocker)
@@ -38,7 +38,7 @@ func (m *Builder) Func(obj interface{}) *DefMocker {
 // 比如需要mock结构体函数 (*conn).Write(b []byte)，则name="conn"
 func (m *Builder) ExportStruct(name string) *UnexportedMethodMocker {
 	mocker := &UnexportedMethodMocker{
-		baseMocker: &baseMocker{},
+		baseMocker: newBackMocker(),
 		name:       fmt.Sprintf("%s.%s", m.pkgname, name),
 		namep:      fmt.Sprintf("%s.(*%s)", m.pkgname, name),
 	}
@@ -57,7 +57,7 @@ func (m *Builder) ExportFunc(name string) *UnexportedFuncMocker {
 	}
 
 	mocker := &UnexportedFuncMocker{
-		baseMocker: &baseMocker{},
+		baseMocker: newBackMocker(),
 		name:       fmt.Sprintf("%s.%s", m.pkgname, name)}
 	m.mockers = append(m.mockers, mocker)
 

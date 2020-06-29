@@ -28,6 +28,8 @@ type ExportedMocker interface {
 	Return(args ...interface{}) *When
 	// Origin 指定Mock之后的原函数, orign签名和mock的函数一致
 	Origin(orign interface{}) ExportedMocker
+	// If 条件表达式匹配
+	If() *If
 }
 
 // UnexportedMocker 未导出函数mock接口
@@ -44,6 +46,13 @@ type baseMocker struct {
 	origin interface{}
 	guard  *patch.PatchGuard
 	imp    interface{}
+
+	when *When
+	_if  *If
+}
+
+func newBackMocker() *baseMocker {
+	return &baseMocker{}
 }
 
 // applyByName 根据函数名称应用mock
@@ -85,11 +94,35 @@ func (m *MethodMocker) applyByMethod(structDef interface{}, method string, imp i
 	m.imp = imp
 }
 
-// matches 指定的返回值
-func (m *baseMocker) returns(when *When) error {
-	m.imp = reflect.MakeFunc(when.funTyp, when.invoke).Interface()
-
+// when 指定的返回值
+func (m *baseMocker) whens(when *When) error {
+	m.imp = reflect.MakeFunc(when.funTyp, m.callback).Interface()
+	m.when = when
 	return nil
+}
+
+// if 指定的返回值
+func (m *baseMocker) ifs(_if *If) error {
+	m.imp = reflect.MakeFunc(_if.funTyp, m.callback).Interface()
+	m._if = _if
+	return nil
+}
+
+
+func (m *baseMocker) callback(args []reflect.Value) (results []reflect.Value) {
+	if m.when != nil {
+		results = m.when.invoke(args)
+		if results != nil {
+			return results
+		}
+	}
+	if m._if != nil {
+		results = m._if.invoke(args)
+		if results != nil {
+			return results
+		}
+	}
+	panic("not match any args, please spec default return use: mocker.Return()")
 }
 
 // Cancel 取消Mock
@@ -150,6 +183,10 @@ func (m *MethodMocker) Apply(imp interface{}) {
 
 // When 指定条件匹配
 func (m *MethodMocker) When(args ...interface{}) *When {
+	if m.when != nil {
+		return m.when.When(args)
+	}
+
 	sTyp := reflect.TypeOf(m.structDef)
 
 	methodIns, ok := sTyp.MethodByName(m.method)
@@ -166,7 +203,7 @@ func (m *MethodMocker) When(args ...interface{}) *When {
 		panic(err)
 	}
 
-	if err := m.returns(when); err != nil {
+	if err := m.whens(when); err != nil {
 		panic(err)
 	}
 
@@ -186,7 +223,7 @@ func (m *MethodMocker) Return(returns ...interface{}) *When {
 		panic(err)
 	}
 
-	if err := m.returns(when); err != nil {
+	if err := m.whens(when); err != nil {
 		panic(err)
 	}
 
@@ -200,6 +237,11 @@ func (m *MethodMocker) Origin(orign interface{}) ExportedMocker {
 	m.origin = orign
 
 	return m
+}
+
+// If 条件子句
+func (m *MethodMocker) If() *If {
+	return nil
 }
 
 // UnexportedMethodMocker 对结构体函数或方法进行mock
@@ -333,6 +375,10 @@ func (m *DefMocker) Apply(imp interface{}) {
 
 // When 指定条件匹配
 func (m *DefMocker) When(args ...interface{}) *When {
+	if m.when != nil {
+		return m.when.When(args)
+	}
+
 	var (
 		when *When
 		err  error
@@ -342,7 +388,7 @@ func (m *DefMocker) When(args ...interface{}) *When {
 		panic(err)
 	}
 
-	if err := m.returns(when); err != nil {
+	if err := m.whens(when); err != nil {
 		panic(err)
 	}
 
@@ -362,7 +408,7 @@ func (m *DefMocker) Return(returns ...interface{}) *When {
 		panic(err)
 	}
 
-	if err := m.returns(when); err != nil {
+	if err := m.whens(when); err != nil {
 		panic(err)
 	}
 
@@ -376,4 +422,9 @@ func (m *DefMocker) Origin(orign interface{}) ExportedMocker {
 	m.origin = orign
 
 	return m
+}
+
+// If 条件子句
+func (m *DefMocker) If() *If {
+	return nil
 }

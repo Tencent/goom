@@ -62,7 +62,7 @@ func (s *WhenTestSuite) TestWhenAndReturn() {
 func (s *WhenTestSuite) TestWhenContains() {
 	s.Run("success", func() {
 		when := mocker.NewWhen(reflect.TypeOf(simple))
-		when.Return(-1).WhenContains(1, 2).Return(5)
+		when.Return(-1).In(1, 2).Return(5)
 
 		s.Equal(5, when.Eval(1)[0], "when result check")
 		s.Equal(5, when.Eval(1)[0], "when result check")
@@ -87,7 +87,7 @@ func (s *WhenTestSuite) TestReturns() {
 }
 
 
-// TestNil 测试空参数
+// TestNil 测试复杂参数
 func (s *WhenTestSuite) TestComplex() {
 	s.Run("success", func() {
 		when := mocker.NewWhen(reflect.TypeOf(complex))

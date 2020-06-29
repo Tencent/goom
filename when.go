@@ -69,8 +69,8 @@ func (w *When) When(args ...interface{}) *When {
 	return w
 }
 
-// When 当参数包含其中之一
-func (w *When) WhenContains(slices ...interface{}) *When {
+// In 当参数包含其中之一
+func (w *When) In(slices ...interface{}) *When {
 	w.curMatch = newContainsMatch(slices, nil)
 	return w
 }
@@ -127,6 +127,7 @@ func (w *When) invoke(args1 []reflect.Value) (results []reflect.Value) {
 	return w.returnDefaults()
 }
 
+// Eval 执行when子句
 func (w *When) Eval(args ...interface{}) []interface{} {
 	argVs := I2V(args)
 	resultVs := w.invoke(argVs)
@@ -135,7 +136,7 @@ func (w *When) Eval(args ...interface{}) []interface{} {
 
 func (w *When) returnDefaults() []reflect.Value {
 	if w.defaultReturns == nil {
-		panic("default returns not set.")
+		panic("default whens not set.")
 	}
 	var results []reflect.Value
 	// 使用默认参数

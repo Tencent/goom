@@ -12,7 +12,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+//go:noinline
 func no() bool  { return false }
+//go:noinline
 func yes() bool { return true }
 
 func init() {

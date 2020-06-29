@@ -36,7 +36,7 @@ func complex(a Arg) Result {
 }
 
 // TestWhen 测试简单参数匹配
-func (s *MockerTestSuite) TestWhen() {
+func (s *WhenTestSuite) TestWhen() {
 	s.Run("success", func() {
 		when := mocker.NewWhen(reflect.TypeOf(simple))
 		when.When(1).Return(2)
@@ -47,7 +47,7 @@ func (s *MockerTestSuite) TestWhen() {
 
 
 // TestWhenAndReturn 多次返回不同的值
-func (s *MockerTestSuite) TestWhenAndReturn() {
+func (s *WhenTestSuite) TestWhenAndReturn() {
 	s.Run("success", func() {
 		when := mocker.NewWhen(reflect.TypeOf(simple))
 		when.When(1).Return(2).AndReturn(3)
@@ -59,7 +59,7 @@ func (s *MockerTestSuite) TestWhenAndReturn() {
 }
 
 // TestWhenContains 任意一个配
-func (s *MockerTestSuite) TestWhenContains() {
+func (s *WhenTestSuite) TestWhenContains() {
 	s.Run("success", func() {
 		when := mocker.NewWhen(reflect.TypeOf(simple))
 		when.Return(-1).WhenContains(1, 2).Return(5)
@@ -71,7 +71,7 @@ func (s *MockerTestSuite) TestWhenContains() {
 }
 
 // TestReturns 测试批量设置条件
-func (s *MockerTestSuite) TestReturns() {
+func (s *WhenTestSuite) TestReturns() {
 	s.Run("success", func() {
 		when := mocker.NewWhen(reflect.TypeOf(simple))
 		when.Return(-1).Returns(map[interface{}]interface{}{
@@ -88,7 +88,7 @@ func (s *MockerTestSuite) TestReturns() {
 
 
 // TestNil 测试空参数
-func (s *MockerTestSuite) TestComplex() {
+func (s *WhenTestSuite) TestComplex() {
 	s.Run("success", func() {
 		when := mocker.NewWhen(reflect.TypeOf(complex))
 		when.Return(Result{}).When(Arg{field1:"ok"}).Return(Result{0}).
@@ -101,7 +101,7 @@ func (s *MockerTestSuite) TestComplex() {
 }
 
 // TestNil 测试空参数
-func (s *MockerTestSuite) TestNil() {
+func (s *WhenTestSuite) TestNil() {
 	s.Run("success", func() {
 		when := mocker.NewWhen(reflect.TypeOf(simple))
 		when.Return(-1).When(1).Return(nil)

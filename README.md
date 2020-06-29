@@ -141,4 +141,4 @@ mb.Func(foo1).Origin(&origin).Apply(func(i int) int {
 ```
 
 ## Contributor
-@adrewchen、@miliao、@yongfuchen
+@yongfuchen、@adrewchen、@ivyyi、@miliao

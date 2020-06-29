@@ -182,7 +182,7 @@ func (c *BaseMatcher) Result() []reflect.Value {
 
 	curNum := atomic.LoadInt32(&c.curNum)
 	if len := len(c.results); curNum >= int32(len) {
-		return c.results[len - 1]
+		return c.results[len-1]
 	}
 	atomic.AddInt32(&c.curNum, 1)
 	return c.results[curNum]

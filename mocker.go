@@ -108,7 +108,6 @@ func (m *baseMocker) ifs(_if *If) error {
 	return nil
 }
 
-
 func (m *baseMocker) callback(args []reflect.Value) (results []reflect.Value) {
 	if m.when != nil {
 		results = m.when.invoke(args)
@@ -184,11 +183,10 @@ func (m *MethodMocker) Apply(imp interface{}) {
 // When 指定条件匹配
 func (m *MethodMocker) When(args ...interface{}) *When {
 	if m.when != nil {
-		return m.when.When(args)
+		return m.when.When(args...)
 	}
 
 	sTyp := reflect.TypeOf(m.structDef)
-
 	methodIns, ok := sTyp.MethodByName(m.method)
 	if !ok {
 		panic("method " + m.method + " not found on " + sTyp.String())
@@ -198,15 +196,12 @@ func (m *MethodMocker) When(args ...interface{}) *When {
 		when *When
 		err  error
 	)
-
 	if when, err = CreateWhen(m, methodIns.Func.Interface(), args, nil); err != nil {
 		panic(err)
 	}
-
 	if err := m.whens(when); err != nil {
 		panic(err)
 	}
-
 	m.Apply(m.imp)
 
 	return when
@@ -214,19 +209,20 @@ func (m *MethodMocker) When(args ...interface{}) *When {
 
 // Matcher 代理方法返回
 func (m *MethodMocker) Return(returns ...interface{}) *When {
+	if m.when != nil {
+		return m.when.Return(returns...)
+	}
+
 	var (
 		when *When
 		err  error
 	)
-
 	if when, err = CreateWhen(m, m.methodIns, nil, returns); err != nil {
 		panic(err)
 	}
-
 	if err := m.whens(when); err != nil {
 		panic(err)
 	}
-
 	m.Apply(m.imp)
 
 	return when
@@ -303,11 +299,9 @@ func (m *UnexportedMethodMocker) As(funcdef interface{}) ExportedMocker {
 	if err != nil {
 		originFuncPtr, err = unexports.FindFuncByName(m.namep)
 	}
-
 	if err != nil {
 		panic(err)
 	}
-
 	newFunc := unexports.NewFuncWithCodePtr(reflect.TypeOf(funcdef), originFuncPtr)
 
 	return &DefMocker{
@@ -376,22 +370,19 @@ func (m *DefMocker) Apply(imp interface{}) {
 // When 指定条件匹配
 func (m *DefMocker) When(args ...interface{}) *When {
 	if m.when != nil {
-		return m.when.When(args)
+		return m.when.When(args...)
 	}
 
 	var (
 		when *When
 		err  error
 	)
-
 	if when, err = CreateWhen(m, m.funcdef, args, nil); err != nil {
 		panic(err)
 	}
-
 	if err := m.whens(when); err != nil {
 		panic(err)
 	}
-
 	m.Apply(m.imp)
 
 	return when
@@ -399,19 +390,20 @@ func (m *DefMocker) When(args ...interface{}) *When {
 
 // Matcher 代理方法返回
 func (m *DefMocker) Return(returns ...interface{}) *When {
+	if m.when != nil {
+		return m.when.Return(returns...)
+	}
+
 	var (
 		when *When
 		err  error
 	)
-
 	if when, err = CreateWhen(m, m.funcdef, nil, returns); err != nil {
 		panic(err)
 	}
-
 	if err := m.whens(when); err != nil {
 		panic(err)
 	}
-
 	m.Apply(m.imp)
 
 	return when

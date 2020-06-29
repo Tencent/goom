@@ -17,11 +17,9 @@ type WhenTestSuite struct {
 	suite.Suite
 }
 
-
 func simple(a int) int {
 	return 0
 }
-
 
 type Arg struct {
 	field1 string
@@ -44,7 +42,6 @@ func (s *WhenTestSuite) TestWhen() {
 		s.Equal(2, when.Eval(1)[0], "when result check")
 	})
 }
-
 
 // TestWhenAndReturn 多次返回不同的值
 func (s *WhenTestSuite) TestWhenAndReturn() {
@@ -86,17 +83,16 @@ func (s *WhenTestSuite) TestReturns() {
 	})
 }
 
-
 // TestNil 测试复杂参数
 func (s *WhenTestSuite) TestComplex() {
 	s.Run("success", func() {
 		when := mocker.NewWhen(reflect.TypeOf(complex))
-		when.Return(Result{}).When(Arg{field1:"ok"}).Return(Result{0}).
-			When(Arg{field1:"not ok"}).Return(Result{-1})
+		when.Return(Result{}).When(Arg{field1: "ok"}).Return(Result{0}).
+			When(Arg{field1: "not ok"}).Return(Result{-1})
 
-		s.Equal(Result{0}, when.Eval(Arg{field1:"ok"})[0], "when result check")
-		s.Equal(Result{-1}, when.Eval(Arg{field1:"not ok"})[0], "when result check")
-		s.Equal(Result{}, when.Eval(Arg{field1:"other"})[0], "when result check")
+		s.Equal(Result{0}, when.Eval(Arg{field1: "ok"})[0], "when result check")
+		s.Equal(Result{-1}, when.Eval(Arg{field1: "not ok"})[0], "when result check")
+		s.Equal(Result{}, when.Eval(Arg{field1: "other"})[0], "when result check")
 	})
 }
 

@@ -8,6 +8,7 @@
 1. 私有(未导出)函数(或方法)的mock, 普通函数的mock
 2. mock过程中调用原函数(线程安全, 支持并发单测)
 3. 异常注入，对函数调用支持异常注入，延迟模拟等稳定性测试
+4. 所有操作都是并发安全的
 
 ### 将来
 1. 支持数据驱动测试
@@ -138,3 +139,6 @@ mb.Func(foo1).Origin(&origin).Apply(func(i int) int {
     return originResult + 100
 })
 ```
+
+## Contributor
+@adrewchen、@miliao、@yongfuchen

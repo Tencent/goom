@@ -24,7 +24,7 @@ type ExportedMocker interface {
 	Mocker
 	// When 指定条件匹配
 	When(args ...interface{}) *When
-	// Return 执行返回值
+	// Matcher 执行返回值
 	Return(args ...interface{}) *When
 	// Origin 指定Mock之后的原函数, orign签名和mock的函数一致
 	Origin(orign interface{}) ExportedMocker
@@ -85,7 +85,7 @@ func (m *MethodMocker) applyByMethod(structDef interface{}, method string, imp i
 	m.imp = imp
 }
 
-// returns 指定的返回值
+// matches 指定的返回值
 func (m *baseMocker) returns(when *When) error {
 	m.imp = reflect.MakeFunc(when.funTyp, when.invoke).Interface()
 
@@ -175,7 +175,7 @@ func (m *MethodMocker) When(args ...interface{}) *When {
 	return when
 }
 
-// Return 代理方法返回
+// Matcher 代理方法返回
 func (m *MethodMocker) Return(returns ...interface{}) *When {
 	var (
 		when *When
@@ -351,7 +351,7 @@ func (m *DefMocker) When(args ...interface{}) *When {
 	return when
 }
 
-// Return 代理方法返回
+// Matcher 代理方法返回
 func (m *DefMocker) Return(returns ...interface{}) *When {
 	var (
 		when *When

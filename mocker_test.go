@@ -41,7 +41,7 @@ func (s *MockerTestSuite) TestUnitFuncReturn() {
 	s.Run("success", func() {
 		mb := mocker.Create()
 
-		mb.Func(foo).Return(3)
+		mb.Func(foo).When(1).Return(3)
 
 		s.Equal(3, foo(1), "foo mock check")
 

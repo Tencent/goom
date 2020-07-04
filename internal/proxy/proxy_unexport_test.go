@@ -6,7 +6,6 @@ import (
 	"net"
 	"os"
 	"strconv"
-	"syscall"
 	"testing"
 	"time"
 	"unsafe"
@@ -122,7 +121,7 @@ type FD struct {
 	pd pollDesc
 
 	// Writev cache.
-	iovecs *[]syscall.Iovec
+	iovecs *[]int
 
 	// Semaphore signaled when file is closed.
 	csema uint32

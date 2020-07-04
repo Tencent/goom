@@ -1,10 +1,11 @@
 package mocker_test
 
 import (
-	"git.code.oa.com/goom/mocker"
-	"github.com/stretchr/testify/suite"
 	"reflect"
 	"testing"
+
+	"git.code.oa.com/goom/mocker"
+	"github.com/stretchr/testify/suite"
 )
 
 // TestUnitWhenTestSuite 测试入口

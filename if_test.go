@@ -1,8 +1,9 @@
 package mocker_test
 
 import (
-	"github.com/stretchr/testify/suite"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 )
 
 // TestUnitIfTestSuite 测试入口

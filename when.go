@@ -81,6 +81,7 @@ func (w *When) Return(results ...interface{}) *When {
 		w.defaultReturns = results
 		return w
 	}
+
 	w.curMatch.AddResult(results)
 	w.matches = append(w.matches, w.curMatch)
 	return w
@@ -91,6 +92,7 @@ func (w *When) AndReturn(results ...interface{}) *When {
 	if w.curMatch == nil {
 		return w
 	}
+
 	w.curMatch.AddResult(results)
 	return w
 }
@@ -100,15 +102,18 @@ func (w *When) Returns(resultsmap map[interface{}]interface{}) *When {
 	if len(resultsmap) == 0 {
 		return w
 	}
+
 	for k, v := range resultsmap {
 		args, ok := k.([]interface{})
 		if !ok {
 			args = []interface{}{k}
 		}
+
 		results, ok := v.([]interface{})
 		if !ok {
 			results = []interface{}{v}
 		}
+
 		matcher := newDefaultMatch(args, results)
 		w.matches = append(w.matches, matcher)
 	}
@@ -138,6 +143,7 @@ func (w *When) returnDefaults() []reflect.Value {
 	if w.defaultReturns == nil {
 		panic("default whens not set.")
 	}
+
 	var results []reflect.Value
 	// 使用默认参数
 	for i, r := range w.defaultReturns {
@@ -184,6 +190,7 @@ func (c *BaseMatcher) Result() []reflect.Value {
 	if len := len(c.results); curNum >= int32(len) {
 		return c.results[len-1]
 	}
+
 	atomic.AddInt32(&c.curNum, 1)
 	return c.results[curNum]
 }
@@ -212,6 +219,7 @@ func (c *DefaultMatcher) Match(args []reflect.Value) bool {
 	if len(args) != len(c.args) {
 		return false
 	}
+
 	for i, arg := range c.args {
 		if !equal(arg, args[i]) {
 			return false
@@ -230,6 +238,7 @@ type ContainsMatcher struct {
 
 func newContainsMatch(args []interface{}, results []interface{}) *ContainsMatcher {
 	argVs := make([][]reflect.Value, 0)
+
 	for _, v := range args {
 		arg, ok := v.([]interface{})
 		if !ok {
@@ -239,6 +248,7 @@ func newContainsMatch(args []interface{}, results []interface{}) *ContainsMatche
 		values := I2V(arg)
 		argVs = append(argVs, values)
 	}
+
 	return &ContainsMatcher{
 		args:        argVs,
 		BaseMatcher: newBaseMatcher(results),

@@ -35,12 +35,15 @@ func toString(v reflect.Value) string {
 	if v.Kind() == reflect.Interface && !v.IsNil() {
 		v = v.Elem()
 	}
+
 	if v.Kind() == reflect.Ptr {
 		v = v.Elem()
 	}
+
 	if v.Kind() == reflect.String {
 		return v.String()
 	}
+
 	return fmt.Sprint(v.Interface())
 }
 
@@ -59,6 +62,7 @@ func tryToBool(v reflect.Value) (bool, error) {
 	if v.Kind() == reflect.Ptr || v.Kind() == reflect.Interface {
 		v = v.Elem()
 	}
+
 	switch v.Kind() {
 	case reflect.Float64, reflect.Float32:
 		return v.Float() != 0, nil
@@ -79,13 +83,16 @@ func tryToBool(v reflect.Value) (bool, error) {
 		if f, err := tryToFloat64(v); err == nil && f == 0 {
 			return false, nil
 		}
+
 		return true, nil
 	case reflect.Slice, reflect.Map:
 		if v.Len() > 0 {
 			return true, nil
 		}
+
 		return false, nil
 	}
+
 	return false, errors.New("unknown type")
 }
 
@@ -102,6 +109,7 @@ func tryToFloat64(v reflect.Value) (float64, error) {
 	if v.Kind() == reflect.Ptr || v.Kind() == reflect.Interface {
 		v = v.Elem()
 	}
+
 	switch v.Kind() {
 	case reflect.Float64, reflect.Float32:
 		return v.Float(), nil
@@ -111,6 +119,7 @@ func tryToFloat64(v reflect.Value) (float64, error) {
 		if v.Bool() {
 			return 1, nil
 		}
+
 		return 0, nil
 	case reflect.String:
 		f, err := strconv.ParseFloat(v.String(), 64)
@@ -118,6 +127,7 @@ func tryToFloat64(v reflect.Value) (float64, error) {
 			return f, nil
 		}
 	}
+
 	return 0.0, errors.New("couldn't convert to a float64")
 }
 
@@ -134,6 +144,7 @@ func tryToInt64(v reflect.Value) (int64, error) {
 	if v.Kind() == reflect.Ptr || v.Kind() == reflect.Interface {
 		v = v.Elem()
 	}
+
 	switch v.Kind() {
 	case reflect.Float64, reflect.Float32:
 		return int64(v.Float()), nil
@@ -143,20 +154,27 @@ func tryToInt64(v reflect.Value) (int64, error) {
 		if v.Bool() {
 			return 1, nil
 		}
+
 		return 0, nil
 	case reflect.String:
 		s := v.String()
-		var i int64
-		var err error
+
+		var (
+			i   int64
+			err error
+		)
+
 		if strings.HasPrefix(s, "0x") {
 			i, err = strconv.ParseInt(s, 16, 64)
 		} else {
 			i, err = strconv.ParseInt(s, 10, 64)
 		}
+
 		if err == nil {
 			return i, nil
 		}
 	}
+
 	return 0, errors.New("couldn't convert to integer")
 }
 
@@ -173,6 +191,7 @@ func tryToInt(v reflect.Value) (int, error) {
 	if v.Kind() == reflect.Ptr || v.Kind() == reflect.Interface {
 		v = v.Elem()
 	}
+
 	switch v.Kind() {
 	case reflect.Float64, reflect.Float32:
 		return int(v.Float()), nil
@@ -182,20 +201,27 @@ func tryToInt(v reflect.Value) (int, error) {
 		if v.Bool() {
 			return 1, nil
 		}
+
 		return 0, nil
 	case reflect.String:
 		s := v.String()
-		var i int64
-		var err error
+
+		var (
+			i   int64
+			err error
+		)
+
 		if strings.HasPrefix(s, "0x") {
 			i, err = strconv.ParseInt(s, 16, 64)
 		} else {
 			i, err = strconv.ParseInt(s, 10, 64)
 		}
+
 		if err == nil {
 			return int(i), nil
 		}
 	}
+
 	return 0, errors.New("couldn't convert to integer")
 }
 
@@ -219,6 +245,7 @@ func isNum(v reflect.Value) bool {
 		reflect.Float32, reflect.Float64:
 		return true
 	}
+
 	return false
 }
 
@@ -228,12 +255,15 @@ func equal(lhsV, rhsV reflect.Value) bool {
 	if lhsIsNil && rhsIsNil {
 		return true
 	}
+
 	if (!lhsIsNil && rhsIsNil) || (lhsIsNil && !rhsIsNil) {
 		return false
 	}
+
 	if lhsV.Kind() == reflect.Interface || lhsV.Kind() == reflect.Ptr {
 		lhsV = lhsV.Elem()
 	}
+
 	if rhsV.Kind() == reflect.Interface || rhsV.Kind() == reflect.Ptr {
 		rhsV = rhsV.Elem()
 	}
@@ -248,6 +278,7 @@ func equal(lhsV, rhsV reflect.Value) bool {
 			// Couldn't convert RHS to a float, they can't be compared.
 			return false
 		}
+
 		rhsV = reflect.ValueOf(rhsF)
 	} else if lhsV.Kind() == reflect.String && isNum(rhsV) {
 		// If the LHS is a string formatted as an int, try that before trying float
@@ -274,10 +305,13 @@ func equal(lhsV, rhsV reflect.Value) bool {
 		if err != nil {
 			return false
 		}
+
 		rhsB, err := tryToBool(rhsV)
+
 		if err != nil {
 			return false
 		}
+
 		return lhsB == rhsB
 	}
 

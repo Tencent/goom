@@ -4,8 +4,9 @@ import (
 	"reflect"
 	"testing"
 
-	"git.code.oa.com/goom/mocker"
 	"github.com/stretchr/testify/suite"
+
+	"git.code.oa.com/goom/mocker"
 )
 
 // TestUnitWhenTestSuite 测试入口
@@ -103,6 +104,6 @@ func (s *WhenTestSuite) TestNil() {
 		when := mocker.NewWhen(reflect.TypeOf(simple))
 		when.Return(-1).When(1).Return(nil)
 
-		//s.Equal(5, when.Eval(1)[0], "when result check")
+		// s.Equal(5, when.Eval(1)[0], "when result check")
 	})
 }

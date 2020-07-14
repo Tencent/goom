@@ -6,7 +6,7 @@ import "reflect"
 type If struct {
 	ExportedMocker
 
-	funTyp reflect.Type
+	// funTyp reflect.Type
 }
 
 // Arg 获取第0个参数

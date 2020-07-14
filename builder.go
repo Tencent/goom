@@ -1,19 +1,28 @@
 package mocker
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 // Builder Mock构建器
 type Builder struct {
-	pkgname string
+	pkgName string
 	mockers []Mocker
+}
+
+// Pkg 指定包名，当前包无需指定
+func (m *Builder) Pkg(name string) *Builder {
+	m.pkgName = name
+
+	return m
 }
 
 // Struct 指定结构体名称
 // 比如需要mock结构体函数 (*conn).Write(b []byte)，则name="conn"
 func (m *Builder) Struct(obj interface{}) *MethodMocker {
 	mocker := &MethodMocker{
-		pkgname:    m.pkgname,
-		baseMocker: newBackMocker(),
+		baseMocker: newBaseMocker(m.pkgName),
 		structDef:  obj,
 	}
 	m.mockers = append(m.mockers, mocker)
@@ -26,7 +35,7 @@ func (m *Builder) Struct(obj interface{}) *MethodMocker {
 // 方法的mock, 比如 &Struct{}.method
 func (m *Builder) Func(obj interface{}) *DefMocker {
 	mocker := &DefMocker{
-		baseMocker: newBackMocker(),
+		baseMocker: newBaseMocker(m.pkgName),
 		funcdef:    obj,
 	}
 	m.mockers = append(m.mockers, mocker)
@@ -37,10 +46,15 @@ func (m *Builder) Func(obj interface{}) *DefMocker {
 // ExportStruct 导出私有结构体
 // 比如需要mock结构体函数 (*conn).Write(b []byte)，则name="conn"
 func (m *Builder) ExportStruct(name string) *UnexportedMethodMocker {
+	structName := name
+
+	if strings.Contains(name, "*") {
+		structName = fmt.Sprintf("(%s)", name)
+	}
+
 	mocker := &UnexportedMethodMocker{
-		baseMocker: newBackMocker(),
-		name:       fmt.Sprintf("%s.%s", m.pkgname, name),
-		namep:      fmt.Sprintf("%s.(*%s)", m.pkgname, name),
+		baseMocker: newBaseMocker(m.pkgName),
+		structName: structName,
 	}
 	m.mockers = append(m.mockers, mocker)
 
@@ -57,8 +71,9 @@ func (m *Builder) ExportFunc(name string) *UnexportedFuncMocker {
 	}
 
 	mocker := &UnexportedFuncMocker{
-		baseMocker: newBackMocker(),
-		name:       fmt.Sprintf("%s.%s", m.pkgname, name)}
+		baseMocker: newBaseMocker(m.pkgName),
+		funcName:   name,
+	}
 	m.mockers = append(m.mockers, mocker)
 
 	return mocker
@@ -75,21 +90,11 @@ func (m *Builder) Reset() *Builder {
 
 // Create 创建Mock构建器
 func Create() *Builder {
-	pkgname := currentPackage(2)
-
-	return &Builder{
-		pkgname: pkgname,
-	}
+	return &Builder{pkgName: currentPackage(2)}
 }
 
 // Create 创建Mock构建器
 // pkgname string 包路径,默认取当前包
-func Package(pkgname string) *Builder {
-	if pkgname == "" {
-		pkgname = currentPackage(2)
-	}
-
-	return &Builder{
-		pkgname: pkgname,
-	}
+func Package(_ string) *Builder {
+	return &Builder{pkgName: currentPackage(2)}
 }

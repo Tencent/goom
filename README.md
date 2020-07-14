@@ -88,10 +88,10 @@ mock.Struct(&fake{}).ExportMethod("call").As(func(_ *fake, i int) int {
 ```golang
 // 针对其它包的mock示例
 // 创建指定包的mocker，设置引用路径
-mock := mocker.Package("git.code.oa.com/goom/mocker_test")
+mock := mocker.Create()
 
 // mock函数foo1并设置其代理函数
-mock.mb.ExportFunc("foo1").Apply(func(i int) int {
+mock.Pkg("git.code.oa.com/goom/mocker_test").ExportFunc("foo1").Apply(func(i int) int {
     return i * 3
 })
 
@@ -105,10 +105,10 @@ mock.ExportFunc("foo1").As(func(i int) int {
 ```golang
 // 针对其它包的mock示例
 // 创建指定包的mocker，设置引用路径
-mock := mocker.Package("git.code.oa.com/goom/mocker_test")
+mock := mocker.Create()
 
 // mock其它包的私有结构体fake的私有方法call，并设置其代理函数
-mock.ExportStruct("fake").Method("call").Apply(func(_ *fake, i int) int {
+mock.Pkg("git.code.oa.com/goom/mocker_test").ExportStruct("fake").Method("call").Apply(func(_ *fake, i int) int {
     return i * 2
 })
 
@@ -118,9 +118,17 @@ mock..ExportStruct("fake").Method("call").As(func(_ *fake, i int) int {
 }).Return(1)
 ```
 
+#### 根据参数定义多次返回
+```golang
+mock := mocker.Create()
+
+// 设置函数foo当传入参数为1时，第一次返回3，第二次返回2
+mock.Func(foo).When(1).Return(3).AndReturn(2)
+```
+
 #### 在代理函数中调用原函数
 ```golang
-mb := mocker.Create()
+mock := mocker.Create()
 
 // 定义原函数,用于占位,实际不会执行该函数体
 var origin = func(i int) int {
@@ -129,7 +137,7 @@ var origin = func(i int) int {
     return 0 + i
 }
 
-mb.Func(foo1).Origin(&origin).Apply(func(i int) int {
+mock.Func(foo1).Origin(&origin).Apply(func(i int) int {
     // 调用原函数
     originResult := origin(i)
 

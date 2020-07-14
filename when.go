@@ -84,6 +84,7 @@ func (w *When) Return(results ...interface{}) *When {
 
 	w.curMatch.AddResult(results)
 	w.matches = append(w.matches, w.curMatch)
+
 	return w
 }
 
@@ -94,6 +95,7 @@ func (w *When) AndReturn(results ...interface{}) *When {
 	}
 
 	w.curMatch.AddResult(results)
+
 	return w
 }
 
@@ -129,6 +131,7 @@ func (w *When) invoke(args1 []reflect.Value) (results []reflect.Value) {
 			}
 		}
 	}
+
 	return w.returnDefaults()
 }
 
@@ -136,12 +139,13 @@ func (w *When) invoke(args1 []reflect.Value) (results []reflect.Value) {
 func (w *When) Eval(args ...interface{}) []interface{} {
 	argVs := I2V(args)
 	resultVs := w.invoke(argVs)
+
 	return V2I(resultVs)
 }
 
 func (w *When) returnDefaults() []reflect.Value {
-	if w.defaultReturns == nil {
-		panic("default whens not set.")
+	if w.defaultReturns == nil && w.funTyp.NumOut() != 0 {
+		panic("default returns not set.")
 	}
 
 	var results []reflect.Value
@@ -160,6 +164,7 @@ func (w *When) returnDefaults() []reflect.Value {
 
 		results = append(results, v)
 	}
+
 	return results
 }
 
@@ -175,6 +180,7 @@ func newBaseMatcher(results []interface{}) *BaseMatcher {
 		// TODO results check
 		resultVs = append(resultVs, I2V(results))
 	}
+
 	return &BaseMatcher{
 		results: resultVs,
 		curNum:  0,
@@ -192,6 +198,7 @@ func (c *BaseMatcher) Result() []reflect.Value {
 	}
 
 	atomic.AddInt32(&c.curNum, 1)
+
 	return c.results[curNum]
 }
 
@@ -209,6 +216,7 @@ type DefaultMatcher struct {
 
 func newDefaultMatch(args []interface{}, results []interface{}) *DefaultMatcher {
 	argVs := I2V(args)
+
 	return &DefaultMatcher{
 		args:        argVs,
 		BaseMatcher: newBaseMatcher(results),
@@ -266,7 +274,9 @@ outer:
 				continue outer
 			}
 		}
+
 		return true
 	}
+
 	return false
 }

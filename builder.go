@@ -93,8 +93,8 @@ func Create() *Builder {
 	return &Builder{pkgName: currentPackage(2)}
 }
 
-// Create 创建Mock构建器
-// pkgname string 包路径,默认取当前包
+// Package 创建Mock构建器
+// Deprecated: 已支持在mock时设置pkg
 func Package(_ string) *Builder {
 	return &Builder{pkgName: currentPackage(2)}
 }

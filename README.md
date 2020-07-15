@@ -64,20 +64,20 @@ func (f *fake) call(i int) int {
 // 创建当前包的mocker
 mock := mocker.Create()
 
-// mock fake的方法Call并设置其代理函数
+// mock 结构体fake的方法Call并设置其代理函数
 mock.Struct(&fake{}).Method("Call").Apply(func(_ *fake, i int) int {
     return i * 2
  })
 
-// mock fake的方法Call并返回1
+// mock 结构体fake的方法Call并返回1
 mock.Struct(&fake{}).Method("Call").Return(1)
 
-// mock fake的私有方法call, mock前先调用ExportMethod将其导出，并设置其代理函数
+// mock 结构体fake的私有方法call, mock前先调用ExportMethod将其导出，并设置其代理函数
 mock.Struct(&fake{}).ExportMethod("call").Apply(func(_ *fake, i int) int {
     return i * 2
 })
 
-// mock fake的私有方法call, mock前先调用ExportMethod将其导出为函数类型，后续支持设置When, Return等
+// mock 结构体fake的私有方法call, mock前先调用ExportMethod将其导出为函数类型，后续支持设置When, Return等
 mock.Struct(&fake{}).ExportMethod("call").As(func(_ *fake, i int) int {
     return i * 2
 }).Return(1)
@@ -113,7 +113,7 @@ mock.Pkg("git.code.oa.com/goom/mocker_test").ExportStruct("fake").Method("call")
 })
 
 // mock其它包的私有结构体fake的私有方法call，并设置其返回值
-mock..ExportStruct("fake").Method("call").As(func(_ *fake, i int) int {
+mock.ExportStruct("fake").Method("call").As(func(_ *fake, i int) int {
     return i * 2
 }).Return(1)
 ```

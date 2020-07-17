@@ -1,4 +1,10 @@
-# [0.1.3](https://git.code.oa.com/goom/mocker/compare/v0.1.2...v)(2020-07-06)
+# [0.1.4](https://git.code.oa.com/goom/mocker/compare/v0.1.3...v)(2020-07-17)
+
+### Bug Fixes
+* method when参数个数不匹配问题
+* 支持return nil
+
+# [0.1.3](https://git.code.oa.com/goom/mocker/compare/v0.1.2...v0.1.3)(2020-07-06)
 
 ### Features
 * 支持windows系统

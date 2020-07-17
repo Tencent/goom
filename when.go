@@ -2,7 +2,6 @@ package mocker
 
 import (
 	"reflect"
-	"strconv"
 	"sync/atomic"
 
 	"git.code.oa.com/goom/mocker/errortype"
@@ -19,7 +18,9 @@ type Matcher interface {
 type When struct {
 	ExportedMocker
 
-	funTyp         reflect.Type
+	funcTyp        reflect.Type
+	funcDef        interface{}
+	isMethod       bool
 	matches        []Matcher
 	defaultReturns []interface{}
 	// curMatch 当前指定的参数匹配
@@ -29,34 +30,51 @@ type When struct {
 // CreateWhen 构造条件判断
 // args 参数条件
 // defaultReturns 默认返回值
+// isMethod 是否为方法类型
 func CreateWhen(m ExportedMocker, funcDef interface{}, args []interface{},
-	defaultReturns []interface{}) (*When, error) {
+	defaultReturns []interface{}, isMethod bool) (*When, error) {
 	impTyp := reflect.TypeOf(funcDef)
 
-	if defaultReturns != nil && len(defaultReturns) < impTyp.NumOut() {
-		return nil, errortype.NewIllegalParamError("matches:"+
-			strconv.Itoa(len(defaultReturns)+1), "'empty'")
-	}
-
-	if args != nil && len(args) < impTyp.NumIn() {
-		return nil, errortype.NewIllegalParamError("args:"+
-			strconv.Itoa(len(args)+1), "'empty'")
+	err := checkParams(funcDef, impTyp, args, defaultReturns, isMethod)
+	if err != nil {
+		return nil, err
 	}
 
 	return &When{
 		ExportedMocker: m,
 		defaultReturns: defaultReturns,
-		funTyp:         impTyp,
+		funcTyp:        impTyp,
+		funcDef:        funcDef,
+		isMethod:       isMethod,
 		matches:        make([]Matcher, 0),
-		curMatch:       newDefaultMatch(args, nil),
+		curMatch:       newDefaultMatch(args, nil, isMethod, impTyp),
 	}, nil
+}
+
+func checkParams(funcDef interface{}, impTyp reflect.Type,
+	args []interface{}, returns []interface{}, isMethod bool) error {
+	if returns != nil && len(returns) < impTyp.NumOut() {
+		return errortype.NewReturnsNotMatchError(funcDef, len(returns), impTyp.NumOut())
+	}
+
+	if isMethod {
+		if args != nil && len(args)+1 < impTyp.NumIn() {
+			return errortype.NewArgsNotMatchError(funcDef, len(args), impTyp.NumIn()-1)
+		}
+	} else {
+		if args != nil && len(args) < impTyp.NumIn() {
+			return errortype.NewArgsNotMatchError(funcDef, len(args), impTyp.NumIn())
+		}
+	}
+
+	return nil
 }
 
 // NewWhen 创建默认When
 func NewWhen(funTyp reflect.Type) *When {
 	return &When{
 		ExportedMocker: nil,
-		funTyp:         funTyp,
+		funcTyp:        funTyp,
 		matches:        make([]Matcher, 0),
 		defaultReturns: nil,
 		curMatch:       nil,
@@ -65,13 +83,13 @@ func NewWhen(funTyp reflect.Type) *When {
 
 // When 当参数符合一定的条件
 func (w *When) When(args ...interface{}) *When {
-	w.curMatch = newDefaultMatch(args, nil)
+	w.curMatch = newDefaultMatch(args, nil, w.isMethod, w.funcTyp)
 	return w
 }
 
 // In 当参数包含其中之一
 func (w *When) In(slices ...interface{}) *When {
-	w.curMatch = newContainsMatch(slices, nil)
+	w.curMatch = newContainsMatch(slices, nil, w.isMethod, w.funcTyp)
 	return w
 }
 
@@ -116,7 +134,7 @@ func (w *When) Returns(resultsmap map[interface{}]interface{}) *When {
 			results = []interface{}{v}
 		}
 
-		matcher := newDefaultMatch(args, results)
+		matcher := newDefaultMatch(args, results, w.isMethod, w.funcTyp)
 		w.matches = append(w.matches, matcher)
 	}
 
@@ -137,30 +155,21 @@ func (w *When) invoke(args1 []reflect.Value) (results []reflect.Value) {
 
 // Eval 执行when子句
 func (w *When) Eval(args ...interface{}) []interface{} {
-	argVs := I2V(args)
+	argVs := I2V(args, inTypes(w.isMethod, w.funcTyp))
 	resultVs := w.invoke(argVs)
 
-	return V2I(resultVs)
+	return V2I(resultVs, outTypes(w.funcTyp))
 }
 
 func (w *When) returnDefaults() []reflect.Value {
-	if w.defaultReturns == nil && w.funTyp.NumOut() != 0 {
+	if w.defaultReturns == nil && w.funcTyp.NumOut() != 0 {
 		panic("default returns not set.")
 	}
 
 	var results []reflect.Value
 	// 使用默认参数
 	for i, r := range w.defaultReturns {
-		v := reflect.ValueOf(r)
-
-		if r == nil &&
-			(w.funTyp.Out(i).Kind() == reflect.Interface || w.funTyp.Out(i).Kind() == reflect.Ptr) {
-			v = reflect.Zero(reflect.SliceOf(w.funTyp.Out(i)).Elem())
-		} else if r != nil && w.funTyp.Out(i).Kind() == reflect.Interface {
-			ptr := reflect.New(w.funTyp.Out(i))
-			ptr.Elem().Set(v)
-			v = ptr.Elem()
-		}
+		v := toValue(r, w.funcTyp.Out(i))
 
 		results = append(results, v)
 	}
@@ -172,18 +181,20 @@ func (w *When) returnDefaults() []reflect.Value {
 type BaseMatcher struct {
 	results [][]reflect.Value
 	curNum  int32
+	funTyp  reflect.Type
 }
 
-func newBaseMatcher(results []interface{}) *BaseMatcher {
+func newBaseMatcher(results []interface{}, funTyp reflect.Type) *BaseMatcher {
 	resultVs := make([][]reflect.Value, 0)
 	if results != nil {
 		// TODO results check
-		resultVs = append(resultVs, I2V(results))
+		resultVs = append(resultVs, I2V(results, outTypes(funTyp)))
 	}
 
 	return &BaseMatcher{
 		results: resultVs,
 		curNum:  0,
+		funTyp:  funTyp,
 	}
 }
 
@@ -204,32 +215,45 @@ func (c *BaseMatcher) Result() []reflect.Value {
 
 func (c *BaseMatcher) AddResult(results []interface{}) {
 	// TODO results check
-	c.results = append(c.results, I2V(results))
+	c.results = append(c.results, I2V(results, outTypes(c.funTyp)))
 }
 
 // Matcher 参数匹配
 type DefaultMatcher struct {
 	*BaseMatcher
 
-	args []reflect.Value
+	isMethod bool
+	args     []reflect.Value
 }
 
-func newDefaultMatch(args []interface{}, results []interface{}) *DefaultMatcher {
-	argVs := I2V(args)
+func newDefaultMatch(args []interface{}, results []interface{}, isMethod bool, funTyp reflect.Type) *DefaultMatcher {
+	argVs := I2V(args, inTypes(isMethod, funTyp))
 
 	return &DefaultMatcher{
 		args:        argVs,
-		BaseMatcher: newBaseMatcher(results),
+		BaseMatcher: newBaseMatcher(results, funTyp),
+		isMethod:    isMethod,
 	}
 }
 
 func (c *DefaultMatcher) Match(args []reflect.Value) bool {
-	if len(args) != len(c.args) {
-		return false
+	if c.isMethod {
+		if len(args) != len(c.args)+1 {
+			return false
+		}
+	} else {
+		if len(args) != len(c.args) {
+			return false
+		}
+	}
+
+	skip := 0
+	if c.isMethod {
+		skip = 1
 	}
 
 	for i, arg := range c.args {
-		if !equal(arg, args[i]) {
+		if !equal(arg, args[i+skip]) {
 			return false
 		}
 	}
@@ -241,10 +265,11 @@ func (c *DefaultMatcher) Match(args []reflect.Value) bool {
 type ContainsMatcher struct {
 	*BaseMatcher
 
-	args [][]reflect.Value
+	args     [][]reflect.Value
+	isMethod bool
 }
 
-func newContainsMatch(args []interface{}, results []interface{}) *ContainsMatcher {
+func newContainsMatch(args []interface{}, results []interface{}, isMethod bool, funTyp reflect.Type) *ContainsMatcher {
 	argVs := make([][]reflect.Value, 0)
 
 	for _, v := range args {
@@ -253,24 +278,36 @@ func newContainsMatch(args []interface{}, results []interface{}) *ContainsMatche
 			arg = []interface{}{v}
 		}
 		// TODO results check
-		values := I2V(arg)
+		values := I2V(arg, inTypes(isMethod, funTyp))
 		argVs = append(argVs, values)
 	}
 
 	return &ContainsMatcher{
 		args:        argVs,
-		BaseMatcher: newBaseMatcher(results),
+		BaseMatcher: newBaseMatcher(results, funTyp),
+		isMethod:    isMethod,
 	}
 }
 
 func (c *ContainsMatcher) Match(args []reflect.Value) bool {
 outer:
 	for _, one := range c.args {
-		if len(args) != len(one) {
-			continue
+		if c.isMethod {
+			if len(args) != len(one)+1 {
+				continue
+			}
+		} else {
+			if len(args) != len(one) {
+				continue
+			}
+		}
+
+		skip := 0
+		if c.isMethod {
+			skip = 1
 		}
 		for i, arg := range one {
-			if !equal(arg, args[i]) {
+			if !equal(arg, args[i+skip]) {
 				continue outer
 			}
 		}

@@ -14,6 +14,7 @@ import (
 // Mocker mock接口
 type Mocker interface {
 	// Apply 代理方法实现
+	// 注意: Apply会覆盖之前设定的When条件和Return
 	Apply(imp interface{})
 	// Cancel 取消代理
 	Cancel()
@@ -86,7 +87,7 @@ func (m *baseMocker) applyByFunc(funcdef interface{}, imp interface{}) {
 
 // when 指定的返回值
 func (m *baseMocker) whens(when *When) error {
-	m.imp = reflect.MakeFunc(when.funTyp, m.callback).Interface()
+	m.imp = reflect.MakeFunc(when.funcTyp, m.callback).Interface()
 	m.when = when
 
 	return nil
@@ -94,7 +95,7 @@ func (m *baseMocker) whens(when *When) error {
 
 // if 指定的返回值
 // func (m *baseMocker) ifs(_if *If) error {
-// 	m.imp = reflect.MakeFunc(_if.funTyp, m.callback).Interface()
+// 	m.imp = reflect.MakeFunc(_if.funcTyp, m.callback).Interface()
 // 	m._if = _if
 //
 // 	return nil
@@ -211,7 +212,7 @@ func (m *MethodMocker) When(args ...interface{}) *When {
 		err  error
 	)
 
-	if when, err = CreateWhen(m, methodIns.Func.Interface(), args, nil); err != nil {
+	if when, err = CreateWhen(m, methodIns.Func.Interface(), args, nil, true); err != nil {
 		panic(err)
 	}
 
@@ -235,7 +236,7 @@ func (m *MethodMocker) Return(returns ...interface{}) *When {
 		err  error
 	)
 
-	if when, err = CreateWhen(m, m.methodIns, nil, returns); err != nil {
+	if when, err = CreateWhen(m, m.methodIns, nil, returns, true); err != nil {
 		panic(err)
 	}
 
@@ -403,7 +404,7 @@ func (m *DefMocker) When(args ...interface{}) *When {
 		err  error
 	)
 
-	if when, err = CreateWhen(m, m.funcdef, args, nil); err != nil {
+	if when, err = CreateWhen(m, m.funcdef, args, nil, false); err != nil {
 		panic(err)
 	}
 
@@ -427,7 +428,7 @@ func (m *DefMocker) Return(returns ...interface{}) *When {
 		err  error
 	)
 
-	if when, err = CreateWhen(m, m.funcdef, nil, returns); err != nil {
+	if when, err = CreateWhen(m, m.funcdef, nil, returns, false); err != nil {
 		panic(err)
 	}
 

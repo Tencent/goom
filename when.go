@@ -140,8 +140,8 @@ func (w *When) Eval(args ...interface{}) []interface{} {
 }
 
 func (w *When) returnDefaults() []reflect.Value {
-	if w.defaultReturns == nil {
-		panic("default whens not set.")
+	if w.defaultReturns == nil && w.funTyp.NumOut() != 0 {
+		panic("default return not set.")
 	}
 
 	var results []reflect.Value

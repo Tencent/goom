@@ -76,7 +76,7 @@ func TestAutoGenImpl(t *testing.T) {
 
 	mockfunc := reflect.MakeFunc(methodTyp, func(args []reflect.Value) (results []reflect.Value) {
 		fmt.Println("called")
-		return []reflect.Value{}
+		return []reflect.Value{reflect.ValueOf(3)}
 	})
 
 	ifc := *(*uintptr)(unsafe.Pointer(&gen))
@@ -118,6 +118,13 @@ type itab struct {
 type value struct {
 	_   uintptr
 	ptr unsafe.Pointer
+}
+
+type makeFuncImpl struct {
+	code   uintptr
+	stack  *uintptr // ptrmap for both args and results
+	argLen uintptr  // just args
+	ftyp   *uintptr
 }
 
 // getPtr 获取函数的调用地址(和函数的指令地址不一样)

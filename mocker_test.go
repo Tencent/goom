@@ -214,6 +214,28 @@ func (s *MockerTestSuite) TestMultiReturn() {
 	})
 }
 
+// TestUnitFuncTwiceApply 测试函数mock apply多次
+func (s *MockerTestSuite) TestUnitFuncTwiceApply() {
+	s.Run("success", func() {
+		mock := mocker.Create()
+
+		mock.Func(foo).Apply(func(int) int {
+			return 3
+		})
+		s.Equal(3, foo(1), "foo mock check")
+
+		mock.Reset()
+		s.Equal(1, foo(1), "foo mock reset check")
+
+		mock.Func(foo).Apply(func(int) int {
+			return 5
+		})
+		s.Equal(5, foo(1), "foo mock check")
+
+		mock.Reset()
+	})
+}
+
 //go:noinline
 func foo(i int) int {
 	return i * 1

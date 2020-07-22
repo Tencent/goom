@@ -125,6 +125,9 @@ func (m *baseMocker) Cancel() {
 	if m.guard != nil {
 		m.guard.UnpatchWithLock()
 	}
+
+	m.when = nil
+	m._if = nil
 }
 
 // MethodMocker 对结构体函数或方法进行mock
@@ -191,11 +194,19 @@ func (m *MethodMocker) ExportMethod(name string) UnexportedMocker {
 // mock回调函数, 需要和mock模板函数的签名保持一致
 // 方法的参数签名写法比如: func(s *Struct, arg1, arg2 type), 其中第一个参数必须是接收体类型
 func (m *MethodMocker) Apply(imp interface{}) {
+	if m.method == "" {
+		panic("method is empty")
+	}
+
 	m.applyByMethod(m.structDef, m.method, imp)
 }
 
 // When 指定条件匹配
 func (m *MethodMocker) When(args ...interface{}) *When {
+	if m.method == "" {
+		panic("method is empty")
+	}
+
 	if m.when != nil {
 		return m.when.When(args...)
 	}
@@ -227,6 +238,10 @@ func (m *MethodMocker) When(args ...interface{}) *When {
 
 // Matcher 代理方法返回
 func (m *MethodMocker) Return(returns ...interface{}) *When {
+	if m.method == "" {
+		panic("method is empty")
+	}
+
 	if m.when != nil {
 		return m.when.Return(returns...)
 	}

@@ -142,6 +142,10 @@ func (s *WhenTestSuite) TestMethodWhen() {
 		mocker.Struct(struct1).Method("Div").Return(100)
 		s.Equal(100, structOuter.Compute(2, 1), "method when check")
 
+		mocker.Reset()
+		mocker.Struct(struct1).Method("Div").Return(50)
+		s.Equal(50, structOuter.Compute(2, 1), "method when check")
+
 		mocker.Struct(struct1).Method("Div").When(3, 4).Return(100)
 		mocker.Struct(struct1).Method("Div").When(4, 4).Return(200)
 		s.Equal(100, structOuter.Compute(3, 4), "method when check")

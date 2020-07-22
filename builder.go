@@ -23,19 +23,21 @@ func (m *Builder) Pkg(name string) *Builder {
 
 // Struct 指定结构体名称
 // 比如需要mock结构体函数 (*conn).Write(b []byte)，则name="conn"
-func (m *Builder) Struct(obj interface{}) *MethodMocker {
+func (m *Builder) Struct(obj interface{}) *CachedMethodMocker {
 	if mocker, ok := m.mCache[obj]; ok {
-		return mocker.(*MethodMocker)
+		return mocker.(*CachedMethodMocker)
 	}
 
 	mocker := &MethodMocker{
 		baseMocker: newBaseMocker(m.pkgName),
 		structDef:  obj,
 	}
-	m.mockers = append(m.mockers, mocker)
-	m.mCache[obj] = mocker
 
-	return mocker
+	cachedMocker := NewCachedMethodMocker(mocker)
+	m.mockers = append(m.mockers, cachedMocker)
+	m.mCache[obj] = cachedMocker
+
+	return cachedMocker
 }
 
 // Func 指定函数定义
@@ -58,9 +60,9 @@ func (m *Builder) Func(obj interface{}) *DefMocker {
 
 // ExportStruct 导出私有结构体
 // 比如需要mock结构体函数 (*conn).Write(b []byte)，则name="conn"
-func (m *Builder) ExportStruct(name string) *UnexportedMethodMocker {
+func (m *Builder) ExportStruct(name string) *CachedUnexportedMethodMocker {
 	if mocker, ok := m.mCache[m.pkgName+"_"+name]; ok {
-		return mocker.(*UnexportedMethodMocker)
+		return mocker.(*CachedUnexportedMethodMocker)
 	}
 
 	structName := name
@@ -73,10 +75,12 @@ func (m *Builder) ExportStruct(name string) *UnexportedMethodMocker {
 		baseMocker: newBaseMocker(m.pkgName),
 		structName: structName,
 	}
-	m.mockers = append(m.mockers, mocker)
-	m.mCache[m.pkgName+"_"+name] = mocker
 
-	return mocker
+	cachedMocker := NewCachedUnexportedMethodMocker(mocker)
+	m.mockers = append(m.mockers, cachedMocker)
+	m.mCache[m.pkgName+"_"+name] = cachedMocker
+
+	return cachedMocker
 }
 
 // ExportFunc 导出私有函数
@@ -120,4 +124,86 @@ func Create() *Builder {
 // Deprecated: 已支持在mock时设置pkg
 func Package(_ string) *Builder {
 	return &Builder{pkgName: currentPackage(2), mCache: make(map[interface{}]interface{}, 30)}
+}
+
+// CachedMethodMocker 带缓存的方法Mocker
+type CachedMethodMocker struct {
+	*MethodMocker
+	mCache  map[string]*MethodMocker
+	umCache map[string]UnexportedMocker
+}
+
+func NewCachedMethodMocker(m *MethodMocker) *CachedMethodMocker {
+	return &CachedMethodMocker{
+		MethodMocker: m,
+		mCache:       make(map[string]*MethodMocker, 16),
+		umCache:      make(map[string]UnexportedMocker, 16),
+	}
+}
+
+// CachedMethodMocker 设置结构体的方法名
+func (m *CachedMethodMocker) Method(name string) ExportedMocker {
+	if mocker, ok := m.mCache[name]; ok {
+		return mocker
+	}
+
+	mocker := m.MethodMocker.Method(name)
+	m.mCache[name] = m.MethodMocker
+
+	return mocker
+}
+
+// CachedMethodMocker 导出私有方法
+func (m *CachedMethodMocker) ExportMethod(name string) UnexportedMocker {
+	if mocker, ok := m.umCache[name]; ok {
+		return mocker
+	}
+
+	mocker := m.MethodMocker.ExportMethod(name)
+	m.umCache[name] = mocker
+
+	return mocker
+}
+
+// 清除mock
+func (m *CachedMethodMocker) Cancel() {
+	for _, v := range m.mCache {
+		v.Cancel()
+	}
+
+	for _, v := range m.umCache {
+		v.Cancel()
+	}
+}
+
+// CachedUnexportedMethodMocker 带缓存的未导出方法Mocker
+type CachedUnexportedMethodMocker struct {
+	*UnexportedMethodMocker
+	mCache map[string]*UnexportedMethodMocker
+}
+
+func NewCachedUnexportedMethodMocker(m *UnexportedMethodMocker) *CachedUnexportedMethodMocker {
+	return &CachedUnexportedMethodMocker{
+		UnexportedMethodMocker: m,
+		mCache:                 make(map[string]*UnexportedMethodMocker, 16),
+	}
+}
+
+// CachedMethodMocker 设置结构体的方法名
+func (m *CachedUnexportedMethodMocker) Method(name string) UnexportedMocker {
+	if mocker, ok := m.mCache[name]; ok {
+		return mocker
+	}
+
+	mocker := m.UnexportedMethodMocker.Method(name)
+	m.mCache[name] = m.UnexportedMethodMocker
+
+	return mocker
+}
+
+// 清除mock
+func (m *CachedUnexportedMethodMocker) Cancel() {
+	for _, v := range m.mCache {
+		v.Cancel()
+	}
 }

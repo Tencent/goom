@@ -219,19 +219,14 @@ func (s *MockerTestSuite) TestUnitFuncTwiceApply() {
 	s.Run("success", func() {
 		mock := mocker.Create()
 
-		mock.Func(foo).Apply(func(int) int {
-			return 3
-		})
+		mock.Func(foo).When(1).Return(3)
+		mock.Func(foo).When(2).Return(6)
 		s.Equal(3, foo(1), "foo mock check")
-
+		s.Equal(6, foo(2), "foo mock check")
 		mock.Reset()
-		s.Equal(1, foo(1), "foo mock reset check")
 
-		mock.Func(foo).Apply(func(int) int {
-			return 5
-		})
-		s.Equal(5, foo(1), "foo mock check")
-
+		mock.Func(foo).When(1).Return(2)
+		s.Equal(2, foo(1), "foo mock reset check")
 		mock.Reset()
 	})
 }

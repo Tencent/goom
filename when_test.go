@@ -4,8 +4,9 @@ import (
 	"reflect"
 	"testing"
 
-	"git.code.oa.com/goom/mocker"
 	"github.com/stretchr/testify/suite"
+
+	"git.code.oa.com/goom/mocker"
 )
 
 // TestUnitWhenTestSuite 测试入口
@@ -32,6 +33,29 @@ type Result struct {
 
 func complex(a Arg) Result {
 	return Result{0}
+}
+
+func complex1(a Arg) *Result {
+	return &Result{0}
+}
+
+// Struct for结构体方法When
+type Struct struct{}
+
+//go:noinline
+func (s *Struct) Div(a int, b int) int {
+	return a / b
+}
+
+type StructOuter struct {
+}
+
+// Compute 中会调用sub运算
+func (s *StructOuter) Compute(a int, b int) int {
+	diver := new(Struct)
+	res := diver.Div(a, b)
+
+	return res
 }
 
 // TestWhen 测试简单参数匹配
@@ -100,9 +124,37 @@ func (s *WhenTestSuite) TestComplex() {
 // TestNil 测试空参数
 func (s *WhenTestSuite) TestNil() {
 	s.Run("success", func() {
-		when := mocker.NewWhen(reflect.TypeOf(simple))
-		when.Return(-1).When(1).Return(nil)
+		when := mocker.NewWhen(reflect.TypeOf(complex1))
+		when.Return(nil)
 
-		//s.Equal(5, when.Eval(1)[0], "when result check")
+		s.Equal(nil, when.Eval(1)[0], "when return nil check")
+	})
+}
+
+// TestMethodWhen 方法参数条件匹配
+func (s *WhenTestSuite) TestMethodWhen() {
+	s.Run("success", func() {
+		structOuter := new(StructOuter)
+		struct1 := new(Struct)
+		mocker := mocker.Create()
+
+		// 直接mock方法的返回值
+		mocker.Struct(struct1).Method("Div").Return(100)
+		s.Equal(100, structOuter.Compute(2, 1), "method when check")
+
+		mocker.Reset()
+		mocker.Struct(struct1).Method("Div").Return(50)
+		s.Equal(50, structOuter.Compute(2, 1), "method when check")
+
+		mocker.Struct(struct1).Method("Div").When(3, 4).Return(100)
+		mocker.Struct(struct1).Method("Div").When(4, 4).Return(200)
+		s.Equal(100, structOuter.Compute(3, 4), "method when check")
+		s.Equal(200, structOuter.Compute(4, 4), "method when check")
+
+		// mock方法的替换方法
+		mocker.Struct(struct1).Method("Div").Apply(func(_ *Struct, a int, b int) int {
+			return a/b + 1
+		})
+		s.Equal(3, structOuter.Compute(2, 1), "method when check")
 	})
 }

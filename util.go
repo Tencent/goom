@@ -42,21 +42,68 @@ func getTypeName(val interface{}) string {
 	return t.Name()
 }
 
+func inTypes(isMethod bool, funTyp reflect.Type) []reflect.Type {
+	skip := 0
+	if isMethod {
+		skip = 1
+	}
+
+	numIn := funTyp.NumIn()
+	inTypes := make([]reflect.Type, numIn-skip)
+
+	for i := 0; i < numIn-skip; i++ {
+		inTypes[i] = funTyp.In(i + skip)
+	}
+
+	return inTypes
+}
+
+func outTypes(funTyp reflect.Type) []reflect.Type {
+	numOut := funTyp.NumOut()
+	outTypes := make([]reflect.Type, numOut)
+
+	for i := 0; i < numOut; i++ {
+		outTypes[i] = funTyp.Out(i)
+	}
+
+	return outTypes
+}
+
 // I2V []interface convert to []reflect.Value
-func I2V(args []interface{}) []reflect.Value {
+func I2V(args []interface{}, typs []reflect.Type) []reflect.Value {
 	values := make([]reflect.Value, len(args))
 	for i, a := range args {
-		values[i] = reflect.ValueOf(a)
+		values[i] = toValue(a, typs[i])
 	}
 
 	return values
 }
 
+func toValue(r interface{}, out reflect.Type) reflect.Value {
+	v := reflect.ValueOf(r)
+	if r == nil &&
+		(out.Kind() == reflect.Interface || out.Kind() == reflect.Ptr) {
+		v = reflect.Zero(reflect.SliceOf(out).Elem())
+	} else if r != nil && out.Kind() == reflect.Interface {
+		ptr := reflect.New(out)
+
+		ptr.Elem().Set(v)
+		v = ptr.Elem()
+	}
+
+	return v
+}
+
 // V2I []reflect.Value convert to []interface
-func V2I(args []reflect.Value) []interface{} {
+func V2I(args []reflect.Value, typs []reflect.Type) []interface{} {
 	values := make([]interface{}, len(args))
+
 	for i, a := range args {
-		values[i] = a.Interface()
+		if (typs[i].Kind() == reflect.Interface || typs[i].Kind() == reflect.Ptr) && a.IsZero() {
+			values[i] = nil
+		} else {
+			values[i] = a.Interface()
+		}
 	}
 
 	return values

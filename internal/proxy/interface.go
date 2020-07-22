@@ -4,5 +4,5 @@ import _ "unsafe"
 
 func InterfaceCallStub()
 
-// MakeInterface 构造interface
-func MakeInterface()
+//go:linkname MakeFuncStub reflect.makeFuncStub
+func MakeFuncStub()

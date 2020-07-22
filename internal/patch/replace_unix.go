@@ -26,7 +26,7 @@ func mprotectCrossPage(addr uintptr, length int, prot int) {
 // this function is super unsafe
 // aww yeah
 // It copies a slice to a raw memory location, disabling all memory protection before doing so.
-func copyToLocation(location uintptr, data []byte) error {
+func CopyToLocation(location uintptr, data []byte) error {
 	memoryAccessLock.Lock()
 	defer memoryAccessLock.Unlock()
 

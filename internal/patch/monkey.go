@@ -46,7 +46,7 @@ func PatchUnlock() {
 func (g *PatchGuard) Apply() {
 	g.applied = true
 	// 执行函数调用地址替换(延迟执行)
-	if err := copyToLocation(g.target, g.jumpData); err != nil {
+	if err := CopyToLocation(g.target, g.jumpData); err != nil {
 		logger.LogWarningf("Apply to 0x%x error: %s", g.target, err)
 	}
 	ShowInst(fmt.Sprintf("apply copy to 0x%x", g.target), g.target, 20, logger.DebugLevel)
@@ -291,7 +291,7 @@ func unpatchValue(target uintptr) bool {
 }
 
 func unpatch(target uintptr, p patch) {
-	_ = copyToLocation(target, p.originalBytes)
+	_ = CopyToLocation(target, p.originalBytes)
 	ShowInst(fmt.Sprintf("unpatch copy to 0x%x", target), target, 20, logger.DebugLevel)
 }
 

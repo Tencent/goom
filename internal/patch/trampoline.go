@@ -3,6 +3,7 @@ package patch
 import (
 	"errors"
 	"fmt"
+
 	"git.code.oa.com/goom/mocker/internal/logger"
 )
 
@@ -69,7 +70,7 @@ func fixOriginFuncToTrampoline(from uintptr, trampoline uintptr, jumpInstSize in
 
 	showInst("fixed inst >>>>> ", trampoline, fixOrigin, logger.DebugLevel)
 
-	if err := copyToLocation(trampoline, fixOrigin); err != nil {
+	if err := CopyToLocation(trampoline, fixOrigin); err != nil {
 		return 0, err
 	}
 	ShowInst(fmt.Sprintf("tramp copy to 0x%x", trampoline), trampoline, 30, logger.DebugLevel)

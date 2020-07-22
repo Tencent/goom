@@ -83,21 +83,6 @@ func TestAutoGenImpl(t *testing.T) {
 	fmt.Println("ok")
 }
 
-// TestTraceBack 测试生成任意接口实现的traceback
-func TestTraceBack(t *testing.T) {
-
-	gen := (I)(nil)
-
-	dynamicGenImpl(&gen)
-
-	// 调用接口方法
-	for i := 0; i < 1000; i++ {
-		(gen).Call(1)
-	}
-
-	fmt.Println("ok")
-}
-
 func dynamicGenImpl(i interface{}) {
 	typ := reflect.TypeOf(i).Elem()
 	for i := 0; i < typ.NumMethod(); i++ {
@@ -187,4 +172,19 @@ func (i Impl2) Call(a int) int {
 
 func (i Impl2) Call1(string) string {
 	return "!ok"
+}
+
+// TestTraceBack 测试生成任意接口实现的traceback
+func TestTraceBack(t *testing.T) {
+
+	gen := (I)(nil)
+
+	dynamicGenImpl(&gen)
+
+	// 调用接口方法
+	for i := 0; i < 1000; i++ {
+		(gen).Call(1)
+	}
+
+	fmt.Println("ok")
 }

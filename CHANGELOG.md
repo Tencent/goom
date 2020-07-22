@@ -1,4 +1,9 @@
-# [0.1.5](https://git.code.oa.com/goom/mocker/compare/v0.1.4...v)(2020-07-17)
+# [0.1.6](https://git.code.oa.com/goom/mocker/compare/0.1.5...0.1.6)(2020-07-17)
+
+### Bug Fixes
+* 修复reset之后mock失败问题
+
+# [0.1.5](https://git.code.oa.com/goom/mocker/compare/v0.1.4...0.1.5)(2020-07-17)
 
 ### Bug Fixes
 * method when参数个数不匹配问题

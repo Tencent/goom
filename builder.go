@@ -36,6 +36,7 @@ func (m *Builder) Struct(obj interface{}) *CachedMethodMocker {
 	cachedMocker := NewCachedMethodMocker(mocker)
 	m.mockers = append(m.mockers, cachedMocker)
 	m.mCache[obj] = cachedMocker
+	m.pkgName = currentPackage(2)
 
 	return cachedMocker
 }
@@ -54,6 +55,7 @@ func (m *Builder) Func(obj interface{}) *DefMocker {
 	}
 	m.mockers = append(m.mockers, mocker)
 	m.mCache[reflect.ValueOf(obj)] = mocker
+	m.pkgName = currentPackage(2)
 
 	return mocker
 }
@@ -79,6 +81,7 @@ func (m *Builder) ExportStruct(name string) *CachedUnexportedMethodMocker {
 	cachedMocker := NewCachedUnexportedMethodMocker(mocker)
 	m.mockers = append(m.mockers, cachedMocker)
 	m.mCache[m.pkgName+"_"+name] = cachedMocker
+	m.pkgName = currentPackage(2)
 
 	return cachedMocker
 }
@@ -102,6 +105,7 @@ func (m *Builder) ExportFunc(name string) *UnexportedFuncMocker {
 	}
 	m.mockers = append(m.mockers, mocker)
 	m.mCache[m.pkgName+"_"+name] = mocker
+	m.pkgName = currentPackage(2)
 
 	return mocker
 }
@@ -117,12 +121,6 @@ func (m *Builder) Reset() *Builder {
 
 // Create 创建Mock构建器
 func Create() *Builder {
-	return &Builder{pkgName: currentPackage(2), mCache: make(map[interface{}]interface{}, 30)}
-}
-
-// Package 创建Mock构建器
-// Deprecated: 已支持在mock时设置pkg
-func Package(_ string) *Builder {
 	return &Builder{pkgName: currentPackage(2), mCache: make(map[interface{}]interface{}, 30)}
 }
 

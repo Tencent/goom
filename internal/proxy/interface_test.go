@@ -38,7 +38,10 @@ func TestGenImpl(t *testing.T) {
 		fmt.Println(typ.Method(i).Name, typ.Method(i).Type)
 	}
 
-	genInterfaceImpl(&gen)
+	genInterfaceImpl(&gen, func(data *Impl2, a int) int {
+		fmt.Println("proxy")
+		return 3
+	})
 
 	// 调用接口方法
 	r := (gen).Call(1)
@@ -46,13 +49,10 @@ func TestGenImpl(t *testing.T) {
 	fmt.Println("ok", r)
 }
 
-func genInterfaceImpl(i interface{}) {
+func genInterfaceImpl(i interface{}, proxy interface{}) {
 	gen := hack.UnpackEFace(i).Data
 	// mock接口方法
-	mockfunc := reflect.ValueOf(func(data *Impl2, a int) int {
-		fmt.Println("proxy")
-		return 3
-	})
+	mockfunc := reflect.ValueOf(proxy)
 	ifc := *(*uintptr)(unsafe.Pointer(gen))
 	fmt.Println(ifc)
 	// 伪装iface

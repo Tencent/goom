@@ -2,7 +2,9 @@ package mocker_test
 
 import (
 	"fmt"
+	"math/rand"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/suite"
 
@@ -228,6 +230,24 @@ func (s *MockerTestSuite) TestUnitFuncTwiceApply() {
 		mock.Func(foo).When(1).Return(2)
 		s.Equal(2, foo(1), "foo mock reset check")
 		mock.Reset()
+	})
+}
+
+// TestUnitSystemFuncApply 测试系统函数的mock
+//  需要加上 -gcflags="-l"
+func (s *MockerTestSuite) TestUnitSystemFuncApply() {
+	s.Run("success", func() {
+		mock := mocker.Create()
+		defer mock.Reset()
+
+		mock.Func(rand.Int31).Return(int32(3))
+
+		date, _ := time.Parse("2006-01-02 15:04:05", "2020-07-30 00:00:00")
+		mock.Func(time.Now).Return(date)
+
+		s.Equal(int32(3), rand.Int31(), "foo mock check")
+		s.Equal(date, time.Now(), "foo mock check")
+
 	})
 }
 

@@ -24,7 +24,8 @@ func (m *Builder) Pkg(name string) *Builder {
 // Struct 指定结构体名称
 // 比如需要mock结构体函数 (*conn).Write(b []byte)，则name="conn"
 func (m *Builder) Struct(obj interface{}) *CachedMethodMocker {
-	if mocker, ok := m.mCache[obj]; ok {
+	mKey := reflect.ValueOf(obj).Type().String()
+	if mocker, ok := m.mCache[mKey]; ok {
 		return mocker.(*CachedMethodMocker)
 	}
 
@@ -35,7 +36,7 @@ func (m *Builder) Struct(obj interface{}) *CachedMethodMocker {
 
 	cachedMocker := NewCachedMethodMocker(mocker)
 	m.mockers = append(m.mockers, cachedMocker)
-	m.mCache[obj] = cachedMocker
+	m.mCache[mKey] = cachedMocker
 	m.pkgName = currentPackage(2)
 
 	return cachedMocker

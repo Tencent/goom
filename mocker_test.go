@@ -237,6 +237,22 @@ func (s *MockerTestSuite) TestUnitFuncTwiceApply() {
 	})
 }
 
+// TestUnitDefaultReturn 测试函数mock返回默认值
+func (s *MockerTestSuite) TestUnitDefaultReturn() {
+	s.Run("success", func() {
+		mock := mocker.Create()
+
+		mock.Func(foo).Return(3).AndReturn(4)
+		mock.Func(foo).Return(5).AndReturn(6)
+		s.Equal(3, foo(1), "foo return check")
+		s.Equal(4, foo(2), "foo return check")
+		s.Equal(5, foo(1), "foo return check")
+		s.Equal(6, foo(2), "foo return check")
+		mock.Reset()
+
+	})
+}
+
 // TestUnitSystemFuncApply 测试系统函数的mock
 //  需要加上 -gcflags="-l"
 func (s *MockerTestSuite) TestUnitSystemFuncApply() {

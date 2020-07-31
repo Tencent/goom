@@ -146,8 +146,13 @@ func (m *CachedMethodMocker) Method(name string) ExportedMocker {
 		return mocker
 	}
 
-	mocker := m.MethodMocker.Method(name)
-	m.mCache[name] = m.MethodMocker
+	mocker := &MethodMocker{
+		baseMocker: newBaseMocker(m.pkgName),
+		structDef:  m.MethodMocker.structDef,
+	}
+
+	mocker.Method(name)
+	m.mCache[name] = mocker
 
 	return mocker
 }
@@ -158,10 +163,15 @@ func (m *CachedMethodMocker) ExportMethod(name string) UnexportedMocker {
 		return mocker
 	}
 
-	mocker := m.MethodMocker.ExportMethod(name)
-	m.umCache[name] = mocker
+	mocker := &MethodMocker{
+		baseMocker: newBaseMocker(m.pkgName),
+		structDef:  m.MethodMocker.structDef,
+	}
 
-	return mocker
+	exportedMocker := mocker.ExportMethod(name)
+	m.umCache[name] = exportedMocker
+
+	return exportedMocker
 }
 
 // 清除mock
@@ -194,8 +204,13 @@ func (m *CachedUnexportedMethodMocker) Method(name string) UnexportedMocker {
 		return mocker
 	}
 
-	mocker := m.UnexportedMethodMocker.Method(name)
-	m.mCache[name] = m.UnexportedMethodMocker
+	mocker := &UnexportedMethodMocker{
+		baseMocker: newBaseMocker(m.pkgName),
+		structName: m.UnexportedMethodMocker.structName,
+	}
+
+	mocker.Method(name)
+	m.mCache[name] = mocker
 
 	return mocker
 }

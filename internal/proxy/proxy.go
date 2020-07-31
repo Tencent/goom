@@ -42,7 +42,7 @@ func StaticProxyByName(funcName string, proxyFunc interface{}, trampolineFunc in
 	// 构造原先方法实例值
 	logger.LogDebug("OrignUintptr is:", fmt.Sprintf("0x%x", patchGuard.OriginFunc()))
 	// 替换原函数调用指针
-	patchGuard.Apply()
+	//patchGuard.Apply()
 	logger.LogInfo("static proxy[trampoline] ok, funcName=", funcName)
 
 	return patchGuard, nil
@@ -78,7 +78,7 @@ func StaticProxyByFunc(funcDef interface{}, proxyFunc, trampolineFunc interface{
 	}
 
 	// 替换原函数调用指针
-	patchGuard.Apply()
+	//patchGuard.Apply()
 
 	logger.LogDebug("static proxy ok funcDef=", funcDef)
 
@@ -115,7 +115,7 @@ func StaticProxyByMethod(target reflect.Type, methodName string, proxyFunc, tram
 		}
 	}
 	// 替换原函数调用指针
-	patchGuard.Apply()
+	//patchGuard.Apply()
 
 	logger.LogDebug("static proxy ok funcName=", target, ".", methodName)
 	return patchGuard, nil

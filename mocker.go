@@ -128,6 +128,7 @@ func (m *baseMocker) Cancel() {
 
 	m.when = nil
 	m._if = nil
+	m.origin = nil
 }
 
 // MethodMocker 对结构体函数或方法进行mock

@@ -2,7 +2,9 @@ package mocker_test
 
 import (
 	"fmt"
+	"math/rand"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/suite"
 
@@ -107,11 +109,15 @@ func (s *MockerTestSuite) TestUnitMethodApply() {
 func (s *MockerTestSuite) TestUnitMethodReturn() {
 	s.Run("success", func() {
 		mock := mocker.Create()
-		mock.Struct(&fake{}).Method("Call").Return(5)
+		mock.Struct(&fake{}).Method("Call").Return(5).AndReturn(6)
+		mock.Struct(&fake{}).Method("Call2").Return(7).AndReturn(8)
 
 		f := &fake{}
 
 		s.Equal(5, f.Call(1), "call mock check")
+		s.Equal(6, f.Call(1), "call mock check")
+		s.Equal(7, f.Call2(1), "call mock check")
+		s.Equal(8, f.Call2(1), "call mock check")
 
 		mock.Reset()
 
@@ -231,6 +237,40 @@ func (s *MockerTestSuite) TestUnitFuncTwiceApply() {
 	})
 }
 
+// TestUnitDefaultReturn 测试函数mock返回默认值
+func (s *MockerTestSuite) TestUnitDefaultReturn() {
+	s.Run("success", func() {
+		mock := mocker.Create()
+
+		mock.Func(foo).Return(3).AndReturn(4)
+		mock.Func(foo).Return(5).AndReturn(6)
+		s.Equal(3, foo(1), "foo return check")
+		s.Equal(4, foo(2), "foo return check")
+		s.Equal(5, foo(1), "foo return check")
+		s.Equal(6, foo(2), "foo return check")
+		mock.Reset()
+
+	})
+}
+
+// TestUnitSystemFuncApply 测试系统函数的mock
+//  需要加上 -gcflags="-l"
+func (s *MockerTestSuite) TestUnitSystemFuncApply() {
+	s.Run("success", func() {
+		mock := mocker.Create()
+		defer mock.Reset()
+
+		mock.Func(rand.Int31).Return(int32(3))
+
+		date, _ := time.Parse("2006-01-02 15:04:05", "2020-07-30 00:00:00")
+		mock.Func(time.Now).Return(date)
+
+		s.Equal(int32(3), rand.Int31(), "foo mock check")
+		s.Equal(date, time.Now(), "foo mock check")
+
+	})
+}
+
 //go:noinline
 func foo(i int) int {
 	return i * 1
@@ -240,6 +280,11 @@ type fake struct{}
 
 //go:noinline
 func (f *fake) Call(i int) int {
+	return i
+}
+
+//go:noinline
+func (f *fake) Call2(i int) int {
 	return i
 }
 

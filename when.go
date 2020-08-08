@@ -22,7 +22,7 @@ type When struct {
 	funcDef        interface{}
 	isMethod       bool
 	matches        []Matcher
-	defaultReturns []interface{}
+	defaultReturns Matcher
 	// curMatch 当前指定的参数匹配
 	curMatch Matcher
 }
@@ -40,14 +40,26 @@ func CreateWhen(m ExportedMocker, funcDef interface{}, args []interface{},
 		return nil, err
 	}
 
+	var curMatch Matcher
+	var defaultMatch Matcher
+
+	if defaultReturns != nil {
+		curMatch = newAlwaysMatch(defaultReturns, impTyp)
+		defaultMatch = curMatch
+	}
+
+	if args != nil {
+		curMatch = newDefaultMatch(args, nil, isMethod, impTyp)
+	}
+
 	return &When{
 		ExportedMocker: m,
-		defaultReturns: defaultReturns,
+		defaultReturns: defaultMatch,
 		funcTyp:        impTyp,
 		funcDef:        funcDef,
 		isMethod:       isMethod,
 		matches:        make([]Matcher, 0),
-		curMatch:       newDefaultMatch(args, nil, isMethod, impTyp),
+		curMatch:       curMatch,
 	}, nil
 }
 
@@ -96,7 +108,7 @@ func (w *When) In(slices ...interface{}) *When {
 // Matcher 指定返回值
 func (w *When) Return(results ...interface{}) *When {
 	if w.curMatch == nil {
-		w.defaultReturns = results
+		w.defaultReturns = newAlwaysMatch(results, w.funcTyp)
 		return w
 	}
 
@@ -109,7 +121,7 @@ func (w *When) Return(results ...interface{}) *When {
 // Matcher 指定第二次调用返回值,之后的调用以最后一个指定的值返回
 func (w *When) AndReturn(results ...interface{}) *When {
 	if w.curMatch == nil {
-		return w
+		return w.Return(results...)
 	}
 
 	w.curMatch.AddResult(results)
@@ -165,16 +177,7 @@ func (w *When) returnDefaults() []reflect.Value {
 	if w.defaultReturns == nil && w.funcTyp.NumOut() != 0 {
 		panic("default returns not set.")
 	}
-
-	var results []reflect.Value
-	// 使用默认参数
-	for i, r := range w.defaultReturns {
-		v := toValue(r, w.funcTyp.Out(i))
-
-		results = append(results, v)
-	}
-
-	return results
+	return w.defaultReturns.Result()
 }
 
 // BaseMatcher 参数匹配基类
@@ -218,7 +221,7 @@ func (c *BaseMatcher) AddResult(results []interface{}) {
 	c.results = append(c.results, I2V(results, outTypes(c.funTyp)))
 }
 
-// Matcher 参数匹配
+// DefaultMatcher 参数匹配
 type DefaultMatcher struct {
 	*BaseMatcher
 
@@ -316,4 +319,22 @@ outer:
 	}
 
 	return false
+}
+
+// AlwaysMatcher 默认匹配
+type AlwaysMatcher struct {
+	*BaseMatcher
+}
+
+func newAlwaysMatch(results []interface{}, funTyp reflect.Type) *AlwaysMatcher {
+	if results == nil {
+		return nil
+	}
+	return &AlwaysMatcher{
+		BaseMatcher: newBaseMatcher(results, funTyp),
+	}
+}
+
+func (c *AlwaysMatcher) Match(args []reflect.Value) bool {
+	return true
 }

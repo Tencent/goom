@@ -24,7 +24,8 @@ func (m *Builder) Pkg(name string) *Builder {
 // Struct 指定结构体名称
 // 比如需要mock结构体函数 (*conn).Write(b []byte)，则name="conn"
 func (m *Builder) Struct(obj interface{}) *CachedMethodMocker {
-	if mocker, ok := m.mCache[obj]; ok {
+	mKey := reflect.ValueOf(obj).Type().String()
+	if mocker, ok := m.mCache[mKey]; ok {
 		return mocker.(*CachedMethodMocker)
 	}
 
@@ -35,7 +36,8 @@ func (m *Builder) Struct(obj interface{}) *CachedMethodMocker {
 
 	cachedMocker := NewCachedMethodMocker(mocker)
 	m.mockers = append(m.mockers, cachedMocker)
-	m.mCache[obj] = cachedMocker
+	m.mCache[mKey] = cachedMocker
+	m.pkgName = currentPackage(2)
 
 	return cachedMocker
 }
@@ -54,6 +56,7 @@ func (m *Builder) Func(obj interface{}) *DefMocker {
 	}
 	m.mockers = append(m.mockers, mocker)
 	m.mCache[reflect.ValueOf(obj)] = mocker
+	m.pkgName = currentPackage(2)
 
 	return mocker
 }
@@ -79,6 +82,7 @@ func (m *Builder) ExportStruct(name string) *CachedUnexportedMethodMocker {
 	cachedMocker := NewCachedUnexportedMethodMocker(mocker)
 	m.mockers = append(m.mockers, cachedMocker)
 	m.mCache[m.pkgName+"_"+name] = cachedMocker
+	m.pkgName = currentPackage(2)
 
 	return cachedMocker
 }
@@ -102,6 +106,7 @@ func (m *Builder) ExportFunc(name string) *UnexportedFuncMocker {
 	}
 	m.mockers = append(m.mockers, mocker)
 	m.mCache[m.pkgName+"_"+name] = mocker
+	m.pkgName = currentPackage(2)
 
 	return mocker
 }
@@ -117,12 +122,6 @@ func (m *Builder) Reset() *Builder {
 
 // Create 创建Mock构建器
 func Create() *Builder {
-	return &Builder{pkgName: currentPackage(2), mCache: make(map[interface{}]interface{}, 30)}
-}
-
-// Package 创建Mock构建器
-// Deprecated: 已支持在mock时设置pkg
-func Package(_ string) *Builder {
 	return &Builder{pkgName: currentPackage(2), mCache: make(map[interface{}]interface{}, 30)}
 }
 
@@ -147,8 +146,13 @@ func (m *CachedMethodMocker) Method(name string) ExportedMocker {
 		return mocker
 	}
 
-	mocker := m.MethodMocker.Method(name)
-	m.mCache[name] = m.MethodMocker
+	mocker := &MethodMocker{
+		baseMocker: newBaseMocker(m.pkgName),
+		structDef:  m.MethodMocker.structDef,
+	}
+
+	mocker.Method(name)
+	m.mCache[name] = mocker
 
 	return mocker
 }
@@ -159,10 +163,15 @@ func (m *CachedMethodMocker) ExportMethod(name string) UnexportedMocker {
 		return mocker
 	}
 
-	mocker := m.MethodMocker.ExportMethod(name)
-	m.umCache[name] = mocker
+	mocker := &MethodMocker{
+		baseMocker: newBaseMocker(m.pkgName),
+		structDef:  m.MethodMocker.structDef,
+	}
 
-	return mocker
+	exportedMocker := mocker.ExportMethod(name)
+	m.umCache[name] = exportedMocker
+
+	return exportedMocker
 }
 
 // 清除mock
@@ -195,8 +204,13 @@ func (m *CachedUnexportedMethodMocker) Method(name string) UnexportedMocker {
 		return mocker
 	}
 
-	mocker := m.UnexportedMethodMocker.Method(name)
-	m.mCache[name] = m.UnexportedMethodMocker
+	mocker := &UnexportedMethodMocker{
+		baseMocker: newBaseMocker(m.pkgName),
+		structName: m.UnexportedMethodMocker.structName,
+	}
+
+	mocker.Method(name)
+	m.mCache[name] = mocker
 
 	return mocker
 }

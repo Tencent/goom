@@ -1,10 +1,11 @@
 package proxy
 
 import (
-	"git.code.oa.com/goom/mocker/internal/hack"
-	"git.code.oa.com/goom/mocker/internal/stub"
 	"reflect"
 	"unsafe"
+
+	"git.code.oa.com/goom/mocker/internal/hack"
+	"git.code.oa.com/goom/mocker/internal/stub"
 )
 
 // IContext 接口实现定义
@@ -17,7 +18,7 @@ var ifaceCache = make(map[string]*hack.Iface, 64)
 
 // MakeInterfaceImpl 构造接口代理
 func MakeInterfaceImpl(iface interface{}, ctx *IContext, method string,
-		apply interface{}, proxy func(args []reflect.Value) (results []reflect.Value)) error {
+	apply interface{}, proxy func(args []reflect.Value) (results []reflect.Value)) error {
 	typ := reflect.TypeOf(iface).Elem()
 
 	funcTabIndex := 0

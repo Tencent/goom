@@ -2,17 +2,25 @@ package proxy_test
 
 import (
 	"fmt"
-	"git.code.oa.com/goom/mocker/internal/proxy"
 	"reflect"
 	"runtime/debug"
 	"testing"
 	"unsafe"
+
+	"git.code.oa.com/goom/mocker/internal/proxy"
 
 	"git.code.oa.com/goom/mocker/internal/logger"
 	"git.code.oa.com/goom/mocker/internal/stub"
 
 	"git.code.oa.com/goom/mocker/internal/hack"
 )
+
+// I 接口测试
+type I interface {
+	Call(int) int
+	Call1(string) string
+	call2(int32) int32
+}
 
 // TestInterfaceCall 测试接口调用
 func TestInterfaceCall(t *testing.T) {
@@ -36,12 +44,16 @@ func TestAutoGen(t *testing.T) {
 		return "not ok"
 	}, nil)
 
+	proxy.MakeInterfaceImpl(&gen, &proxy.IContext{}, "call2", func(ctx *proxy.IContext, a int32) int32 {
+		t.Log("called call2")
+		return 99
+	}, nil)
+
 	// 调用接口方法
 	gen.Call(2)
 	gen.Call1("ok")
-
+	gen.call2(33)
 }
-
 
 // TestNilImpl 测试空实现结构体方法列表
 func TestNilImpl(t *testing.T) {
@@ -153,7 +165,6 @@ func dynamicGenImpl(t *testing.T, i interface{}) {
 	fmt.Println(mockfunc.Pointer())
 }
 
-
 // getPtr 获取函数的调用地址(和函数的指令地址不一样)
 func getPtr(v reflect.Value) unsafe.Pointer {
 	return (*hack.Value)(unsafe.Pointer(&v)).Ptr
@@ -166,12 +177,6 @@ func getImpl(n int) I {
 		return &Impl2{}
 	}
 	return nil
-}
-
-// I 接口测试
-type I interface {
-	Call(int) int
-	Call1(string) string
 }
 
 type Impl1 struct {
@@ -187,6 +192,10 @@ func (i Impl1) Call1(string) string {
 	return "ok"
 }
 
+func (i Impl1) call2(int32) int32 {
+	return 11
+}
+
 type Impl2 struct {
 	field1 string
 }
@@ -198,6 +207,10 @@ func (i Impl2) Call(a int) int {
 
 func (i Impl2) Call1(string) string {
 	return "!ok"
+}
+
+func (i Impl2) call2(int32) int32 {
+	return 22
 }
 
 // TestTraceBack 测试生成任意接口实现的traceback

@@ -2,6 +2,7 @@ package stub
 
 import (
 	"errors"
+	"git.code.oa.com/goom/mocker/internal/patch"
 	"reflect"
 	"sync/atomic"
 	"unsafe"
@@ -21,16 +22,29 @@ type PlaceHolder struct {
 	max uintptr
 }
 
+// Placeholder 汇编函数声明: 占位函数
+func Placeholder()
+
 // placeHolderIns 占位实例
 var placeHolderIns *PlaceHolder
 
 func init() {
-	offset := (*reflect.StringHeader)(unsafe.Pointer(&PlaceHolderVar)).Data
+	//offset := (*reflect.StringHeader)(unsafe.Pointer(&PlaceHolderVar)).Data + 200
+
+	offset := reflect.ValueOf(Placeholder).Pointer()
+	size, err := patch.GetFuncSize(64, offset, false)
+	if err != nil {
+		logger.LogError("GetFuncSize error", err)
+		size = 102400
+	}
+
+
 	placeHolderIns = &PlaceHolder{
 		count: 0,
 		off:   offset,
 		min:   offset,
-		max:   uintptr(len(PlaceHolderVar)) + offset,
+		//max:   uintptr(len(PlaceHolderVar)) + offset,
+		max:   uintptr(size) + offset,
 	}
 
 	logger.LogDebugf("Placeholder pointer: %d %d\n", placeHolderIns.min, offset)

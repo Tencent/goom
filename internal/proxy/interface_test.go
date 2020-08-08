@@ -2,14 +2,13 @@ package proxy_test
 
 import (
 	"fmt"
+	"git.code.oa.com/goom/mocker/internal/proxy"
 	"reflect"
 	"runtime/debug"
 	"testing"
 	"unsafe"
 
 	"git.code.oa.com/goom/mocker/internal/logger"
-	"git.code.oa.com/goom/mocker/internal/proxy"
-
 	"git.code.oa.com/goom/mocker/internal/stub"
 
 	"git.code.oa.com/goom/mocker/internal/hack"
@@ -20,6 +19,29 @@ func TestInterfaceCall(t *testing.T) {
 	i := getImpl(1)
 	i.Call(0)
 }
+
+// TestAutoGen 测试生成任意接口实现
+func TestAutoGen(t *testing.T) {
+	logger.LogLevel = logger.DebugLevel
+	logger.Log2Console(true)
+
+	gen := (I)(nil)
+
+	proxy.MakeInterfaceImpl(&gen, &proxy.IContext{}, "Call", func(ctx *proxy.IContext, a int) int {
+		return 0
+	}, nil)
+
+	proxy.MakeInterfaceImpl(&gen, &proxy.IContext{}, "Call1", func(ctx *proxy.IContext, a string) string {
+		t.Log("called Call1")
+		return "not ok"
+	}, nil)
+
+	// 调用接口方法
+	gen.Call(2)
+	gen.Call1("ok")
+
+}
+
 
 // TestNilImpl 测试空实现结构体方法列表
 func TestNilImpl(t *testing.T) {
@@ -55,10 +77,11 @@ func genInterfaceImpl(i interface{}, proxy interface{}) {
 	mockfunc := reflect.ValueOf(proxy)
 	ifc := *(*uintptr)(unsafe.Pointer(gen))
 	fmt.Println(ifc)
+
 	// 伪装iface
 	*(*hack.Iface)(unsafe.Pointer(gen)) = hack.Iface{
 		Tab: &hack.Itab{
-			Fun: [3]uintptr{uintptr(mockfunc.Pointer()), uintptr(0), uintptr(0)},
+			Fun: [99]uintptr{uintptr(mockfunc.Pointer()), uintptr(0), uintptr(0)},
 		},
 		Data: unsafe.Pointer(&Impl2{
 			field1: "ok",
@@ -75,15 +98,15 @@ func TestAutoGenImpl(t *testing.T) {
 
 	gen := (I)(nil)
 
-	dynamicGenImpl(&gen)
+	dynamicGenImpl(t, &gen)
 
 	// 调用接口方法
-	(gen).Call(1)
+	gen.Call(1)
 
 	fmt.Println("ok")
 }
 
-func dynamicGenImpl(i interface{}) {
+func dynamicGenImpl(t *testing.T, i interface{}) {
 	typ := reflect.TypeOf(i).Elem()
 	for i := 0; i < typ.NumMethod(); i++ {
 		fmt.Println(typ.Method(i).Name, typ.Method(i).Type)
@@ -100,14 +123,16 @@ func dynamicGenImpl(i interface{}) {
 	mockfunc := reflect.MakeFunc(methodTyp, func(args []reflect.Value) (results []reflect.Value) {
 		fmt.Println("called", args[1].Interface())
 		debug.PrintStack()
+		t.Log("ok")
 		return []reflect.Value{reflect.ValueOf(3)}
 	})
 	ifc := *(*uintptr)(unsafe.Pointer(gen))
 	fmt.Println(ifc)
 
-	callStub := reflect.ValueOf(proxy.InterfaceCallStub).Pointer()
+	callStub := reflect.ValueOf(stub.MakeFuncStub).Pointer()
 
-	genStub, err := stub.GenStub((*hack.Value)(unsafe.Pointer(&mockfunc)).Ptr, callStub)
+	mockFuncPtr := (*hack.Value)(unsafe.Pointer(&mockfunc)).Ptr
+	genStub, err := stub.GenStubWithCtx(mockFuncPtr, callStub)
 	if err != nil {
 		panic(err)
 	}
@@ -117,7 +142,7 @@ func dynamicGenImpl(i interface{}) {
 	// 伪装iface
 	*(*hack.Iface)(unsafe.Pointer(gen)) = hack.Iface{
 		Tab: &hack.Itab{
-			Fun: [3]uintptr{genStub, uintptr(0), uintptr(0)},
+			Fun: [99]uintptr{genStub, uintptr(0), uintptr(0)},
 		},
 		Data: (*hack.Value)(unsafe.Pointer(&mockfunc)).Ptr,
 	}
@@ -127,6 +152,7 @@ func dynamicGenImpl(i interface{}) {
 	fmt.Println(uintptr(getPtr(reflect.ValueOf(mockfunc.Interface()))))
 	fmt.Println(mockfunc.Pointer())
 }
+
 
 // getPtr 获取函数的调用地址(和函数的指令地址不一样)
 func getPtr(v reflect.Value) unsafe.Pointer {
@@ -179,7 +205,7 @@ func TestTraceBack(t *testing.T) {
 
 	gen := (I)(nil)
 
-	dynamicGenImpl(&gen)
+	dynamicGenImpl(t, &gen)
 
 	// 调用接口方法
 	for i := 0; i < 1000; i++ {

@@ -9,8 +9,11 @@ import (
 
 // Matcher 参数匹配接口
 type Matcher interface {
+	// Match 匹配执行方法
 	Match(args []reflect.Value) bool
+	// Result 匹配成功返回的结果
 	Result() []reflect.Value
+	// AddResult 添加返回结果
 	AddResult([]interface{})
 }
 

@@ -12,6 +12,7 @@ func Caller(i int) int {
 	if i <= 0 {
 		return 1
 	}
+
 	return i * Caller(i-1)
 }
 
@@ -20,12 +21,13 @@ func Caller1(i int) int {
 	if i <= 0 {
 		return 1
 	}
+
 	return i
 }
 
 //go:noinline
 func Caller2(i int) int {
-	i += 1
+	i++
 	return i
 }
 
@@ -33,11 +35,6 @@ type Arg struct {
 	field1 string
 	field2 map[string]int
 	inner  InnerArg
-}
-
-var argPtr = &Arg{
-	field1: field1,
-	field2: nil,
 }
 
 //go:noinline
@@ -64,11 +61,10 @@ func Caller4(arg *Arg) {
 	if len(arg.field2) > 0 {
 		fmt.Println(len(arg.field2), arg.field1)
 	}
+
 	if len(arg.inner.field2) > 0 {
 		fmt.Println(len(arg.inner.field2), arg.inner.field1)
 	}
-	//fmt.Println("called4", arg.field1)
-	return
 }
 
 //go:noinline
@@ -131,22 +127,27 @@ type InnerField struct {
 	field3 string
 }
 
+// nolint
 //go:noinline
 func ForceStackExpand(i int) int {
 	if i <= 0 {
 		return 1
 	}
+
 	return i * ForceStackExpand(i-1)
 }
 
 var field1 = "field1"
 
 type TestCase struct {
-	funcName     string
-	funcDef      interface{}
-	eval         func()
-	trampoline   func() interface{}
-	proxy        func(interface{}) interface{}
-	makefunc     interface{}
+	funcName string
+	// nolint
+	funcDef    interface{}
+	eval       func()
+	trampoline func() interface{}
+	proxy      func(interface{}) interface{}
+	// nolint
+	makefunc interface{}
+	// nolint
 	evalMakeFunc func(makefunc interface{})
 }

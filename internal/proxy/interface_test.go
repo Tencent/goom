@@ -35,16 +35,19 @@ func TestAutoGen(t *testing.T) {
 
 	gen := (I)(nil)
 
-	proxy.MakeInterfaceImpl(&gen, &proxy.IContext{}, "Call", func(ctx *proxy.IContext, a int) int {
+	ctx := proxy.NewContext()
+
+	_ = proxy.MakeInterfaceImpl(&gen, ctx, "Call", func(ctx *proxy.IContext, a int) int {
+		t.Log("called Call")
 		return 0
 	}, nil)
 
-	proxy.MakeInterfaceImpl(&gen, &proxy.IContext{}, "Call1", func(ctx *proxy.IContext, a string) string {
+	_ = proxy.MakeInterfaceImpl(&gen, ctx, "Call1", func(ctx *proxy.IContext, a string) string {
 		t.Log("called Call1")
 		return "not ok"
 	}, nil)
 
-	proxy.MakeInterfaceImpl(&gen, &proxy.IContext{}, "call2", func(ctx *proxy.IContext, a int32) int32 {
+	_ = proxy.MakeInterfaceImpl(&gen, ctx, "call2", func(ctx *proxy.IContext, a int32) int32 {
 		t.Log("called call2")
 		return 99
 	}, nil)
@@ -55,10 +58,28 @@ func TestAutoGen(t *testing.T) {
 	gen.call2(33)
 }
 
+// TestGenCancel 测试取消接口代理
+func TestGenCancel(t *testing.T) {
+	gen := getImpl(1)
+	ctx := proxy.NewContext()
+
+	_ = proxy.MakeInterfaceImpl(&gen, ctx, "Call", func(ctx *proxy.IContext, a int) int {
+		t.Log("called Call")
+		return 0
+	}, nil)
+
+	gen.Call(2)
+
+	ctx.Cancel()
+
+	gen.Call(0)
+}
+
 // TestNilImpl 测试空实现结构体方法列表
 func TestNilImpl(t *testing.T) {
 	gen := (*I)(nil)
 	typ := reflect.TypeOf(gen).Elem()
+
 	for i := 0; i < typ.NumMethod(); i++ {
 		fmt.Println(typ.Method(i).Name, typ.Method(i).Type)
 	}
@@ -68,6 +89,7 @@ func TestNilImpl(t *testing.T) {
 func TestGenImpl(t *testing.T) {
 	gen := (I)(nil)
 	typ := reflect.TypeOf(&gen).Elem()
+
 	for i := 0; i < typ.NumMethod(); i++ {
 		fmt.Println(typ.Method(i).Name, typ.Method(i).Type)
 	}
@@ -145,6 +167,7 @@ func dynamicGenImpl(t *testing.T, i interface{}) {
 
 	mockFuncPtr := (*hack.Value)(unsafe.Pointer(&mockfunc)).Ptr
 	genStub, err := stub.GenStubWithCtx(mockFuncPtr, callStub)
+
 	if err != nil {
 		panic(err)
 	}
@@ -176,10 +199,12 @@ func getImpl(n int) I {
 	} else if n == 2 {
 		return &Impl2{}
 	}
+
 	return nil
 }
 
 type Impl1 struct {
+	// nolint
 	field1 string
 }
 
@@ -215,7 +240,6 @@ func (i Impl2) call2(int32) int32 {
 
 // TestTraceBack 测试生成任意接口实现的traceback
 func TestTraceBack(t *testing.T) {
-
 	gen := (I)(nil)
 
 	dynamicGenImpl(t, &gen)

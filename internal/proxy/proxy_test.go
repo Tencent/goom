@@ -19,7 +19,7 @@ var testCases = []*TestCase{
 		funcName: "Caller",
 		funcDef:  Caller,
 		eval: func() {
-			Caller(1000)
+			_ = Caller(1000)
 		},
 		evalMakeFunc: func(makefunc interface{}) {
 			makefunc.(func(i int) int)(5)
@@ -35,7 +35,7 @@ var testCases = []*TestCase{
 		proxy: func(origin interface{}) interface{} {
 			return func(i int) int {
 				logger.LogDebug("proxy Caller called, args", i)
-				originFunc := origin.(*func(i int) int)
+				originFunc, _ := origin.(*func(i int) int)
 				return (*originFunc)(i)
 			}
 		},
@@ -44,7 +44,7 @@ var testCases = []*TestCase{
 		funcName: "Caller1",
 		funcDef:  Caller1,
 		eval: func() {
-			Caller1(5)
+			_ = Caller1(5)
 		},
 		evalMakeFunc: func(makefunc interface{}) {
 			makefunc.(func(i int) int)(5)
@@ -61,7 +61,7 @@ var testCases = []*TestCase{
 			var origin1 = origin
 			return func(i int) int {
 				logger.LogTrace("proxy Caller1 called, args", i)
-				originFunc := origin1.(*func(i int) int)
+				originFunc, _ := origin1.(*func(i int) int)
 				return (*originFunc)(i)
 			}
 		},
@@ -70,7 +70,7 @@ var testCases = []*TestCase{
 		funcName: "Caller2",
 		funcDef:  Caller2,
 		eval: func() {
-			Caller2(5)
+			_ = Caller2(5)
 		},
 		evalMakeFunc: func(makefunc interface{}) {
 			makefunc.(func(i int) int)(5)
@@ -87,7 +87,7 @@ var testCases = []*TestCase{
 			var origin1 = origin
 			return func(i int) int {
 				logger.LogTrace("proxy Caller2 called, args", i)
-				originFunc := origin1.(*func(i int) int)
+				originFunc, _ := origin1.(*func(i int) int)
 				return (*originFunc)(i)
 			}
 		},
@@ -120,7 +120,7 @@ var testCases = []*TestCase{
 			var origin1 = origin
 			return func(arg Arg) int {
 				logger.LogTrace("proxy Caller3 called, args", arg)
-				originFunc := origin1.(*func(arg Arg) int)
+				originFunc, _ := origin1.(*func(arg Arg) int)
 				return (*originFunc)(arg)
 			}
 		},
@@ -147,7 +147,7 @@ var testCases = []*TestCase{
 			var origin1 = origin
 			return func(arg *Arg) int {
 				logger.LogTrace("proxy Caller4 called, args", arg)
-				originFunc := origin1.(*func(arg *Arg) int)
+				originFunc, _ := origin1.(*func(arg *Arg) int)
 				return (*originFunc)(arg)
 			}
 		},
@@ -172,7 +172,7 @@ var testCases = []*TestCase{
 			var origin1 = origin
 			return func() int {
 				logger.LogTrace("proxy Caller5 called, no args")
-				originFunc := origin1.(*func() int)
+				originFunc, _ := origin1.(*func() int)
 				return (*originFunc)()
 			}
 		},
@@ -199,7 +199,7 @@ var testCases = []*TestCase{
 			var origin1 = origin
 			return func(a int) func() int {
 				logger.LogTrace("proxy Caller6 called, args", a)
-				originFunc := origin1.(*func(a int) func() int)
+				originFunc, _ := origin1.(*func(a int) func() int)
 				return (*originFunc)(a)
 			}
 		},
@@ -224,7 +224,7 @@ var testCases = []*TestCase{
 			var origin1 = origin
 			return func(i int) {
 				logger.LogTrace("proxy Caller7 called, args", i)
-				originFunc := origin1.(*func(i int))
+				originFunc, _ := origin1.(*func(i int))
 				(*originFunc)(i)
 			}
 		},
@@ -259,7 +259,7 @@ var testCases = []*TestCase{
 			var origin1 = origin
 			return func(i int) *Result {
 				logger.LogTrace("proxy Caller8 called, args", i)
-				originFunc := origin1.(*func(i int) *Result)
+				originFunc, _ := origin1.(*func(i int) *Result)
 				return (*originFunc)(i)
 			}
 		},
@@ -294,7 +294,7 @@ var testCases = []*TestCase{
 			var origin1 = origin
 			return func(i int) Result {
 				logger.LogTrace("proxy Caller9 called, args", i)
-				originFunc := origin1.(*func(i int) Result)
+				originFunc, _ := origin1.(*func(i int) Result)
 				return (*originFunc)(i)
 			}
 		},
@@ -305,8 +305,8 @@ var testCases = []*TestCase{
 func TestTestStaticProxy(t *testing.T) {
 	logger.LogLevel = logger.DebugLevel
 	logger.Log2Console(true)
-	for _, tc := range testCases {
 
+	for _, tc := range testCases {
 		trampoline := tc.trampoline()
 
 		// 静态代理函数
@@ -319,6 +319,7 @@ func TestTestStaticProxy(t *testing.T) {
 		tc.eval()
 		patch.Unpatch()
 	}
+
 	fmt.Println("ok")
 }
 
@@ -326,9 +327,9 @@ func TestTestStaticProxy(t *testing.T) {
 func BenchmarkStaticProxy(b *testing.B) {
 	logger.LogLevel = logger.TraceLevel
 	logger.Log2Console(true)
+
 	for i := 0; i < b.N; i++ {
 		for _, tc := range testCases {
-
 			trampoline := tc.trampoline()
 
 			fun := tc.proxy(trampoline)
@@ -353,10 +354,9 @@ func TestStaticProxyConcurrent(t *testing.T) {
 	wait := make(chan int)
 
 	for c := 0; c < 10; c++ {
-		go func() {
+		go func(c1 int) {
 			for i := 0; i < 100; i++ {
 				for _, tc := range testCases {
-
 					trampoline := tc.trampoline()
 
 					// 静态代理函数
@@ -368,16 +368,15 @@ func TestStaticProxyConcurrent(t *testing.T) {
 					tc.eval()
 					patch.Unpatch()
 
-					wait <- i * c
+					wait <- i * c1
 				}
 			}
-		}()
+		}(c)
 	}
 
 	for i := 0; i < 10*100*len(testCases); i++ {
 		<-wait
 	}
-
 }
 
 // TestConcurrent 测试运行中patch并发支持
@@ -415,20 +414,19 @@ func TestStaticProxyConcurrent1(t *testing.T) {
 	wait := make(chan int)
 
 	for c := 0; c < 50; c++ {
-		go func() {
+		go func(c1 int) {
 			for i := 0; i < 10000; i++ {
 				for _, t := range testCases {
 					t.eval()
-					wait <- i * c
+					wait <- i * c1
 				}
 			}
-		}()
+		}(c)
 	}
 
 	for i := 0; i < 50*10000*len(testCases); i++ {
 		<-wait
 	}
-
 }
 
 // TestConcurrent 测试运行中patch并发支持
@@ -465,20 +463,19 @@ func TestStaticProxyConcurrentOnce(t *testing.T) {
 	wait := make(chan int)
 
 	for c := 0; c < 50; c++ {
-		go func() {
+		go func(c1 int) {
 			for i := 0; i < 100; i++ {
 				for _, t := range testCases {
 					t.eval()
-					wait <- i * c
+					wait <- i * c1
 				}
 			}
-		}()
+		}(c)
 	}
 
 	for i := 0; i < 50*100*len(testCases); i++ {
 		<-wait
 	}
-
 }
 
 // CurrentPackage 获取当前调用的包路径
@@ -490,11 +487,14 @@ func CurrentPackage() string {
 func currentPackage(skip int) string {
 	pc, _, _, _ := runtime.Caller(skip)
 	callerName := runtime.FuncForPC(pc).Name()
+
 	if i := strings.Index(callerName, ".("); i > -1 {
 		return callerName[:i]
 	}
+
 	if i := strings.LastIndex(callerName, "."); i > -1 {
 		return callerName[:i]
 	}
+
 	return callerName
 }

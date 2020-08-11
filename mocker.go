@@ -96,8 +96,9 @@ func (m *baseMocker) applyByMethod(structDef interface{}, method string, imp int
 }
 
 // applyByIfaceMethod 根据接口方法应用mock
-func (m *baseMocker) applyByIfaceMethod(ctx *proxy.IContext, iface interface{}, method string, imp interface{}) {
-	err := proxy.MakeInterfaceImpl(iface, ctx, method, imp, nil)
+func (m *baseMocker) applyByIfaceMethod(ctx *proxy.IContext, iface interface{}, method string, imp interface{},
+	implV func(args []reflect.Value) (results []reflect.Value)) {
+	err := proxy.MakeInterfaceImpl(iface, ctx, method, imp, implV)
 	if err != nil {
 		panic(fmt.Sprintf("proxy interface method error: %v", err))
 	}

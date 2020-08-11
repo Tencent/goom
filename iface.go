@@ -10,21 +10,14 @@ import (
 // InterfaceMocker 接口Mock
 // 生成和替代接口变量实现Mock
 type InterfaceMocker interface {
-	Mocker
+	ExportedMocker
 	// Method 指定接口方法
 	Method(name string) InterfaceMocker
 	// As 将接口方法应用为函数类型
 	As(funcdef interface{}) InterfaceMocker
-	// When 指定条件匹配
-	When(args ...interface{}) *When
-	// Matcher 执行返回值
-	Return(args ...interface{}) *When
-	// Origin 指定原接口变量, orign类型和mock的函数一致
-	Origin(orign interface{}) InterfaceMocker
 	// Inject 将mock设置到变量
 	Inject(iface interface{}) InterfaceMocker
 	// If 条件表达式匹配
-	If() *If
 }
 
 // IContext 接口mock的接收体
@@ -39,9 +32,10 @@ type IContext struct {
 // DefaultInterfaceMocker 默认接口Mocker
 type DefaultInterfaceMocker struct {
 	*baseMocker
-	ctx    *proxy.IContext
-	iface  interface{}
-	method string
+	ctx     *proxy.IContext
+	iface   interface{}
+	method  string
+	funcDef interface{}
 }
 
 // NewDefaultInterfaceMocker 创建默认接口Mocker
@@ -60,16 +54,18 @@ func (m *DefaultInterfaceMocker) Method(name string) InterfaceMocker {
 		panic("method is empty")
 	}
 
-	sTyp := reflect.TypeOf(m.iface).Elem()
+	m.checkMethod(name)
+	m.method = name
 
+	return m
+}
+
+func (m *DefaultInterfaceMocker) checkMethod(name string) {
+	sTyp := reflect.TypeOf(m.iface).Elem()
 	_, ok := sTyp.MethodByName(name)
 	if !ok {
 		panic("method " + name + " not found on " + sTyp.String())
 	}
-
-	m.method = name
-
-	return m
 }
 
 func (m *DefaultInterfaceMocker) Apply(imp interface{}) {
@@ -77,22 +73,67 @@ func (m *DefaultInterfaceMocker) Apply(imp interface{}) {
 		panic("method is empty")
 	}
 
-	m.applyByIfaceMethod(m.ctx, m.iface, m.method, imp)
+	m.applyByIfaceMethod(m.ctx, m.iface, m.method, imp, nil)
 }
 
 func (m *DefaultInterfaceMocker) As(funcdef interface{}) InterfaceMocker {
-	panic("implement me")
+	if m.method == "" {
+		panic("method is empty")
+	}
+
+	m.funcDef = funcdef
+	return m
 }
 
 func (m *DefaultInterfaceMocker) When(args ...interface{}) *When {
-	panic("implement me")
+	if m.method == "" {
+		panic("method is empty")
+	}
+
+	if m.when != nil {
+		return m.when.When(args...)
+	}
+
+	var (
+		when *When
+		err  error
+	)
+
+	if when, err = CreateWhen(m, m.funcDef, args, nil, true); err != nil {
+		panic(err)
+	}
+
+	m.applyByIfaceMethod(m.ctx, m.iface, m.method, m.funcDef, m.callback)
+	m.when = when
+
+	return when
 }
 
-func (m *DefaultInterfaceMocker) Return(args ...interface{}) *When {
-	panic("implement me")
+func (m *DefaultInterfaceMocker) Return(returns ...interface{}) *When {
+	if m.method == "" {
+		panic("method is empty")
+	}
+
+	if m.when != nil {
+		return m.when.Return(returns...)
+	}
+
+	var (
+		when *When
+		err  error
+	)
+
+	if when, err = CreateWhen(m, m.funcDef, nil, returns, true); err != nil {
+		panic(err)
+	}
+
+	m.applyByIfaceMethod(m.ctx, m.iface, m.method, m.funcDef, m.callback)
+	m.when = when
+
+	return when
 }
 
-func (m *DefaultInterfaceMocker) Origin(orign interface{}) InterfaceMocker {
+func (m *DefaultInterfaceMocker) Origin(orign interface{}) ExportedMocker {
 	panic("implement me")
 }
 

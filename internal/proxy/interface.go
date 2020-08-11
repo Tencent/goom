@@ -14,6 +14,12 @@ import (
 type IContext struct {
 	// Data 可以传递任意数据
 	Data interface{}
+	// 代理上下文数据
+	p *ProxyContext
+}
+
+// ProxyContext 代理上下文
+type ProxyContext struct {
 	// ifaceCache iface 缓存
 	ifaceCache map[string]*hack.Iface
 	// originIface 原始接口地址
@@ -27,14 +33,16 @@ type IContext struct {
 
 // Cancel 取消接口代理
 func (c *IContext) Cancel() {
-	*c.originIface = *c.originIfaceValue
+	*c.p.originIface = *c.p.originIfaceValue
 }
 
 // NewContext 构造上下文
 func NewContext() *IContext {
 	return &IContext{
-		Data:       nil,
-		ifaceCache: make(map[string]*hack.Iface, 32),
+		Data: nil,
+		p: &ProxyContext{
+			ifaceCache: make(map[string]*hack.Iface, 32),
+		},
 	}
 }
 
@@ -45,7 +53,7 @@ func notImplement() {
 
 // MakeInterfaceImpl 构造接口代理
 // iface 接口类型变量,指针类型
-// ctx 接口代理上下文
+// p 接口代理上下文
 // method 代理模板方法名
 // apply 代理函数, 代理函数的第一个参数类型必须是*IContext
 // proxy 动态代理函数, 用于反射的方式回调, proxy参数会覆盖apply参数值
@@ -73,7 +81,7 @@ func MakeInterfaceImpl(iface interface{}, ctx *IContext, method string,
 	var itabFunc = genCallableFunc(ctx, apply, proxy)
 
 	ifaceCacheKey := typ.PkgPath() + "/" + typ.String()
-	if iface, ok := ctx.ifaceCache[ifaceCacheKey]; ok {
+	if iface, ok := ctx.p.ifaceCache[ifaceCacheKey]; ok {
 		iface.Tab.Fun[funcTabIndex] = itabFunc
 		if ctx != nil {
 			iface.Data = unsafe.Pointer(ctx)
@@ -95,18 +103,18 @@ func MakeInterfaceImpl(iface interface{}, ctx *IContext, method string,
 		}
 
 		// 首次调用备份iface
-		if ctx.originIfaceValue == nil {
+		if ctx.p.originIfaceValue == nil {
 
-			ctx.originIface = (*hack.Iface)(unsafe.Pointer(gen))
+			ctx.p.originIface = (*hack.Iface)(unsafe.Pointer(gen))
 
 			originIfaceValue := *(*hack.Iface)(unsafe.Pointer(gen))
-			ctx.originIfaceValue = &originIfaceValue
+			ctx.p.originIfaceValue = &originIfaceValue
 		}
 
 		// 伪装iface
 		*(*hack.Iface)(unsafe.Pointer(gen)) = iface
 
-		ctx.ifaceCache[ifaceCacheKey] = &iface
+		ctx.p.ifaceCache[ifaceCacheKey] = &iface
 	}
 
 	return nil
@@ -142,7 +150,7 @@ func genCallableFunc(ctx *IContext, apply interface{},
 			panic(err)
 		}
 
-		ctx.proxyFunc = mockfunc
+		ctx.p.proxyFunc = mockfunc
 	}
 
 	return genStub

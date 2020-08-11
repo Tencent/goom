@@ -44,6 +44,9 @@ func PatchUnlock() {
 }
 
 func (g *PatchGuard) Apply() {
+	PatchLock()
+	defer PatchUnlock()
+
 	g.applied = true
 	// 执行函数调用地址替换(延迟执行)
 	if err := CopyToLocation(g.target, g.jumpData); err != nil {

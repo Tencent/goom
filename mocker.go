@@ -7,7 +7,6 @@ import (
 
 	"git.code.oa.com/goom/mocker/internal/unexports"
 
-	"git.code.oa.com/goom/mocker/internal/patch"
 	"git.code.oa.com/goom/mocker/internal/proxy"
 )
 
@@ -15,6 +14,7 @@ import (
 type Mocker interface {
 	// Apply 代理方法实现
 	// 注意: Apply会覆盖之前设定的When条件和Return
+	// 注意: 不支持在多个协程中并发地Apply不同的imp函数
 	Apply(imp interface{})
 	// Cancel 取消代理
 	Cancel()
@@ -46,7 +46,7 @@ type UnexportedMocker interface {
 type baseMocker struct {
 	pkgName string
 	origin  interface{}
-	guard   *patch.PatchGuard
+	guard   MockGuard
 	imp     interface{}
 
 	when *When
@@ -61,26 +61,48 @@ func newBaseMocker(pkgName string) *baseMocker {
 
 // applyByName 根据函数名称应用mock
 func (m *baseMocker) applyByName(funcname string, imp interface{}) {
-	var err error
-
-	m.guard, err = proxy.StaticProxyByName(funcname, imp, m.origin)
+	guard, err := proxy.StaticProxyByName(funcname, imp, m.origin)
 	if err != nil {
 		panic(fmt.Sprintf("proxy func name error: %v", err))
 	}
 
+	m.guard = NewPatchMockGuard(guard)
 	m.guard.Apply()
 	m.imp = imp
 }
 
 // applyByFunc 根据函数应用mock
 func (m *baseMocker) applyByFunc(funcdef interface{}, imp interface{}) {
-	var err error
-
-	m.guard, err = proxy.StaticProxyByFunc(funcdef, imp, m.origin)
+	guard, err := proxy.StaticProxyByFunc(funcdef, imp, m.origin)
 	if err != nil {
 		panic(fmt.Sprintf("proxy func definition error: %v", err))
 	}
 
+	m.guard = NewPatchMockGuard(guard)
+	m.guard.Apply()
+	m.imp = imp
+}
+
+// applyByMethod 根据函数名应用mock
+func (m *baseMocker) applyByMethod(structDef interface{}, method string, imp interface{}) {
+	guard, err := proxy.StaticProxyByMethod(reflect.TypeOf(structDef), method, imp, m.origin)
+	if err != nil {
+		panic(fmt.Sprintf("proxy method error: %v", err))
+	}
+
+	m.guard = NewPatchMockGuard(guard)
+	m.guard.Apply()
+	m.imp = imp
+}
+
+// applyByIfaceMethod 根据接口方法应用mock
+func (m *baseMocker) applyByIfaceMethod(ctx *proxy.IContext, iface interface{}, method string, imp interface{}) {
+	err := proxy.MakeInterfaceImpl(iface, ctx, method, imp, nil)
+	if err != nil {
+		panic(fmt.Sprintf("proxy interface method error: %v", err))
+	}
+
+	m.guard = NewIfaceMockGuard(ctx)
 	m.guard.Apply()
 	m.imp = imp
 }
@@ -123,7 +145,7 @@ func (m *baseMocker) callback(args []reflect.Value) (results []reflect.Value) {
 // Cancel 取消Mock
 func (m *baseMocker) Cancel() {
 	if m.guard != nil {
-		m.guard.UnpatchWithLock()
+		m.guard.Cancel()
 	}
 
 	m.when = nil
@@ -140,17 +162,14 @@ type MethodMocker struct {
 	methodIns interface{}
 }
 
-// applyByMethod 根据函数名应用mock
-func (m *MethodMocker) applyByMethod(structDef interface{}, method string, imp interface{}) {
-	var err error
-
-	m.guard, err = proxy.StaticProxyByMethod(reflect.TypeOf(structDef), method, imp, m.origin)
-	if err != nil {
-		panic(fmt.Sprintf("proxy method error: %v", err))
+// NewMethodMocker 创建MethodMocker
+// pkgName 包路径
+// structDef 结构体变量定义, 不能为nil
+func NewMethodMocker(pkgName string, structDef interface{}) *MethodMocker {
+	return &MethodMocker{
+		baseMocker: newBaseMocker(pkgName),
+		structDef:  structDef,
 	}
-
-	m.guard.Apply()
-	m.imp = imp
 }
 
 // Method 设置结构体的方法名
@@ -285,6 +304,16 @@ type UnexportedMethodMocker struct {
 	methodName string
 }
 
+// NewUnexportedMethodMocker 创建未导出方法Mocker
+// pkgName 包路径
+// structName 结构体名称
+func NewUnexportedMethodMocker(pkgName string, structName string) *UnexportedMethodMocker {
+	return &UnexportedMethodMocker{
+		baseMocker: newBaseMocker(pkgName),
+		structName: structName,
+	}
+}
+
 func (m *UnexportedMethodMocker) getObjName() string {
 	return fmt.Sprintf("%s.%s.%s", m.pkgName, m.structName, m.methodName)
 }
@@ -351,6 +380,16 @@ type UnexportedFuncMocker struct {
 	funcName string
 }
 
+// NewUnexportedFuncMocker 创建未导出函数Mocker
+// pkgName 包路径
+// funcName 函数名称
+func NewUnexportedFuncMocker(pkgName, funcName string) *UnexportedFuncMocker {
+	return &UnexportedFuncMocker{
+		baseMocker: newBaseMocker(pkgName),
+		funcName:   funcName,
+	}
+}
+
 func (m *UnexportedFuncMocker) getObjName() string {
 	return fmt.Sprintf("%s.%s", m.pkgName, m.funcName)
 }
@@ -392,6 +431,16 @@ func (m *UnexportedFuncMocker) As(funcdef interface{}) ExportedMocker {
 type DefMocker struct {
 	*baseMocker
 	funcdef interface{}
+}
+
+// NewDefMocker 创建DefMocker
+// pkgName 包路径
+// funcdef 函数变量定义
+func NewDefMocker(pkgName string, funcdef interface{}) *DefMocker {
+	return &DefMocker{
+		baseMocker: newBaseMocker(pkgName),
+		funcdef:    funcdef,
+	}
 }
 
 // Apply 代理方法实现

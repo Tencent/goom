@@ -26,17 +26,19 @@ func FindFuncByName(name string) (uintptr, error) {
 			if f == nil {
 				continue
 			}
+
 			if f.Entry() > (uintptr(PtrMax)) {
 				continue
 			}
-			fName := getFuncName(f)
 
+			fName := getFuncName(f)
 			if fName == name {
 				return f.Entry(), nil
 			}
 		}
 	}
 	logger.LogDebugf("FindFuncByName not found %s", name)
+
 	return 0, errortype.NewFuncNotFoundError(name)
 }
 
@@ -44,12 +46,13 @@ func getFuncName(f *runtime.Func) string {
 	defer func() {
 		if err := recover(); err != nil {
 			var buf = make([]byte, 1024)
+
 			runtime.Stack(buf, true)
 			logger.LogErrorf("getFuncName error:[%+v]\n%s", err, buf)
 		}
 	}()
-	var fName = f.Name()
-	return fName
+
+	return f.Name()
 }
 
 // FindFuncByPtr 根据地址函数
@@ -60,17 +63,20 @@ func FindFuncByPtr(ptr uintptr) (*runtime.Func, string, error) {
 			if f == nil {
 				continue
 			}
+
 			if f.Entry() > (uintptr(PtrMax)) {
 				continue
 			}
+
 			fName := getFuncName(f)
+
 			if f.Entry() == ptr {
 				return f, fName, nil
 			}
 		}
 	}
-	//common.LogDebugf("FindFuncByName not found %d\n", ptr)
-	return nil, "", fmt.Errorf("Invalid function ptr: %d", ptr)
+
+	return nil, "", fmt.Errorf("invalid function ptr: %d", ptr)
 }
 
 // CreateFuncForCodePtr is given a code pointer and creates a function value
@@ -82,6 +88,7 @@ func CreateFuncForCodePtr(outFuncPtr interface{}, codePtr uintptr) (*hack.Func, 
 	if outFunc.Kind() != reflect.Ptr {
 		return nil, errors.New("func param must be ptr")
 	}
+
 	outFuncVal := outFunc.Elem()
 	// Use reflect.MakeGlobalFunc to create a well-formed function value that's
 	// guaranteed to be of the right type and guaranteed to be on the heap
@@ -96,7 +103,9 @@ func CreateFuncForCodePtr(outFuncPtr interface{}, codePtr uintptr) (*hack.Func, 
 	funcValuePtr := reflect.ValueOf(newFuncVal).FieldByName("ptr").Pointer()
 	funcPtr := (*hack.Func)(unsafe.Pointer(funcValuePtr))
 	funcPtr.CodePtr = codePtr
+
 	outFuncVal.Set(newFuncVal)
+
 	return funcPtr, nil
 }
 
@@ -106,5 +115,6 @@ func NewFuncWithCodePtr(typ reflect.Type, codePtr uintptr) reflect.Value {
 	pointer := unsafe.Pointer(ptr2Ptr)
 	funcVal := reflect.NewAt(typ, unsafe.Pointer(pointer)).Elem()
 	(*hack.Value)(unsafe.Pointer(&funcVal)).Flag = uintptr(reflect.Func)
+
 	return funcVal
 }

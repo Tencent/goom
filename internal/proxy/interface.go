@@ -15,11 +15,11 @@ type IContext struct {
 	// Data 可以传递任意数据
 	Data interface{}
 	// 代理上下文数据
-	p *ProxyContext
+	p *PContext
 }
 
-// ProxyContext 代理上下文
-type ProxyContext struct {
+// PContext 代理上下文
+type PContext struct {
 	// ifaceCache iface 缓存
 	ifaceCache map[string]*hack.Iface
 	// originIface 原始接口地址
@@ -40,7 +40,7 @@ func (c *IContext) Cancel() {
 func NewContext() *IContext {
 	return &IContext{
 		Data: nil,
-		p: &ProxyContext{
+		p: &PContext{
 			ifaceCache: make(map[string]*hack.Iface, 32),
 		},
 	}

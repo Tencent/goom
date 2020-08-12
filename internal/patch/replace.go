@@ -1,13 +1,13 @@
 package patch
 
 import (
-	"errors"
 	"fmt"
-	"git.code.oa.com/goom/mocker/internal/logger"
 	"reflect"
 	"runtime/debug"
 	"sync"
 	"unsafe"
+
+	"git.code.oa.com/goom/mocker/internal/logger"
 )
 
 var memoryAccessLock sync.RWMutex
@@ -32,6 +32,7 @@ func rawMemoryRead(p uintptr, length int) []byte {
 	data := rawMemoryAccess(p, length)
 	duplucate := make([]byte, length)
 	copy(duplucate, data)
+
 	return duplucate
 }
 
@@ -44,7 +45,13 @@ func replaceFunction(from, to, proxy, trampoline uintptr) (original []byte, orig
 		if err1 := recover(); err1 != nil {
 			logger.LogErrorf("replaceFunction from=%d to=%d trampoline=%d error:%s", from, to, trampoline, err1)
 			logger.LogError(string(debug.Stack()))
-			err = err1.(error)
+
+			var ok bool
+
+			err, ok = err1.(error)
+			if !ok {
+				err = fmt.Errorf("%s", err1)
+			}
 		}
 	}()
 
@@ -58,12 +65,11 @@ func replaceFunction(from, to, proxy, trampoline uintptr) (original []byte, orig
 	original = rawMemoryRead(from, len(jumpData))
 	// 判断是否已经被patch过
 	if original[0] == NopOpcode {
-		err = errors.New(fmt.Sprintf("from:0x%x is already patched", from))
+		err = fmt.Errorf("from:0x%x is already patched", from)
 		return
 	}
 
 	showInst("origin >>>>> ", from, rawMemoryRead(from, 30), logger.DebugLevel)
-
 
 	// 检测是否支持自动分配跳板函数
 	if trampoline > 0 {

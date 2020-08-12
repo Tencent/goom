@@ -19,6 +19,7 @@ func fixOriginFuncToTrampoline(from uintptr, trampoline uintptr, jumpInstSize in
 	funcSize, err := GetFuncSize(64, from, false)
 	if err != nil {
 		logger.LogError("GetFuncSize error", err)
+
 		funcSize = 1024
 	}
 
@@ -26,7 +27,8 @@ func fixOriginFuncToTrampoline(from uintptr, trampoline uintptr, jumpInstSize in
 
 	if jumpInstSize >= funcSize {
 		ShowInst("origin inst > ", from, 20, logger.InfoLevel)
-		return 0, errors.New(fmt.Sprintf("jumpInstSize[%d] is bigger than origin FuncSize[%d], please add your origin func code", jumpInstSize, funcSize))
+		return 0, fmt.Errorf(
+			"jumpInstSize[%d] is bigger than origin FuncSize[%d], please add your origin func code", jumpInstSize, funcSize)
 	}
 
 	// copy origin function
@@ -62,19 +64,19 @@ func fixOriginFuncToTrampoline(from uintptr, trampoline uintptr, jumpInstSize in
 		logger.LogErrorf("fixOriginSize[%d] is bigger than trampoline FuncSize[%d], please add your "+
 			"trampoline func code", len(fixOrigin), trampolineFuncSize)
 		ShowInst("trampoline inst > ", trampoline, 35, logger.InfoLevel)
-		return 0, errors.New(fmt.Sprintf("fixOriginSize[%d] is bigger than trampoline FuncSize[%d], "+
-			"please add your trampoline func code", len(fixOrigin), trampolineFuncSize))
-	} else {
-		ShowInst("trampoline inst > ", trampoline, 35, logger.DebugLevel)
+
+		return 0, fmt.Errorf("fixOriginSize[%d] is bigger than trampoline FuncSize[%d], "+
+			"please add your trampoline func code", len(fixOrigin), trampolineFuncSize)
 	}
 
+	ShowInst("trampoline inst > ", trampoline, 35, logger.DebugLevel)
 	showInst("fixed inst >>>>> ", trampoline, fixOrigin, logger.DebugLevel)
 
 	if err := CopyToLocation(trampoline, fixOrigin); err != nil {
 		return 0, err
 	}
-	ShowInst(fmt.Sprintf("tramp copy to 0x%x", trampoline), trampoline, 30, logger.DebugLevel)
 
+	ShowInst(fmt.Sprintf("tramp copy to 0x%x", trampoline), trampoline, 30, logger.DebugLevel)
 	logger.LogDebugf("copy to trampoline %x ", trampoline)
 
 	return trampoline, nil

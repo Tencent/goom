@@ -168,6 +168,7 @@ func isNum(v reflect.Value) bool {
 }
 
 // equal matches true when lhsV and rhsV is same value.
+// nolint
 func equal(lhsV, rhsV reflect.Value) bool {
 	lhsIsNil, rhsIsNil := isNil(lhsV), isNil(rhsV)
 	if lhsIsNil && rhsIsNil {

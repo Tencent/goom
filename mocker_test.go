@@ -351,6 +351,7 @@ type I interface {
 }
 
 // I 接口实现1
+// nolint
 type Impl1 struct {
 }
 

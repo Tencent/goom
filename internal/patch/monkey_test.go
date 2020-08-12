@@ -13,7 +13,8 @@ import (
 )
 
 //go:noinline
-func no() bool  { return false }
+func no() bool { return false }
+
 //go:noinline
 func yes() bool { return true }
 
@@ -23,12 +24,14 @@ func init() {
 
 func TestTimePatch(t *testing.T) {
 	before := time.Now()
+
 	guard, err := patch.Patch(time.Now, func() time.Time {
 		return time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC)
 	})
 	if err != nil {
 		t.Error(err)
 	}
+
 	guard.Apply()
 
 	during := time.Now()
@@ -45,6 +48,7 @@ func TestGC(t *testing.T) {
 	_, _ = patch.Patch(no, func() bool {
 		return value
 	})
+
 	defer patch.UnpatchAll()
 	runtime.GC()
 	assert.True(t, no())
@@ -66,6 +70,7 @@ func TestGuard(t *testing.T) {
 		defer guard.Restore()
 		return !no()
 	})
+
 	for i := 0; i < 100; i++ {
 		assert.True(t, no())
 	}
@@ -88,8 +93,11 @@ func TestWithInstanceMethod(t *testing.T) {
 	i := &s{}
 
 	assert.False(t, no())
-	patch.Patch(no, i.yes)
+
+	_, _ = patch.Patch(no, i.yes)
+
 	assert.True(t, no())
+
 	patch.Unpatch(no)
 	assert.False(t, no())
 }
@@ -109,15 +117,15 @@ func TestOnInstanceMethod(t *testing.T) {
 
 func TestNotFunction(t *testing.T) {
 	assert.Panics(t, func() {
-		patch.Patch(no, 1)
+		_, _ = patch.Patch(no, 1)
 	})
 	assert.Panics(t, func() {
-		patch.Patch(1, yes)
+		_, _ = patch.Patch(1, yes)
 	})
 }
 
 func TestNotCompatible(t *testing.T) {
 	assert.Panics(t, func() {
-		patch.Patch(no, func() {})
+		_, _ = patch.Patch(no, func() {})
 	})
 }

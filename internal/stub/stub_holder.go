@@ -2,10 +2,11 @@ package stub
 
 import (
 	"errors"
-	"git.code.oa.com/goom/mocker/internal/patch"
 	"reflect"
 	"sync/atomic"
 	"unsafe"
+
+	"git.code.oa.com/goom/mocker/internal/patch"
 
 	"git.code.oa.com/goom/mocker/internal/logger"
 )
@@ -29,22 +30,21 @@ func Placeholder()
 var placeHolderIns *PlaceHolder
 
 func init() {
-	//offset := (*reflect.StringHeader)(unsafe.Pointer(&PlaceHolderVar)).Data + 200
-
 	offset := reflect.ValueOf(Placeholder).Pointer()
+
 	size, err := patch.GetFuncSize(64, offset, false)
 	if err != nil {
 		logger.LogError("GetFuncSize error", err)
+
 		size = 102400
 	}
-
 
 	placeHolderIns = &PlaceHolder{
 		count: 0,
 		off:   offset,
 		min:   offset,
 		//max:   uintptr(len(PlaceHolderVar)) + offset,
-		max:   uintptr(size) + offset,
+		max: uintptr(size) + offset,
 	}
 
 	logger.LogDebugf("Placeholder pointer: %d %d\n", placeHolderIns.min, offset)
@@ -60,6 +60,7 @@ func addOff(from uintptr, used uintptr) error {
 	}
 
 	logger.LogDebug("add offset map, size:", used)
+
 	return nil
 }
 
@@ -70,10 +71,12 @@ func acqureSpace(funcSize int) (uintptr, []byte, error) {
 		logger.LogError("placehlder space usage oveflow")
 		return 0, nil, errors.New("placehlder space usage oveflow")
 	}
+
 	bytes := (*[]byte)(unsafe.Pointer(&reflect.SliceHeader{
 		Data: placehlder,
 		Len:  funcSize,
 		Cap:  funcSize,
 	}))
+
 	return placehlder, *bytes, nil
 }

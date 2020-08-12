@@ -62,6 +62,7 @@ func (m *DefaultInterfaceMocker) Method(name string) InterfaceMocker {
 
 func (m *DefaultInterfaceMocker) checkMethod(name string) {
 	sTyp := reflect.TypeOf(m.iface).Elem()
+
 	_, ok := sTyp.MethodByName(name)
 	if !ok {
 		panic("method " + name + " not found on " + sTyp.String())
@@ -82,6 +83,7 @@ func (m *DefaultInterfaceMocker) As(funcdef interface{}) InterfaceMocker {
 	}
 
 	m.funcDef = funcdef
+
 	return m
 }
 

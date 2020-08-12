@@ -8,11 +8,9 @@ import (
 	"git.code.oa.com/goom/mocker/internal/patch"
 )
 
-
 // GenStub 构造桩函数
 // to 桩函数最终跳转到另一个地址
 func GenStub(to unsafe.Pointer) (uintptr, error) {
-
 	// acqure space
 	placehlder, _, err := acqureSpace(30)
 	if err != nil {
@@ -20,7 +18,6 @@ func GenStub(to unsafe.Pointer) (uintptr, error) {
 	}
 
 	code := jmpWithRdx(uintptr(to))
-
 
 	if err := patch.CopyToLocation(placehlder, code); err != nil {
 		return 0, err
@@ -39,7 +36,6 @@ func GenStub(to unsafe.Pointer) (uintptr, error) {
 // ctx 上下文地址 @see reflect.makeFuncImpl
 // to 桩函数最终跳转到另一个地址
 func GenStubWithCtx(ctx unsafe.Pointer, to uintptr) (uintptr, error) {
-
 	// acqure space
 	placehlder, _, err := acqureSpace(30)
 	if err != nil {
@@ -47,7 +43,6 @@ func GenStubWithCtx(ctx unsafe.Pointer, to uintptr) (uintptr, error) {
 	}
 
 	code := jmpWithRdxAndCtx(uintptr(ctx), to, placehlder)
-
 
 	if err := patch.CopyToLocation(placehlder, code); err != nil {
 		return 0, err

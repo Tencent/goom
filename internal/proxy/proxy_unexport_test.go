@@ -8,7 +8,6 @@ import (
 	"strconv"
 	"testing"
 	"time"
-	"unsafe"
 )
 
 func TestPrintMock(t *testing.T) {
@@ -32,7 +31,6 @@ func TestPrintMock(t *testing.T) {
 }
 
 func TestNetConnMock(t *testing.T) {
-
 	// 原始函数
 	var connWrite func(c *conn, b []byte) (int, error)
 
@@ -53,6 +51,7 @@ func TestNetConnMock(t *testing.T) {
 
 	conn, err := net.Dial("tcp", host+":"+strconv.Itoa(port))
 	fmt.Println("Connecting to " + host + ":" + strconv.Itoa(port))
+
 	if err != nil {
 		fmt.Println("Error connecting:", err)
 		os.Exit(1)
@@ -68,6 +67,7 @@ func TestNetConnMock(t *testing.T) {
 }
 
 type conn struct {
+	// nolint
 	fd *netFD
 }
 
@@ -87,20 +87,15 @@ func (c *conn) SetReadDeadline(t time.Time) error { return nil }
 
 func (c *conn) SetWriteDeadline(t time.Time) error { return nil }
 
-func (c *conn) ok() bool { return c != nil && c.fd != nil }
-
-func connIdentity(c conn) string {
-	fd := c.fd
-	ptr := (uintptr)(unsafe.Pointer(fd))
-	return strconv.FormatInt(int64(ptr), 10)
-}
-
+// nolint
 // Network file descriptor.
 type netFD struct {
+	// nolint
 	pfd FD
 
 	// immutable until Close
-	family      int
+	family int
+	// nolint
 	sotype      int
 	isConnected bool // handshake completed or use of association with peer
 	net         string
@@ -108,6 +103,7 @@ type netFD struct {
 	raddr       net.Addr
 }
 
+// nolint
 // FD is a file descriptor. The net and os packages use this type as a
 // field of a larger type representing a network connection or OS file.
 type FD struct {
@@ -141,12 +137,14 @@ type FD struct {
 	isFile bool
 }
 
+// nolint
 type fdMutex struct {
 	state uint64
 	rsema uint32
 	wsema uint32
 }
 
+// nolint
 type pollDesc struct {
 	runtimeCtx uintptr
 }

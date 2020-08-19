@@ -15,7 +15,7 @@ const defaultPrefix = "[goom-mocker]"
 // ShowError2Console 把错误同步打印到控制台
 var ShowError2Console = false
 
-// 日志级别
+// LogLevel 日志级别
 // level总共分5个级别：debug < info< warning< error< critical
 var LogLevel = 6
 
@@ -45,11 +45,14 @@ func init() {
 		fmt.Println("getLoggerPath error:", err)
 		return
 	}
-	logFile, err = os.OpenFile(filepath.Join(loggerPath, "goom-mocker.log"), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0766)
+
+	logFile, err = os.OpenFile(filepath.Join(loggerPath, "goom-mocker.log"),
+		os.O_RDWR|os.O_CREATE|os.O_APPEND, 0766)
 	if err != nil {
 		fmt.Println("init log file error:", err)
 		return
 	}
+
 	Logger = logFile
 }
 
@@ -113,14 +116,14 @@ func LogDebugf(format string, a ...interface{}) {
 // LogInfo 打印info日志
 func LogInfo(v ...interface{}) {
 	if LogLevel >= InfoLevel {
-		Logger.Write(withPrefix("info", v))
+		_, _ = Logger.Write(withPrefix("info", v))
 	}
 }
 
 // LogInfof 打印info日志
 func LogInfof(format string, a ...interface{}) {
 	if LogLevel >= InfoLevel {
-		Logger.Write(withPrefixStr("info", format, a...))
+		_, _ = Logger.Write(withPrefixStr("info", format, a...))
 	}
 }
 
@@ -128,7 +131,9 @@ func LogInfof(format string, a ...interface{}) {
 func LogWarning(v ...interface{}) {
 	if LogLevel >= WarningLevel {
 		line := withPrefix("warning", v)
-		Logger.Write(line)
+
+		_, _ = Logger.Write(line)
+
 		if ShowError2Console {
 			os.Stdout.Write(line)
 		}
@@ -139,7 +144,8 @@ func LogWarning(v ...interface{}) {
 func LogWarningf(format string, a ...interface{}) {
 	if LogLevel >= WarningLevel {
 		line := withPrefixStr("warning", format, a...)
-		Logger.Write(line)
+		_, _ = Logger.Write(line)
+
 		if ShowError2Console {
 			os.Stdout.Write(line)
 		}
@@ -149,7 +155,8 @@ func LogWarningf(format string, a ...interface{}) {
 // LogImportant 打印重要的日志
 func LogImportant(v ...interface{}) {
 	line := withPrefix("info", v)
-	Logger.Write(line)
+	_, _ = Logger.Write(line)
+
 	if ShowError2Console {
 		os.Stdout.Write(line)
 	}
@@ -158,7 +165,8 @@ func LogImportant(v ...interface{}) {
 // LogImportantf 打印重要的日志
 func LogImportantf(format string, a ...interface{}) {
 	line := withPrefixStr("info", format, a...)
-	Logger.Write(line)
+	_, _ = Logger.Write(line)
+
 	if ShowError2Console {
 		os.Stdout.Write(line)
 	}
@@ -168,7 +176,8 @@ func LogImportantf(format string, a ...interface{}) {
 func LogError(v ...interface{}) {
 	if LogLevel >= ErrorLevel {
 		line := withPrefix("error", v)
-		Logger.Write(line)
+		_, _ = Logger.Write(line)
+
 		if ShowError2Console {
 			os.Stdout.Write(line)
 		}
@@ -179,7 +188,8 @@ func LogError(v ...interface{}) {
 func LogErrorf(format string, a ...interface{}) {
 	if LogLevel >= ErrorLevel {
 		line := withPrefixStr("error", format, a...)
-		Logger.Write(line)
+		_, _ = Logger.Write(line)
+
 		if ShowError2Console {
 			os.Stdout.Write(line)
 		}
@@ -190,23 +200,30 @@ func withPrefix(level string, v []interface{}) []byte {
 	arr := make([]string, 0, len(v)+1)
 	arr = append(arr, time.Now().Format("2006-01-02 15:04:05"))
 	arr = append(arr, defaultPrefix, "["+level+"]:")
+
 	if EnableLogColor {
 		arr = append(arr, colorGetter())
 	}
+
 	for _, a := range v {
 		arr = append(arr, fmt.Sprintf("%s", a))
 	}
+
 	arr = append(arr, "\n")
+
 	return []byte(strings.Join(arr, " "))
 }
 
 func withPrefixStr(level, format string, a ...interface{}) []byte {
 	time := time.Now().Format("2006-01-02 15:04:05")
+
 	if EnableLogColor {
-		return []byte(time + " " + defaultPrefix + "[" + level + "]: " + colorGetter() + " " + fmt.Sprintf(format, a...) + "\n")
-	} else {
-		return []byte(time + " " + defaultPrefix + "[" + level + "]: " + fmt.Sprintf(format, a...) + "\n")
+		return []byte(time + " " + defaultPrefix + "[" + level + "]: " +
+			colorGetter() + " " + fmt.Sprintf(format, a...) + "\n")
 	}
+
+	return []byte(time + " " + defaultPrefix + "[" + level + "]: " +
+		fmt.Sprintf(format, a...) + "\n")
 }
 
 // 获取日志存储路径
@@ -233,5 +250,6 @@ func getLoggerPath() (string, error) {
 	}
 
 	fmt.Println("goom-mocker logFileLocation:", logFileLocation)
+
 	return logFileLocation, err
 }

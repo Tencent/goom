@@ -26,7 +26,6 @@ func jmpToFunctionValue(from, to uintptr) (value []byte) {
 
 // Assembles a jump to a function value
 func jmpToOriginFunctionValue(from, to uintptr) (value []byte) {
-
 	if relative(from, to) {
 		var dis uint32
 		if to > from {
@@ -34,6 +33,7 @@ func jmpToOriginFunctionValue(from, to uintptr) (value []byte) {
 		} else {
 			dis = uint32(-int32(from-to) - 5)
 		}
+
 		return []byte{
 			0xe9,
 			byte(dis),
@@ -70,5 +70,6 @@ func relative(from uintptr, to uintptr) bool {
 		delta = -delta
 		relative = (delta <= 0x80000000)
 	}
+
 	return relative
 }

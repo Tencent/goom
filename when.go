@@ -9,8 +9,11 @@ import (
 
 // Matcher 参数匹配接口
 type Matcher interface {
+	// Match 匹配执行方法
 	Match(args []reflect.Value) bool
+	// Result 匹配成功返回的结果
 	Result() []reflect.Value
+	// AddResult 添加返回结果
 	AddResult([]interface{})
 }
 
@@ -40,8 +43,10 @@ func CreateWhen(m ExportedMocker, funcDef interface{}, args []interface{},
 		return nil, err
 	}
 
-	var curMatch Matcher
-	var defaultMatch Matcher
+	var (
+		curMatch     Matcher
+		defaultMatch Matcher
+	)
 
 	if defaultReturns != nil {
 		curMatch = newAlwaysMatch(defaultReturns, impTyp)
@@ -177,6 +182,7 @@ func (w *When) returnDefaults() []reflect.Value {
 	if w.defaultReturns == nil && w.funcTyp.NumOut() != 0 {
 		panic("default returns not set.")
 	}
+
 	return w.defaultReturns.Result()
 }
 
@@ -330,6 +336,7 @@ func newAlwaysMatch(results []interface{}, funTyp reflect.Type) *AlwaysMatcher {
 	if results == nil {
 		return nil
 	}
+
 	return &AlwaysMatcher{
 		BaseMatcher: newBaseMatcher(results, funTyp),
 	}

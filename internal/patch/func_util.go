@@ -58,6 +58,7 @@ func GetFuncSize(mode int, start uintptr, minimal bool) (lenth int, err error) {
 			if minimal {
 				return curLen, nil
 			}
+
 			int3Found = true
 		} else if int3Found {
 			return curLen, nil
@@ -87,21 +88,24 @@ func isNil(i interface{}) bool {
 	if i == nil {
 		return true
 	}
+
 	switch reflect.TypeOf(i).Kind() {
 	case reflect.Ptr, reflect.Map, reflect.Array, reflect.Chan, reflect.Slice:
 		return reflect.ValueOf(i).Elem().IsNil()
 	}
+
 	return reflect.ValueOf(i).IsNil()
 }
 
 // getTrampolinePtr 获取跳板函数的地址
 func getTrampolinePtr(trampoline interface{}) (uintptr, error) {
 	trampolinePtr := uintptr(0)
+
 	if !isNil(trampoline) {
 		trampolineType := reflect.TypeOf(trampoline)
+
 		if trampolineType.Kind() == reflect.Ptr {
 			trampolinePtr = reflect.ValueOf(trampoline).Elem().Pointer()
-			//return  0, errors.New("param trampoline must be a pointer")
 		} else if trampolineType.Kind() == reflect.Func {
 			trampolinePtr = reflect.ValueOf(trampoline).Pointer()
 		}
@@ -122,14 +126,17 @@ func IsPtr(value interface{}) bool {
 	if value == nil {
 		return false
 	}
+
 	t := reflect.TypeOf(value)
 
 	return t.Kind() == reflect.Ptr
 }
 
+// nolint
 func LoadUnit(s int64) string {
 	suffix := ""
 	b := s
+
 	if s > (1 << 40) {
 		suffix = "G"
 		b = s / (1 << 30)
@@ -140,6 +147,7 @@ func LoadUnit(s int64) string {
 		suffix = "K"
 		b = s / (1 << 10)
 	}
+
 	return fmt.Sprintf("%d%s", b, suffix)
 }
 
@@ -153,6 +161,7 @@ func minSize(showSize int, fixOrigin []byte) int {
 	if showSize > len(fixOrigin) {
 		showSize = len(fixOrigin)
 	}
+
 	return showSize
 }
 
@@ -162,7 +171,9 @@ func showInst(title string, from uintptr, copyOrigin []byte, level int) {
 	}
 
 	logger.LogImportant(title)
+
 	startAddr := (uint64)(from)
+
 	for pos := 0; pos < len(copyOrigin); {
 		// read 16 bytes atmost each time
 		endPos := pos + 16
@@ -176,30 +187,35 @@ func showInst(title string, from uintptr, copyOrigin []byte, level int) {
 
 		if err != nil {
 			logger.LogImportantf("[0] 0x%x: inst decode error:%s", startAddr+(uint64)(pos), err)
+
 			if ins.Len == 0 {
 				pos = pos + 1
 			} else {
 				pos = pos + ins.Len
 			}
+
 			continue
 		}
+
 		if ins.Opcode == 0 {
 			if ins.Len == 0 {
 				pos = pos + 1
 			} else {
 				pos = pos + ins.Len
 			}
+
 			continue
 		}
 
 		if ins.PCRelOff > 0 {
-
 			var isAdd = true
+
 			for i := 0; i < len(ins.Args); i++ {
 				arg := ins.Args[i]
 				if arg == nil {
 					break
 				}
+
 				addrArgs := arg.String()
 				if strings.HasPrefix(addrArgs, ".-") || strings.Contains(addrArgs, "RIP-") {
 					isAdd = false
@@ -207,6 +223,7 @@ func showInst(title string, from uintptr, copyOrigin []byte, level int) {
 			}
 
 			offset := pos + ins.PCRelOff
+
 			relativeAddr := decodeAddress(copyOrigin[offset:offset+ins.PCRel], ins.PCRel)
 			if !isAdd && relativeAddr > 0 {
 				relativeAddr = -relativeAddr
@@ -215,7 +232,6 @@ func showInst(title string, from uintptr, copyOrigin []byte, level int) {
 			logger.LogImportantf("[%d] 0x%x:\t%s\t\t%-30s\t\t%s\t\tabs:0x%x", ins.Len,
 				startAddr+(uint64)(pos), ins.Op, ins.String(), hex.EncodeToString(code[:ins.Len]),
 				from+uintptr(pos)+uintptr(relativeAddr)+uintptr(ins.Len))
-
 		} else {
 			logger.LogImportantf("[%d] 0x%x:\t%s\t\t%-30s\t\t%s", ins.Len,
 				startAddr+(uint64)(pos), ins.Op, ins.String(), hex.EncodeToString(code[:ins.Len]))

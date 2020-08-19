@@ -1,3 +1,11 @@
+# [0.2.2](https://git.code.oa.com/goom/mocker/compare/0.1.6...0.2.2)(2020-08-19)
+### Features
+* 支持接口Mock
+
+### Bug Fixes
+* 修复指定pkg后未重置问题
+* 修复默认andreturn无效问题
+
 # [0.1.6](https://git.code.oa.com/goom/mocker/compare/0.1.5...0.1.6)(2020-07-17)
 
 ### Bug Fixes

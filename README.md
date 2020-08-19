@@ -83,6 +83,40 @@ mock.Struct(&fake{}).ExportMethod("call").As(func(_ *fake, i int) int {
 }).Return(1)
 ```
 
+#### 接口Mock
+接口定义举例:
+```golang
+// I 接口测试
+type I interface {
+  Call(int) int
+  Call1(string) string
+  call2(int32) int32
+}
+```
+接口变量Mock:
+```golang
+mock := mocker.Create()
+
+// 接口变量
+i := (I)(nil)
+
+// 将Mock应用到接口变量(仅对该变量有效)
+mock.Interface(&i).Method("Call").Apply(func(ctx *mocker.IContext, i int) int {
+    return 3
+})
+mock.Interface(&i).Method("Call1").Apply(func(ctx *mocker.IContext, i string) string {
+    return "ok"
+})
+
+s.Equal(3, i.Call(1), "interface mock check")
+s.Equal("ok", i.Call1(""), "interface mock check")
+
+// Mock重置, 接口变量将恢复原来的值
+mock.Reset()
+
+s.Equal(nil, i, "interface mock reset check")
+```
+
 ### 高阶用法
 #### 函数mock
 ```golang
@@ -108,6 +142,8 @@ mock.ExportFunc("foo1").As(func(i int) int {
 mock := mocker.Create()
 
 // mock其它包的私有结构体fake的私有方法call，并设置其代理函数
+// 如果参数是私有的，那么需要在当前包fake一个同等结构的struct，fake结构体要和原私有结构体的内存结构对齐
+// 注意: 如果方法是指针方法，那么需要给struct加上*，比如:ExportStruct("*fake")
 mock.Pkg("git.code.oa.com/goom/mocker_test").ExportStruct("fake").Method("call").Apply(func(_ *fake, i int) int {
     return i * 2
 })

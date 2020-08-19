@@ -32,6 +32,8 @@ func Create() *Builder {
 // Interface 指定接口类型的变量定义
 // iface 必须是指针类型, 比如 i为interface类型变量, iface传递&i
 func (m *Builder) Interface(iface interface{}) *CachedInterfaceMocker {
+	defer func() { m.pkgName = currentPackage(2) }()
+
 	mKey := reflect.TypeOf(iface).String()
 	if mocker, ok := m.mCache[mKey]; ok {
 		return mocker.(*CachedInterfaceMocker)
@@ -44,7 +46,6 @@ func (m *Builder) Interface(iface interface{}) *CachedInterfaceMocker {
 	cachedMocker := NewCachedInterfaceMocker(mocker)
 	m.mockers = append(m.mockers, cachedMocker)
 	m.mCache[mKey] = cachedMocker
-	m.pkgName = currentPackage(2)
 
 	return cachedMocker
 }
@@ -52,6 +53,8 @@ func (m *Builder) Interface(iface interface{}) *CachedInterfaceMocker {
 // Struct 指定结构体名称
 // 比如需要mock结构体函数 (*conn).Write(b []byte)，则name="conn"
 func (m *Builder) Struct(obj interface{}) *CachedMethodMocker {
+	defer func() { m.pkgName = currentPackage(2) }()
+
 	mKey := reflect.ValueOf(obj).Type().String()
 	if mocker, ok := m.mCache[mKey]; ok {
 		return mocker.(*CachedMethodMocker)
@@ -62,7 +65,6 @@ func (m *Builder) Struct(obj interface{}) *CachedMethodMocker {
 	cachedMocker := NewCachedMethodMocker(mocker)
 	m.mockers = append(m.mockers, cachedMocker)
 	m.mCache[mKey] = cachedMocker
-	m.pkgName = currentPackage(2)
 
 	return cachedMocker
 }
@@ -71,6 +73,8 @@ func (m *Builder) Struct(obj interface{}) *CachedMethodMocker {
 // funcdef 函数，比如 foo
 // 方法的mock, 比如 &Struct{}.method
 func (m *Builder) Func(obj interface{}) *DefMocker {
+	defer func() { m.pkgName = currentPackage(2) }()
+
 	if mocker, ok := m.mCache[reflect.ValueOf(obj)]; ok {
 		return mocker.(*DefMocker)
 	}
@@ -79,7 +83,6 @@ func (m *Builder) Func(obj interface{}) *DefMocker {
 
 	m.mockers = append(m.mockers, mocker)
 	m.mCache[reflect.ValueOf(obj)] = mocker
-	m.pkgName = currentPackage(2)
 
 	return mocker
 }
@@ -87,6 +90,8 @@ func (m *Builder) Func(obj interface{}) *DefMocker {
 // ExportStruct 导出私有结构体
 // 比如需要mock结构体函数 (*conn).Write(b []byte)，则name="conn"
 func (m *Builder) ExportStruct(name string) *CachedUnexportedMethodMocker {
+	defer func() { m.pkgName = currentPackage(2) }()
+
 	if mocker, ok := m.mCache[m.pkgName+"_"+name]; ok {
 		return mocker.(*CachedUnexportedMethodMocker)
 	}
@@ -102,7 +107,6 @@ func (m *Builder) ExportStruct(name string) *CachedUnexportedMethodMocker {
 	cachedMocker := NewCachedUnexportedMethodMocker(mocker)
 	m.mockers = append(m.mockers, cachedMocker)
 	m.mCache[m.pkgName+"_"+name] = cachedMocker
-	m.pkgName = currentPackage(2)
 
 	return cachedMocker
 }
@@ -112,6 +116,8 @@ func (m *Builder) ExportStruct(name string) *CachedUnexportedMethodMocker {
 // 比如需要mock方法, pkgname.(*struct_name).method_name
 // name string foo或者(*struct_name).method_name
 func (m *Builder) ExportFunc(name string) *UnexportedFuncMocker {
+	defer func() { m.pkgName = currentPackage(2) }()
+
 	if name == "" {
 		panic("func name is empty")
 	}
@@ -123,7 +129,6 @@ func (m *Builder) ExportFunc(name string) *UnexportedFuncMocker {
 	mocker := NewUnexportedFuncMocker(m.pkgName, name)
 	m.mockers = append(m.mockers, mocker)
 	m.mCache[m.pkgName+"_"+name] = mocker
-	m.pkgName = currentPackage(2)
 
 	return mocker
 }

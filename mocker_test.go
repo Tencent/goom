@@ -38,29 +38,6 @@ func (s *MockerTestSuite) TestUnitFuncApply() {
 	})
 }
 
-// TestUnitInterfaceApply 测试接口mock apply
-func (s *MockerTestSuite) TestUnitInterfaceApply() {
-	s.Run("success", func() {
-		mock := mocker.Create()
-
-		i := (I)(nil)
-
-		mock.Interface(&i).Method("Call").Apply(func(ctx *mocker.IContext, i int) int {
-			return 3
-		})
-		mock.Interface(&i).Method("Call1").Apply(func(ctx *mocker.IContext, i string) string {
-			return "ok"
-		})
-
-		s.Equal(3, i.Call(1), "interface mock check")
-		s.Equal("ok", i.Call1(""), "interface mock check")
-
-		mock.Reset()
-
-		s.Equal(nil, i, "interface mock reset check")
-	})
-}
-
 // TestUnitFuncReturn 测试函数mock return
 func (s *MockerTestSuite) TestUnitFuncReturn() {
 	s.Run("success", func() {
@@ -73,33 +50,6 @@ func (s *MockerTestSuite) TestUnitFuncReturn() {
 		mock.Reset()
 
 		s.Equal(1, foo(1), "foo mock reset check")
-	})
-}
-
-// TestUnitInterfaceReturn 测试接口mock return
-func (s *MockerTestSuite) TestUnitInterfaceReturn() {
-	s.Run("success", func() {
-		mock := mocker.Create()
-
-		i := (I)(nil)
-
-		mock.Interface(&i).Method("Call").As(func(ctx *mocker.IContext, i int) int {
-			return 0
-		}).When(1).Return(3)
-		mock.Interface(&i).Method("Call1").As(func(ctx *mocker.IContext, s string) string {
-			return ""
-		}).When("").Return("ok")
-		mock.Interface(&i).Method("call2").As(func(ctx *mocker.IContext, i int32) int32 {
-			return 0
-		}).Return(int32(5))
-
-		s.Equal(3, i.Call(1), "interface mock check")
-		s.Equal("ok", i.Call1(""), "interface mock check")
-		s.Equal(int32(5), i.call2(0), "interface mock check")
-
-		mock.Reset()
-
-		s.Equal(nil, i, "interface mock reset check")
 	})
 }
 
@@ -341,28 +291,4 @@ func (f *fake) Call2(i int) int {
 //go:noinline
 func (f *fake) call(i int) int {
 	return i
-}
-
-// I 接口测试
-type I interface {
-	Call(int) int
-	Call1(string) string
-	call2(int32) int32
-}
-
-// I 接口实现1
-// nolint
-type Impl1 struct {
-}
-
-func (i Impl1) Call(int) int {
-	return 1
-}
-
-func (i Impl1) Call1(string) string {
-	return "not ok"
-}
-
-func (i Impl1) call2(int32) int32 {
-	return 1
 }

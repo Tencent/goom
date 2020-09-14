@@ -40,6 +40,8 @@ func Create() *Builder {
 func (b *Builder) Interface(iface interface{}) *CachedInterfaceMocker {
 	mKey := reflect.TypeOf(iface).String()
 	if mocker, ok := b.mCache[mKey]; ok {
+		b.pkgName = currentPackage(currentPackageIndex)
+
 		return mocker.(*CachedInterfaceMocker)
 	}
 
@@ -61,6 +63,8 @@ func (b *Builder) Interface(iface interface{}) *CachedInterfaceMocker {
 func (b *Builder) Struct(obj interface{}) *CachedMethodMocker {
 	mKey := reflect.ValueOf(obj).Type().String()
 	if mocker, ok := b.mCache[mKey]; ok {
+		b.pkgName = currentPackage(currentPackageIndex)
+
 		return mocker.(*CachedMethodMocker)
 	}
 
@@ -80,6 +84,8 @@ func (b *Builder) Struct(obj interface{}) *CachedMethodMocker {
 // 方法的mock, 比如 &Struct{}.method
 func (b *Builder) Func(obj interface{}) *DefMocker {
 	if mocker, ok := b.mCache[reflect.ValueOf(obj)]; ok {
+		b.pkgName = currentPackage(currentPackageIndex)
+
 		return mocker.(*DefMocker)
 	}
 
@@ -97,6 +103,8 @@ func (b *Builder) Func(obj interface{}) *DefMocker {
 // 比如需要mock结构体函数 (*conn).Write(b []byte)，则name="conn"
 func (b *Builder) ExportStruct(name string) *CachedUnexportedMethodMocker {
 	if mocker, ok := b.mCache[b.pkgName+"_"+name]; ok {
+		b.pkgName = currentPackage(currentPackageIndex)
+
 		return mocker.(*CachedUnexportedMethodMocker)
 	}
 
@@ -127,6 +135,8 @@ func (b *Builder) ExportFunc(name string) *UnexportedFuncMocker {
 	}
 
 	if mocker, ok := b.mCache[b.pkgName+"_"+name]; ok {
+		b.pkgName = currentPackage(currentPackageIndex)
+
 		return mocker.(*UnexportedFuncMocker)
 	}
 

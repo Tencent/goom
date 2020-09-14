@@ -8,7 +8,7 @@ import (
 
 // CurrentPackage 获取当前调用的包路径
 func CurrentPackage() string {
-	return currentPackage(2)
+	return currentPackage(currentPackageIndex)
 }
 
 // currentPackage 获取调用者的包路径
@@ -20,8 +20,10 @@ func currentPackage(skip int) string {
 		return callerName[:i]
 	}
 
-	if i := strings.LastIndex(callerName, "."); i > -1 {
-		return callerName[:i]
+	if i := strings.LastIndex(callerName, "/"); i > -1 {
+		realIndex := strings.Index(callerName[i:len(callerName)-1], ".")
+
+		return callerName[:realIndex+i]
 	}
 
 	return callerName

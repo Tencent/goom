@@ -115,7 +115,7 @@ func genInterfaceImpl(i interface{}, proxy interface{}) {
 	// 伪装iface
 	*(*hack.Iface)(unsafe.Pointer(gen)) = hack.Iface{
 		Tab: &hack.Itab{
-			Fun: [99]uintptr{uintptr(mockfunc.Pointer()), uintptr(0), uintptr(0)},
+			Fun: [hack.MaxMethod]uintptr{uintptr(mockfunc.Pointer()), uintptr(0), uintptr(0)},
 		},
 		Data: unsafe.Pointer(&Impl2{
 			field1: "ok",
@@ -177,7 +177,7 @@ func dynamicGenImpl(t *testing.T, i interface{}) {
 	// 伪装iface
 	*(*hack.Iface)(unsafe.Pointer(gen)) = hack.Iface{
 		Tab: &hack.Itab{
-			Fun: [99]uintptr{genStub, uintptr(0), uintptr(0)},
+			Fun: [hack.MaxMethod]uintptr{genStub, uintptr(0), uintptr(0)},
 		},
 		Data: (*hack.Value)(unsafe.Pointer(&mockfunc)).Ptr,
 	}

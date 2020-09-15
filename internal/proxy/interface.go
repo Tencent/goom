@@ -88,9 +88,9 @@ func MakeInterfaceImpl(iface interface{}, ctx *IContext, method string,
 		}
 	} else {
 
-		funcTabData := [99]uintptr{}
+		funcTabData := [hack.MaxMethod]uintptr{}
 		notImplements := reflect.ValueOf(notImplement).Pointer()
-		for i := 0; i < 99; i++ {
+		for i := 0; i < hack.MaxMethod; i++ {
 			funcTabData[i] = notImplements
 		}
 		funcTabData[funcTabIndex] = itabFunc

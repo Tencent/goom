@@ -1,4 +1,5 @@
 # https://git.code.oa.com/standards/go/blob/master/.golangci.yml
+# golangci-lint run -c golangci.yml ./...
 linters-settings:
   funlen:
     lines: 80

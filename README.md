@@ -118,7 +118,7 @@ s.Equal(nil, i, "interface mock reset check")
 ```
 
 ### 高阶用法
-#### 函数mock
+#### 未导出函数mock
 ```golang
 // 针对其它包的mock示例
 // 创建指定包的mocker，设置引用路径
@@ -135,7 +135,7 @@ mock.ExportFunc("foo1").As(func(i int) int {
 }).Return(1)
 ```
 
-#### 结构体方法mock
+#### 未导出结构体方法mock
 ```golang
 // 针对其它包的mock示例
 // 创建指定包的mocker，设置引用路径

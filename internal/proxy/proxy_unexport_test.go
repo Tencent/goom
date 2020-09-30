@@ -46,7 +46,7 @@ func TestNetConnMock(t *testing.T) {
 	}
 
 	// 发起网络请求
-	host := "100.65.4.24"
+	host := "127.0.0.1"
 	port := 80
 
 	conn, err := net.Dial("tcp", host+":"+strconv.Itoa(port))

@@ -234,6 +234,7 @@ func Decode(src []byte, mode int) (inst Inst, err error) {
 // comparison if we adjust a few small pieces of logic.
 // The affected logic is in the conditional branch for "mandatory" prefixes,
 // case xCondPrefix.
+// nolint
 func decode1(src []byte, mode int, gnuCompat bool) (Inst, error) {
 	switch mode {
 	case 16, 32, 64:

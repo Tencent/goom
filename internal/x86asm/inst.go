@@ -101,12 +101,15 @@ func (p Prefix) String() string {
 		if p&PrefixREXW != 0 {
 			s += "W"
 		}
+
 		if p&PrefixREXR != 0 {
 			s += "R"
 		}
+
 		if p&PrefixREXX != 0 {
 			s += "X"
 		}
+
 		if p&PrefixREXB != 0 {
 			s += "B"
 		}
@@ -361,10 +364,12 @@ func (m Mem) String() string {
 	if m.Base != 0 {
 		base = m.Base.String()
 	}
+
 	if m.Scale != 0 {
 		if m.Base != 0 {
 			plus = "+"
 		}
+
 		if m.Scale > 1 {
 			scale = fmt.Sprintf("%d*", m.Scale)
 		}
@@ -396,73 +401,35 @@ func (i Imm) String() string {
 
 func (i Inst) String() string {
 	var buf bytes.Buffer
+
 	for _, p := range i.Prefix {
 		if p == 0 {
 			break
 		}
+
 		if p&PrefixImplicit != 0 {
 			continue
 		}
 		fmt.Fprintf(&buf, "%v ", p)
 	}
+
 	fmt.Fprintf(&buf, "%v", i.Op)
 	sep := " "
+
 	for _, v := range i.Args {
 		if v == nil {
 			break
 		}
+
 		fmt.Fprintf(&buf, "%s%v", sep, v)
 		sep = ", "
 	}
 	return buf.String()
 }
 
-func isReg(a Arg) bool {
-	_, ok := a.(Reg)
-	return ok
-}
-
-func isSegReg(a Arg) bool {
-	r, ok := a.(Reg)
-	return ok && ES <= r && r <= GS
-}
-
 func isMem(a Arg) bool {
 	_, ok := a.(Mem)
 	return ok
-}
-
-func isImm(a Arg) bool {
-	_, ok := a.(Imm)
-	return ok
-}
-
-func regBytes(a Arg) int {
-	r, ok := a.(Reg)
-	if !ok {
-		return 0
-	}
-	if AL <= r && r <= R15B {
-		return 1
-	}
-	if AX <= r && r <= R15W {
-		return 2
-	}
-	if EAX <= r && r <= R15L {
-		return 4
-	}
-	if RAX <= r && r <= R15 {
-		return 8
-	}
-	return 0
-}
-
-func isSegment(p Prefix) bool {
-	switch p {
-	case PrefixCS, PrefixDS, PrefixES, PrefixFS, PrefixGS, PrefixSS:
-		return true
-	}
-	return false
 }
 
 // The Op definitions and string list are in tables.go.

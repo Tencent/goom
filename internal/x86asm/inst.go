@@ -113,6 +113,7 @@ func (p Prefix) String() string {
 		if p&PrefixREXB != 0 {
 			s += "B"
 		}
+
 		return s
 	}
 
@@ -127,6 +128,7 @@ func (op Op) String() string {
 	if i < 0 || i >= len(opNames) || opNames[i] == "" {
 		return fmt.Sprintf("Op(%d)", i)
 	}
+
 	return opNames[i]
 }
 
@@ -343,6 +345,7 @@ func (r Reg) String() string {
 	if i < 0 || i >= len(regNames) || regNames[i] == "" {
 		return fmt.Sprintf("Reg(%d)", i)
 	}
+
 	return regNames[i]
 }
 
@@ -373,11 +376,14 @@ func (m Mem) String() string {
 		if m.Scale > 1 {
 			scale = fmt.Sprintf("%d*", m.Scale)
 		}
+
 		index = m.Index.String()
 	}
+
 	if m.Disp != 0 || m.Base == 0 && m.Scale == 0 {
 		disp = fmt.Sprintf("%+#x", m.Disp)
 	}
+
 	return "[" + base + plus + scale + index + disp + "]"
 }
 
@@ -410,10 +416,12 @@ func (i Inst) String() string {
 		if p&PrefixImplicit != 0 {
 			continue
 		}
+
 		fmt.Fprintf(&buf, "%v ", p)
 	}
 
 	fmt.Fprintf(&buf, "%v", i.Op)
+
 	sep := " "
 
 	for _, v := range i.Args {
@@ -424,6 +432,7 @@ func (i Inst) String() string {
 		fmt.Fprintf(&buf, "%s%v", sep, v)
 		sep = ", "
 	}
+
 	return buf.String()
 }
 

@@ -28,6 +28,7 @@ func TestDecode(t *testing.T) {
 		if line == "" || strings.HasPrefix(line, "#") {
 			continue
 		}
+
 		f := strings.SplitN(line, "\t", 4)
 
 		i := strings.Index(f[0], "|")
@@ -35,11 +36,13 @@ func TestDecode(t *testing.T) {
 			t.Errorf("parsing %q: missing | separator", f[0])
 			continue
 		}
+
 		if i%2 != 0 {
 			t.Errorf("parsing %q: misaligned | separator", f[0])
 		}
 
 		size := i / 2
+
 		code, err := hex.DecodeString(f[0][:i] + f[0][i+1:])
 		if err != nil {
 			t.Errorf("parsing %q: %v", f[0], err)
@@ -65,6 +68,7 @@ func TestDecode(t *testing.T) {
 				continue
 			}
 		}
+
 		if out != asm || inst.Len != size {
 			t.Errorf("Decode(%s) [%s] = %s, %d, want %s, %d", f[0], syntax, out, inst.Len, asm, size)
 		}
@@ -72,11 +76,7 @@ func TestDecode(t *testing.T) {
 }
 
 func TestDecodeDoesNotCrash(t *testing.T) {
-	cases := [...][]byte{
-		[]byte{},
-		[]byte{0xc5},
-		[]byte{0xc4},
-	}
+	cases := [...][]byte{[]byte{}, []byte{0xc5}, []byte{0xc4}}
 	for _, test := range cases {
 		_, err := Decode([]byte(test), 64) // the only goal is that this line does not panic
 		if err == nil {

@@ -1227,6 +1227,7 @@ Decode:
 		if nprefix > 0 {
 			return instPrefix(src[0], mode) // invalid instruction
 		}
+
 		return Inst{Len: pos}, ErrUnrecognized
 	}
 
@@ -1285,6 +1286,7 @@ Decode:
 	// TODO(rsc): Perhaps add these to the tables and
 	// create bytecode instructions for them.
 	usedAddrSize := false
+
 	switch inst.Op {
 	case INSB, INSW, INSD:
 		inst.Args[0] = Mem{Segment: ES, Base: baseRegForBits(addrMode) + DI - AX}
@@ -1348,6 +1350,7 @@ Decode:
 		case SCASQ:
 			inst.Args[0] = RAX
 		}
+
 		usedAddrSize = true
 
 	case XLATB:
@@ -1428,6 +1431,7 @@ Decode:
 				hasLock = true
 				break
 			}
+
 			fallthrough
 		default:
 			inst.Prefix[lockIndex] |= PrefixInvalid
@@ -1508,6 +1512,7 @@ Decode:
 	inst.AddrSize = addrMode
 	inst.Mode = mode
 	inst.Len = pos
+
 	return inst, nil
 }
 
@@ -1537,6 +1542,7 @@ func baseRegForBits(bits int) Reg {
 	case 64:
 		return RAX
 	}
+
 	return 0
 }
 
@@ -1601,6 +1607,7 @@ func prefixToSegment(p Prefix) Reg {
 	case PrefixSS:
 		return SS
 	}
+
 	return 0
 }
 
@@ -1650,14 +1657,14 @@ var memBytes = [...]int8{
 	xArgMoffs16:    16 / 8,
 	xArgMoffs32:    32 / 8,
 	xArgMoffs64:    64 / 8,
-	xArgMoffs8:     8 / 8,
+	xArgMoffs8:     1, // 8 / 8,
 	xArgR32M16:     16 / 8,
-	xArgR32M8:      8 / 8,
+	xArgR32M8:      1, //8 / 8,
 	xArgR64M16:     16 / 8,
 	xArgRM16:       16 / 8,
 	xArgRM32:       32 / 8,
 	xArgRM64:       64 / 8,
-	xArgRM8:        8 / 8,
+	xArgRM8:        1, //8 / 8,
 	xArgXmm2M128:   128 / 8,
 	xArgYmm2M256:   256 / 8,
 	xArgXmm2M16:    16 / 8,

@@ -15,6 +15,7 @@ import (
 	"git.code.oa.com/goom/mocker/internal/x86asm"
 )
 
+//pageStart pageStart
 func pageStart(ptr uintptr) uintptr {
 	return ptr & ^(uintptr(syscall.Getpagesize() - 1))
 }
@@ -73,6 +74,7 @@ func GetFuncSize(mode int, start uintptr, minimal bool) (lenth int, err error) {
 	}
 }
 
+// value value
 type value struct {
 	_   uintptr
 	ptr unsafe.Pointer
@@ -151,12 +153,14 @@ func LoadUnit(s int64) string {
 	return fmt.Sprintf("%d%s", b, suffix)
 }
 
+// ShowInst ShowInst
 func ShowInst(name string, from uintptr, size int, level int) {
 	_, funcName, _ := unexports.FindFuncByPtr(from)
 	instBytes := rawMemoryRead(from, size)
 	showInst(fmt.Sprintf("show [%s = %s] inst>>: ", name, funcName), from, instBytes, level)
 }
 
+// minSize 缩小size
 func minSize(showSize int, fixOrigin []byte) int {
 	if showSize > len(fixOrigin) {
 		showSize = len(fixOrigin)
@@ -165,6 +169,7 @@ func minSize(showSize int, fixOrigin []byte) int {
 	return showSize
 }
 
+// ShowInst ShowInst
 func showInst(title string, from uintptr, copyOrigin []byte, level int) {
 	if logger.LogLevel < level {
 		return

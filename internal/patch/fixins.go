@@ -36,6 +36,7 @@ func replaceRelativeAddr(from uintptr, copyOrigin []byte, placehlder uintptr, fu
 	return replaceNew, len(replaceOrigin), err
 }
 
+//doReplaceRelativeAddr 替换函数字节码中的相对地址(如果有的话)
 func doReplaceRelativeAddr(from uintptr, copyOrigin []byte, placehlder uintptr, funcSize int, leastSize int,
 	allowCopyCall bool) ([]byte, error) {
 	startAddr := (uint64)(from)
@@ -79,6 +80,7 @@ func doReplaceRelativeAddr(from uintptr, copyOrigin []byte, placehlder uintptr, 
 	return result, nil
 }
 
+// nextIns nextIns
 func nextIns(pos int, copyOrigin []byte) (*x86asm.Inst, error) {
 	if pos >= len(copyOrigin) {
 		return nil, nil
@@ -207,6 +209,7 @@ func encodeAddress(op uint32, ops []byte, addr []byte, addrLen int, val int, add
 	return append(result, addr...)
 }
 
+// isByteOverflow 字节是否溢出
 func isByteOverflow(v int32) bool {
 	if v > 0 {
 		if v > math.MaxInt8 {
@@ -221,6 +224,7 @@ func isByteOverflow(v int32) bool {
 	return false
 }
 
+// isInt16Overflow  init16是否溢出
 func isInt16Overflow(v int32) bool {
 	if v > 0 {
 		if v > math.MaxInt16 {

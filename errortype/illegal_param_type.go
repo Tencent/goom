@@ -9,6 +9,7 @@ type IllegalParamType struct {
 	expectType string
 }
 
+// IllegalParamType 参数类型错误异常
 func (i *IllegalParamType) Error() string {
 	return fmt.Sprintf("Illegal param type error, param: %s, type:%s, expect type: %s",
 		i.paramName, i.paramType, i.expectType)

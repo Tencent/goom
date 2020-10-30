@@ -39,6 +39,7 @@ var (
 	CriticalLevel = 1
 )
 
+// init() 初始化
 func init() {
 	loggerPath, err := getLoggerPath()
 	if err != nil {
@@ -196,6 +197,7 @@ func LogErrorf(format string, a ...interface{}) {
 	}
 }
 
+// withPrefix withPrefix
 func withPrefix(level string, v []interface{}) []byte {
 	arr := make([]string, 0, len(v)+1)
 	arr = append(arr, time.Now().Format("2006-01-02 15:04:05"))
@@ -214,6 +216,7 @@ func withPrefix(level string, v []interface{}) []byte {
 	return []byte(strings.Join(arr, " "))
 }
 
+//withPrefixStr withPrefixStr
 func withPrefixStr(level, format string, a ...interface{}) []byte {
 	time := time.Now().Format("2006-01-02 15:04:05")
 

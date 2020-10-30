@@ -10,6 +10,7 @@ import (
 //go:linkname Firstmoduledata runtime.firstmoduledata
 var Firstmoduledata Moduledata
 
+//Moduledata Moduledata
 type Moduledata struct {
 	Pclntable []byte
 	Ftab      []Functab
@@ -63,6 +64,7 @@ type Moduledata struct {
 	Next *Moduledata
 }
 
+//Functab Functab
 type Functab struct {
 	Entry   uintptr
 	Funcoff uintptr
@@ -76,6 +78,7 @@ type Func struct {
 	CodePtr uintptr
 }
 
+//Bitvector Bitvector
 type Bitvector struct {
 	// nolint
 	n int32 // # of bits
@@ -95,6 +98,7 @@ type textsect struct {
 type typeOff int32 // offset to an *rtype
 
 // TODO 不同go版本兼容
+//Value Value
 type Value struct {
 	Typ  *uintptr
 	Ptr  unsafe.Pointer

@@ -105,6 +105,7 @@ func TestGenImpl(t *testing.T) {
 	fmt.Println("ok", r)
 }
 
+// genInterfaceImpl 生成接口实现
 func genInterfaceImpl(i interface{}, proxy interface{}) {
 	gen := hack.UnpackEFace(i).Data
 	// mock接口方法
@@ -140,6 +141,7 @@ func TestAutoGenImpl(t *testing.T) {
 	fmt.Println("ok")
 }
 
+//dynamicGenImpl 生成任意接口实现
 func dynamicGenImpl(t *testing.T, i interface{}) {
 	typ := reflect.TypeOf(i).Elem()
 	for i := 0; i < typ.NumMethod(); i++ {

@@ -7,6 +7,7 @@ type IllegalParam struct {
 	funcName   string
 }
 
+// IllegalParam 参数错误异常
 func (i *IllegalParam) Error() string {
 	if len(i.funcName) > 0 {
 		return "Illegal param error when call" + i.funcName + ", param=" + i.paramName + ", value=" + i.paramValue

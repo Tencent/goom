@@ -143,6 +143,7 @@ func tryToInt64(v reflect.Value) (int64, error) {
 	return 0, errors.New("couldn't convert to integer")
 }
 
+// isNil 判断是否为空
 func isNil(v reflect.Value) bool {
 	switch v.Kind() {
 	case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Ptr, reflect.Slice:
@@ -156,6 +157,7 @@ func isNil(v reflect.Value) bool {
 	}
 }
 
+// isNum 判断是否为数字
 func isNum(v reflect.Value) bool {
 	switch v.Kind() {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,

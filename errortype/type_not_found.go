@@ -5,6 +5,7 @@ type TypeNotFound struct {
 	typName string
 }
 
+// TypeNotFound 类型没有找到
 func (t *TypeNotFound) Error() string {
 	return "type not found:" + t.typName
 }

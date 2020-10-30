@@ -10,6 +10,7 @@ import (
 	"time"
 )
 
+// TestPrintMock
 func TestPrintMock(t *testing.T) {
 	var trampoline = func(a ...interface{}) (n int, err error) {
 		return 0, nil
@@ -30,6 +31,7 @@ func TestPrintMock(t *testing.T) {
 	fmt.Print("ok", "2")
 }
 
+// TestNetConnMock
 func TestNetConnMock(t *testing.T) {
 	// 原始函数
 	var connWrite func(c *conn, b []byte) (int, error)
@@ -66,25 +68,34 @@ func TestNetConnMock(t *testing.T) {
 	patch.Unpatch()
 }
 
+// // nolint
 type conn struct {
 	// nolint
 	fd *netFD
 }
 
+// nolint
 func (c *conn) Read(b []byte) (n int, err error) { return 0, nil }
 
+// nolint
 func (c *conn) Write(b []byte) (n int, err error) { return 0, nil }
 
+// nolint
 func (c *conn) Close() error { return nil }
 
+// nolint
 func (c *conn) LocalAddr() net.Addr { return nil }
 
+// nolint
 func (c *conn) RemoteAddr() net.Addr { return nil }
 
+// nolint
 func (c *conn) SetDeadline(t time.Time) error { return nil }
 
+// nolint
 func (c *conn) SetReadDeadline(t time.Time) error { return nil }
 
+// nolint
 func (c *conn) SetWriteDeadline(t time.Time) error { return nil }
 
 // nolint

@@ -18,10 +18,12 @@ func no() bool { return false }
 //go:noinline
 func yes() bool { return true }
 
+//init 初始化
 func init() {
 	logger.Log2Console(true)
 }
 
+// TestTimePatch timePatch测试
 func TestTimePatch(t *testing.T) {
 	before := time.Now()
 
@@ -43,6 +45,7 @@ func TestTimePatch(t *testing.T) {
 	assert.NotEqual(t, during, after)
 }
 
+// TestGC GC测试
 func TestGC(t *testing.T) {
 	value := true
 	_, _ = patch.Patch(no, func() bool {
@@ -54,6 +57,7 @@ func TestGC(t *testing.T) {
 	assert.True(t, no())
 }
 
+// TestSimple TestSimple
 func TestSimple(t *testing.T) {
 	assert.False(t, no())
 	_, _ = patch.Patch(no, yes)
@@ -63,6 +67,7 @@ func TestSimple(t *testing.T) {
 	assert.False(t, patch.Unpatch(no))
 }
 
+// TestGuard TestGuard
 func TestGuard(t *testing.T) {
 	var guard *patch.PatchGuard
 	guard, _ = patch.Patch(no, func() bool {
@@ -77,6 +82,7 @@ func TestGuard(t *testing.T) {
 	patch.Unpatch(no)
 }
 
+//TestUnpatchAll TestUnpatchAll
 func TestUnpatchAll(t *testing.T) {
 	assert.False(t, no())
 	_, _ = patch.Patch(no, yes)
@@ -85,10 +91,13 @@ func TestUnpatchAll(t *testing.T) {
 	assert.False(t, no())
 }
 
+//s s
 type s struct{}
 
+//yes yes
 func (s *s) yes() bool { return true }
 
+//TestWithInstanceMethod TestWithInstanceMethod
 func TestWithInstanceMethod(t *testing.T) {
 	i := &s{}
 
@@ -102,10 +111,13 @@ func TestWithInstanceMethod(t *testing.T) {
 	assert.False(t, no())
 }
 
+//f f
 type f struct{}
 
+// No No
 func (f *f) No() bool { return false }
 
+//TestOnInstanceMethod TestOnInstanceMethod
 func TestOnInstanceMethod(t *testing.T) {
 	i := &f{}
 	assert.False(t, i.No())
@@ -115,6 +127,7 @@ func TestOnInstanceMethod(t *testing.T) {
 	assert.False(t, i.No())
 }
 
+//TestNotFunction TestNotFunction
 func TestNotFunction(t *testing.T) {
 	assert.Panics(t, func() {
 		_, _ = patch.Patch(no, 1)
@@ -124,6 +137,7 @@ func TestNotFunction(t *testing.T) {
 	})
 }
 
+//TestNotCompatible TestNotCompatible
 func TestNotCompatible(t *testing.T) {
 	assert.Panics(t, func() {
 		_, _ = patch.Patch(no, func() {})

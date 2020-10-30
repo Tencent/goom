@@ -9,6 +9,7 @@ import (
 	"testing"
 )
 
+// TestFormatting TestFormatting
 func TestFormatting(t *testing.T) {
 	testCases := []struct {
 		PC    uint64

@@ -19,22 +19,27 @@ type WhenTestSuite struct {
 	suite.Suite
 }
 
+//noLint
 func simple(a int) int {
 	return 0
 }
 
+//noLint
 type Arg struct {
 	field1 string
 }
 
+//noLint
 type Result struct {
 	field1 int
 }
 
+//noLint
 func complex(a Arg) Result {
 	return Result{0}
 }
 
+//noLint
 func complex1(a Arg) *Result {
 	return &Result{0}
 }
@@ -47,6 +52,7 @@ func (s *Struct) Div(a int, b int) int {
 	return a / b
 }
 
+//noLint
 type StructOuter struct {
 }
 

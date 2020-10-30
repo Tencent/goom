@@ -5,6 +5,7 @@ type FuncNotFound struct {
 	funcName string
 }
 
+// FuncNotFound 函数未找到异常
 func (e *FuncNotFound) Error() string {
 	return "func not found:" + e.funcName
 }

@@ -53,6 +53,7 @@ type baseMocker struct {
 	_if  *If
 }
 
+// newBaseMocker 新增基础类型mocker
 func newBaseMocker(pkgName string) *baseMocker {
 	return &baseMocker{
 		pkgName: pkgName,
@@ -124,6 +125,7 @@ func (m *baseMocker) whens(when *When) error {
 // 	return nil
 // }
 
+//callback callback
 func (m *baseMocker) callback(args []reflect.Value) (results []reflect.Value) {
 	if m.when != nil {
 		results = m.when.invoke(args)
@@ -315,6 +317,7 @@ func NewUnexportedMethodMocker(pkgName string, structName string) *UnexportedMet
 	}
 }
 
+// getObjName 获取对象名
 func (m *UnexportedMethodMocker) getObjName() string {
 	return fmt.Sprintf("%s.%s.%s", m.pkgName, m.structName, m.methodName)
 }
@@ -391,6 +394,7 @@ func NewUnexportedFuncMocker(pkgName, funcName string) *UnexportedFuncMocker {
 	}
 }
 
+// getObjName 获取对象名
 func (m *UnexportedFuncMocker) getObjName() string {
 	return fmt.Sprintf("%s.%s", m.pkgName, m.funcName)
 }

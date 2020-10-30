@@ -49,6 +49,7 @@ func NewDefaultInterfaceMocker(pkgName string, iface interface{}, ctx *proxy.ICo
 	}
 }
 
+// Method 名字转化为接口
 func (m *DefaultInterfaceMocker) Method(name string) InterfaceMocker {
 	if name == "" {
 		panic("method is empty")
@@ -60,6 +61,7 @@ func (m *DefaultInterfaceMocker) Method(name string) InterfaceMocker {
 	return m
 }
 
+// checkMethod 检查是否能找到函数
 func (m *DefaultInterfaceMocker) checkMethod(name string) {
 	sTyp := reflect.TypeOf(m.iface).Elem()
 
@@ -69,6 +71,7 @@ func (m *DefaultInterfaceMocker) checkMethod(name string) {
 	}
 }
 
+// Apply Apply
 func (m *DefaultInterfaceMocker) Apply(imp interface{}) {
 	if m.method == "" {
 		panic("method is empty")
@@ -77,6 +80,7 @@ func (m *DefaultInterfaceMocker) Apply(imp interface{}) {
 	m.applyByIfaceMethod(m.ctx, m.iface, m.method, imp, nil)
 }
 
+// nolint
 func (m *DefaultInterfaceMocker) As(funcdef interface{}) InterfaceMocker {
 	if m.method == "" {
 		panic("method is empty")
@@ -87,6 +91,7 @@ func (m *DefaultInterfaceMocker) As(funcdef interface{}) InterfaceMocker {
 	return m
 }
 
+// nolint
 func (m *DefaultInterfaceMocker) When(args ...interface{}) *When {
 	if m.method == "" {
 		panic("method is empty")
@@ -111,6 +116,7 @@ func (m *DefaultInterfaceMocker) When(args ...interface{}) *When {
 	return when
 }
 
+// nolint
 func (m *DefaultInterfaceMocker) Return(returns ...interface{}) *When {
 	if m.method == "" {
 		panic("method is empty")
@@ -135,14 +141,17 @@ func (m *DefaultInterfaceMocker) Return(returns ...interface{}) *When {
 	return when
 }
 
+// nolint
 func (m *DefaultInterfaceMocker) Origin(orign interface{}) ExportedMocker {
 	panic("implement me")
 }
 
+// nolint
 func (m *DefaultInterfaceMocker) Inject(iface interface{}) InterfaceMocker {
 	panic("implement me")
 }
 
+// nolint
 func (m *DefaultInterfaceMocker) If() *If {
 	panic("implement me")
 }

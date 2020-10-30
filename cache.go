@@ -9,6 +9,7 @@ type CachedMethodMocker struct {
 	umCache map[string]UnexportedMocker
 }
 
+// NewCachedMethodMocker 创建新的带缓存的方法Mocker
 func NewCachedMethodMocker(m *MethodMocker) *CachedMethodMocker {
 	return &CachedMethodMocker{
 		MethodMocker: m,
@@ -60,6 +61,7 @@ type CachedUnexportedMethodMocker struct {
 	mCache map[string]*UnexportedMethodMocker
 }
 
+// NewCachedUnexportedMethodMocker 创建新的带缓存的未导出方法Mocker
 func NewCachedUnexportedMethodMocker(m *UnexportedMethodMocker) *CachedUnexportedMethodMocker {
 	return &CachedUnexportedMethodMocker{
 		UnexportedMethodMocker: m,
@@ -94,6 +96,7 @@ type CachedInterfaceMocker struct {
 	ctx    *proxy.IContext
 }
 
+// NewCachedInterfaceMocker 创建新的带缓存的Interface Mocker
 func NewCachedInterfaceMocker(interfaceMocker *DefaultInterfaceMocker) *CachedInterfaceMocker {
 	return &CachedInterfaceMocker{
 		DefaultInterfaceMocker: interfaceMocker,
@@ -102,6 +105,7 @@ func NewCachedInterfaceMocker(interfaceMocker *DefaultInterfaceMocker) *CachedIn
 	}
 }
 
+// Method Method
 func (m *CachedInterfaceMocker) Method(name string) InterfaceMocker {
 	if mocker, ok := m.mCache[name]; ok {
 		return mocker

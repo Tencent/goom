@@ -278,12 +278,12 @@ func (s *MockerTestSuite) TestFakeReturn() {
 		mock := mocker.Create()
 		defer mock.Reset()
 
-		mock.Func(foo1).Return(S1{
+		mock.Func(foo1).Return(&S1{
 			field1: "ok",
 			field2: 2,
 		})
 
-		s.Equal(S{
+		s.Equal(&S{
 			field1: "ok",
 			field2: 2,
 		}, foo1(), "foo mock check")
@@ -325,8 +325,8 @@ type S1 struct {
 
 //go:noinline
 // foo1 foo1
-func foo1() S {
-	return S{
+func foo1() *S {
+	return &S{
 		field1: "ok",
 		field2: 2,
 	}

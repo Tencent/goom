@@ -90,17 +90,20 @@ func I2V(args []interface{}, typs []reflect.Type) []reflect.Value {
 // toValue 转化为数值
 func toValue(r interface{}, out reflect.Type) reflect.Value {
 	v := reflect.ValueOf(r)
-	if r != nil && v.Type() != out {
+	if r != nil && v.Type() != out && (out.Kind() == reflect.Struct || out.Kind() == reflect.Ptr) {
 		if v.Type().Size() != out.Size() {
 			panic(fmt.Sprintf("type mismatch:%s %v", v.Type(), out))
 		}
-		// 类型强制转换
-		mockFuncPtr := (*hack.Value)(unsafe.Pointer(&v)).Ptr
-		v = reflect.NewAt(out, mockFuncPtr)
+		// 类型强制转换,适用于结构体fake场景
+		originV := (*hack.Value)(unsafe.Pointer(&v))
+		newV := reflect.NewAt(out, originV.Ptr).Elem()
+		newV1 := (*hack.Value)(unsafe.Pointer(&newV))
 
-		if out.Kind() != reflect.Ptr {
-			v = v.Elem()
-		}
+		v = *(*reflect.Value)(unsafe.Pointer(&hack.Value{
+			Typ:  newV1.Typ,
+			Ptr:  originV.Ptr,
+			Flag: originV.Flag,
+		}))
 	}
 
 	if r == nil &&

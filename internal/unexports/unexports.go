@@ -42,6 +42,7 @@ func FindFuncByName(name string) (uintptr, error) {
 	return 0, errortype.NewFuncNotFoundError(name)
 }
 
+// getFuncName 获取函数名字
 func getFuncName(f *runtime.Func) string {
 	defer func() {
 		if err := recover(); err != nil {

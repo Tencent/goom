@@ -57,6 +57,7 @@ func jmpToOriginFunctionValue(from, to uintptr) (value []byte) {
 	}
 }
 
+// relative 是否相关
 func relative(from uintptr, to uintptr) bool {
 	delta := int64(from - to)
 	if unsafe.Sizeof(uintptr(0)) == unsafe.Sizeof(int32(0)) {

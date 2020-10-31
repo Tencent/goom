@@ -86,10 +86,12 @@ func (p Prefix) IsREX() bool {
 	return p&0xF0 == PrefixREX
 }
 
+// IsVEX reports whether p is a VEX prefix byte.
 func (p Prefix) IsVEX() bool {
 	return p&0xFF == PrefixVEX2Bytes || p&0xFF == PrefixVEX3Bytes
 }
 
+//noLint
 func (p Prefix) String() string {
 	p &^= PrefixImplicit | PrefixIgnored | PrefixInvalid
 	if s := prefixNames[p]; s != "" {
@@ -123,6 +125,7 @@ func (p Prefix) String() string {
 // An Op is an x86 opcode.
 type Op uint32
 
+//noLint
 func (op Op) String() string {
 	i := int(op)
 	if i < 0 || i >= len(opNames) || opNames[i] == "" {
@@ -338,8 +341,10 @@ const (
 
 const regMax = TR7
 
+//noLint
 func (Reg) isArg() {}
 
+//noLint
 func (r Reg) String() string {
 	i := int(r)
 	if i < 0 || i >= len(regNames) || regNames[i] == "" {
@@ -359,8 +364,10 @@ type Mem struct {
 	Disp    int64
 }
 
+//noLint
 func (Mem) isArg() {}
 
+//noLint
 func (m Mem) String() string {
 	var base, plus, scale, index, disp string
 
@@ -390,8 +397,10 @@ func (m Mem) String() string {
 // A Rel is an offset relative to the current instruction pointer.
 type Rel int32
 
+//noLint
 func (Rel) isArg() {}
 
+//noLint
 func (r Rel) String() string {
 	return fmt.Sprintf(".%+d", r)
 }
@@ -399,12 +408,15 @@ func (r Rel) String() string {
 // An Imm is an integer constant.
 type Imm int64
 
+//noLint
 func (Imm) isArg() {}
 
+//noLint
 func (i Imm) String() string {
 	return fmt.Sprintf("%#x", int64(i))
 }
 
+//noLint
 func (i Inst) String() string {
 	var buf bytes.Buffer
 
@@ -436,6 +448,7 @@ func (i Inst) String() string {
 	return buf.String()
 }
 
+//noLint
 func isMem(a Arg) bool {
 	_, ok := a.(Mem)
 	return ok

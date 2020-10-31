@@ -44,6 +44,7 @@ func getTypeName(val interface{}) string {
 	return t.Name()
 }
 
+// inTypes 获取类型
 func inTypes(isMethod bool, funTyp reflect.Type) []reflect.Type {
 	skip := 0
 	if isMethod {
@@ -60,6 +61,7 @@ func inTypes(isMethod bool, funTyp reflect.Type) []reflect.Type {
 	return inTypes
 }
 
+// outTypes 获取类型
 func outTypes(funTyp reflect.Type) []reflect.Type {
 	numOut := funTyp.NumOut()
 	outTypes := make([]reflect.Type, numOut)
@@ -81,6 +83,7 @@ func I2V(args []interface{}, typs []reflect.Type) []reflect.Value {
 	return values
 }
 
+// toValue 转化为数值
 func toValue(r interface{}, out reflect.Type) reflect.Value {
 	v := reflect.ValueOf(r)
 	if r == nil &&

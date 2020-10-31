@@ -16,6 +16,7 @@ var (
 
 var procVirtualProtect = syscall.NewLazyDLL("kernel32.dll").NewProc("VirtualProtect")
 
+//virtualProtect virtualProtect
 func virtualProtect(lpAddress uintptr, dwSize int, flNewProtect uint32, lpflOldProtect unsafe.Pointer) error {
 	ret, _, _ := procVirtualProtect.Call(
 		lpAddress,

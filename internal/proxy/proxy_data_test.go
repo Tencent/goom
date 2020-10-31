@@ -31,6 +31,7 @@ func Caller2(i int) int {
 	return i
 }
 
+//go:noinline
 type Arg struct {
 	field1 string
 	field2 map[string]int
@@ -85,12 +86,14 @@ func Caller7(i int) {
 	logger.LogTrace("Caller 7 called")
 }
 
+//go:noinline
 type Result struct {
 	i     int
 	inner *InnerResult
 	m     map[string]int
 }
 
+//go:noinline
 type InnerResult struct {
 	j int
 }
@@ -117,12 +120,14 @@ func Caller9(i int) Result {
 	}
 }
 
+//go:noinline
 type InnerArg struct {
 	field1 string
 	field2 []string
 	field3 *InnerField
 }
 
+//go:noinline
 type InnerField struct {
 	field3 string
 }
@@ -137,8 +142,10 @@ func ForceStackExpand(i int) int {
 	return i * ForceStackExpand(i-1)
 }
 
+//go:noinline
 var field1 = "field1"
 
+//go:noinline
 type TestCase struct {
 	funcName string
 	// nolint

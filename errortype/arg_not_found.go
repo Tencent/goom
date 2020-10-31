@@ -8,6 +8,7 @@ type ArgNotFound struct {
 	arg      int
 }
 
+//Error() 返回错误
 func (e *ArgNotFound) Error() string {
 	return "arg not found:" + e.funcName + ":" + strconv.Itoa(e.arg)
 }

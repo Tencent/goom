@@ -35,14 +35,17 @@ type PatchGuard struct {
 	applied     bool
 }
 
+// PatchLock PatchLock
 func PatchLock() {
 	lock.Lock()
 }
 
+// PatchUnlock()  PatchUnlock()
 func PatchUnlock() {
 	lock.Unlock()
 }
 
+// Apply() 执行
 func (g *PatchGuard) Apply() {
 	PatchLock()
 
@@ -113,6 +116,7 @@ func PatchTrampoline(target, replacement interface{}, trampoline interface{}) (*
 	return &PatchGuard{t.Pointer(), r, originFunc, jumpData, false}, nil
 }
 
+// UnsafePatch UnsafePatch
 func UnsafePatch(target, replacement interface{}) (*PatchGuard, error) {
 	return UnsafePatchTrampoline(target, replacement, nil)
 }
@@ -311,6 +315,7 @@ func unpatchValue(target uintptr) bool {
 	return true
 }
 
+//unpatch unpatch
 func unpatch(target uintptr, p patch) {
 	_ = CopyToLocation(target, p.originalBytes)
 	ShowInst(fmt.Sprintf("unpatch copy to 0x%x", target), target, 20, logger.DebugLevel)

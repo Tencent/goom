@@ -12,6 +12,7 @@ import (
 	"testing"
 )
 
+// TestDecode 解码测试
 func TestDecode(t *testing.T) {
 	data, err := ioutil.ReadFile("testdata/decode.txt")
 	if err != nil {
@@ -75,6 +76,7 @@ func TestDecode(t *testing.T) {
 	}
 }
 
+// TestDecodeDoesNotCrash TestDecodeDoesNotCrash
 func TestDecodeDoesNotCrash(t *testing.T) {
 	cases := [...][]byte{[]byte{}, []byte{0xc5}, []byte{0xc4}}
 	for _, test := range cases {

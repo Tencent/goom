@@ -205,6 +205,7 @@ func (s *MockerTestSuite) TestCallOrigin() {
 	})
 }
 
+// TestMultiReturn 测试调用原函数多返回
 func (s *MockerTestSuite) TestMultiReturn() {
 	s.Run("success", func() {
 		mock := mocker.Create()

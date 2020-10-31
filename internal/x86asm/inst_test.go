@@ -9,6 +9,7 @@ import (
 	"testing"
 )
 
+// TestRegString TestRegString
 func TestRegString(t *testing.T) {
 	for r := Reg(1); r <= regMax; r++ {
 		if regNames[r] == "" {

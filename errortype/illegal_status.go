@@ -6,6 +6,7 @@ type IllegalStatus struct {
 	msg      string
 }
 
+// IllegalStatus 状态错误异常
 func (i *IllegalStatus) Error() string {
 	return "Illegal status error when call " + i.funcName + " msg:" + i.msg
 }

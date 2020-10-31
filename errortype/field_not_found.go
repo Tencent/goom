@@ -6,6 +6,7 @@ type FieldNotFound struct {
 	fieldName string
 }
 
+// FieldNotFound 类型没有找到
 func (t *FieldNotFound) Error() string {
 	return "field not found:" + t.typName + "." + t.fieldName
 }

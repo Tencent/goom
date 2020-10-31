@@ -12,6 +12,7 @@ type ArgsNotMatch struct {
 	expectLen int
 }
 
+// ArgsNotMatch 参数不匹配异常
 func (i *ArgsNotMatch) Error() string {
 	if i.funcDef != nil {
 		return "args lenth not match of func " + reflect.ValueOf(i.funcDef).String() +

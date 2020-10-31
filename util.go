@@ -1,9 +1,13 @@
 package mocker
 
 import (
+	"fmt"
 	"reflect"
 	"runtime"
 	"strings"
+	"unsafe"
+
+	"git.code.oa.com/goom/mocker/internal/hack"
 )
 
 // CurrentPackage 获取当前调用的包路径
@@ -86,6 +90,19 @@ func I2V(args []interface{}, typs []reflect.Type) []reflect.Value {
 // toValue 转化为数值
 func toValue(r interface{}, out reflect.Type) reflect.Value {
 	v := reflect.ValueOf(r)
+	if r != nil && v.Type() != out {
+		if v.Type().Size() != out.Size() {
+			panic(fmt.Sprintf("type mismatch:%s %v", v.Type(), out))
+		}
+		// 类型强制转换
+		mockFuncPtr := (*hack.Value)(unsafe.Pointer(&v)).Ptr
+		v = reflect.NewAt(out, mockFuncPtr)
+
+		if out.Kind() != reflect.Ptr {
+			v = v.Elem()
+		}
+	}
+
 	if r == nil &&
 		(out.Kind() == reflect.Interface || out.Kind() == reflect.Ptr) {
 		v = reflect.Zero(reflect.SliceOf(out).Elem())

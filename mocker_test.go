@@ -272,6 +272,25 @@ func (s *MockerTestSuite) TestUnitSystemFuncApply() {
 	})
 }
 
+// TestFakeReturn 测试返回fake值
+func (s *MockerTestSuite) TestFakeReturn() {
+	s.Run("success", func() {
+		mock := mocker.Create()
+		defer mock.Reset()
+
+		mock.Func(foo1).Return(&S1{
+			field1: "ok",
+			field2: 2,
+		})
+
+		s.Equal(&S{
+			field1: "ok",
+			field2: 2,
+		}, foo1(), "foo mock check")
+
+	})
+}
+
 //go:noinline
 func foo(i int) int {
 	return i * 1
@@ -292,4 +311,23 @@ func (f *fake) Call2(i int) int {
 //go:noinline
 func (f *fake) call(i int) int {
 	return i
+}
+
+type S struct {
+	field1 string
+	field2 int
+}
+
+type S1 struct {
+	field1 string
+	field2 int
+}
+
+//go:noinline
+// foo1 foo1
+func foo1() *S {
+	return &S{
+		field1: "ok",
+		field2: 2,
+	}
 }

@@ -133,7 +133,7 @@ func (s *WhenTestSuite) TestNil() {
 		when := mocker.NewWhen(reflect.TypeOf(complex1))
 		when.Return(nil)
 
-		s.Equal(nil, when.Eval(1)[0], "when return nil check")
+		s.Equal(nil, when.Eval(Arg{})[0], "when return nil check")
 	})
 }
 

@@ -144,15 +144,17 @@ func UnsafePatchTrampoline(target, replacement interface{}, trampoline interface
 // patchValue 对value进行应用代理
 func patchValue(target, replacement reflect.Value, trampoline interface{}) (uintptr, []byte, error) {
 	// 外部手动check(使用signature包) modified by @jake
-	//if target.Type() != replacement.Type() {
-	//	return 0, errors.New(fmt.Sprintf(
-	//	"target and replacement have to have the same type %s != %s", target.Type(), replacement.Type()))
-	//}
+	if !checkSignature(target.Type(), replacement.Type()) {
+		return 0, nil, errors.New(fmt.Sprintf(
+			"target and replacement have to have the same type %s != %s", target.Type(), replacement.Type()))
+	}
+
 	// 外部手动check(使用signature包) modified by @jake
 	//if target.Type() != reflect.TypeOf(trampoline).Elem() {
 	//	return 0, errors.New(fmt.Sprintf(
 	//	"target and trampoline have to have the same type %s != %s", target.Type(), trampolineElemType))
 	//}
+
 	trampolinePtr, err := getTrampolinePtr(trampoline)
 	if err != nil {
 		return 0, nil, err
@@ -161,6 +163,10 @@ func patchValue(target, replacement reflect.Value, trampoline interface{}) (uint
 	ptrholder[trampolinePtr] = trampoline
 
 	return unsafePatchValue(target, replacement, trampolinePtr)
+}
+
+func checkSignature(i reflect.Type, i2 reflect.Type) bool {
+	return true
 }
 
 // unsafePatchValue 不做类型检查

@@ -106,8 +106,7 @@ func toValue(r interface{}, out reflect.Type) reflect.Value {
 		}))
 	}
 
-	if r == nil &&
-		(out.Kind() == reflect.Interface || out.Kind() == reflect.Ptr) {
+	if r == nil && (out.Kind() == reflect.Interface || out.Kind() == reflect.Ptr || out.Kind() == reflect.Slice) {
 		v = reflect.Zero(reflect.SliceOf(out).Elem())
 	} else if r != nil && out.Kind() == reflect.Interface {
 		ptr := reflect.New(out)

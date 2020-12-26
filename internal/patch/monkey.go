@@ -155,6 +155,28 @@ func patchValue(target, replacement reflect.Value, trampoline interface{}) (uint
 	//	"target and trampoline have to have the same type %s != %s", target.Type(), trampolineElemType))
 	//}
 
+	// 检测参数对齐
+	var (
+		targetType      = target.Type()
+		replacementType = replacement.Type()
+	)
+	if targetType.NumIn() != replacementType.NumIn() {
+		panic(fmt.Sprintf("func signature mismatch, args len must:%d, actual:%d", target.Type().NumIn(), replacement.Type().NumIn()))
+	}
+	if targetType.NumOut() != replacementType.NumOut() {
+		panic(fmt.Sprintf("func signature mismatch, returns len must:%d, actual:%d", target.Type().NumOut(), replacement.Type().NumOut()))
+	}
+	for i := 0; i < target.Type().NumIn(); i++ {
+		if targetType.In(i).Size() != replacementType.In(i).Size() {
+			panic(fmt.Sprintf("func signature mismatch, args %d's size must:%d, actual:%d", i, targetType.In(i).Size(), replacementType.In(i).Size()))
+		}
+	}
+	for i := 0; i < target.Type().NumOut(); i++ {
+		if targetType.Out(i).Size() != replacementType.Out(i).Size() {
+			panic(fmt.Sprintf("func signature mismatch, returns %d's size must:%d, actual:%d", i, targetType.Out(i).Size(), replacementType.Out(i).Size()))
+		}
+	}
+
 	trampolinePtr, err := getTrampolinePtr(trampoline)
 	if err != nil {
 		return 0, nil, err

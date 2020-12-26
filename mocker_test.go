@@ -1,6 +1,7 @@
 package mocker_test
 
 import (
+	"errors"
 	"fmt"
 	"math/rand"
 	"testing"
@@ -19,6 +20,11 @@ func TestUnitBuilderTestSuite(t *testing.T) {
 // MockerTestSuite Builder测试套件
 type MockerTestSuite struct {
 	suite.Suite
+	fakeErr error
+}
+
+func (s *MockerTestSuite) SetupTest() {
+	s.fakeErr = errors.New("fake error")
 }
 
 // TestUnitFuncApply 测试函数mock apply
@@ -291,6 +297,24 @@ func (s *MockerTestSuite) TestFakeReturn() {
 	})
 }
 
+func (s *MockerTestSuite) TestUnitEmptyMatch() {
+	s.Run("empty return", func() {
+		mocker.Create().Func(time.Sleep).Return()
+		time.Sleep(time.Second)
+	})
+}
+
+func (s *MockerTestSuite) TestUnitNilReturn() {
+	s.Run("nil return ", func() {
+		mocker.Create().Func(getS).Return(nil, s.fakeErr)
+
+		res, err := getS()
+
+		s.Equal([]byte(nil), res)
+		s.Equal(s.fakeErr, err)
+	})
+}
+
 //go:noinline
 func foo(i int) int {
 	return i * 1
@@ -330,4 +354,8 @@ func foo1() *S {
 		field1: "ok",
 		field2: 2,
 	}
+}
+
+func getS() ([]byte, error) {
+	return []byte("hello"), nil
 }

@@ -50,8 +50,11 @@ func CreateWhen(m ExportedMocker, funcDef interface{}, args []interface{},
 
 	if defaultReturns != nil {
 		curMatch = newAlwaysMatch(defaultReturns, impTyp)
-		defaultMatch = curMatch
+	} else if len(outTypes(impTyp)) == 0 {
+		curMatch = newEmptyMatch()
 	}
+
+	defaultMatch = curMatch
 
 	if args != nil {
 		curMatch = newDefaultMatch(args, nil, isMethod, impTyp)
@@ -211,15 +214,15 @@ func newBaseMatcher(results []interface{}, funTyp reflect.Type) *BaseMatcher {
 	}
 }
 
-//noLint
+// Result 回参
 func (c *BaseMatcher) Result() []reflect.Value {
 	if len(c.results) <= 1 {
 		return c.results[c.curNum]
 	}
 
 	curNum := atomic.LoadInt32(&c.curNum)
-	if len := len(c.results); curNum >= int32(len) {
-		return c.results[len-1]
+	if length := len(c.results); curNum >= int32(length) {
+		return c.results[length-1]
 	}
 
 	atomic.AddInt32(&c.curNum, 1)
@@ -354,6 +357,20 @@ func newAlwaysMatch(results []interface{}, funTyp reflect.Type) *AlwaysMatcher {
 }
 
 // Match 总是匹配
-func (c *AlwaysMatcher) Match(args []reflect.Value) bool {
+func (c *AlwaysMatcher) Match(_ []reflect.Value) bool {
 	return true
+}
+
+// EmptyMatch 没有返回参数的匹配器
+type EmptyMatch struct {
+	*AlwaysMatcher
+}
+
+func newEmptyMatch() *EmptyMatch {
+	return &EmptyMatch{}
+}
+
+// Result 返回参数
+func (c *EmptyMatch) Result() []reflect.Value {
+	return []reflect.Value{}
 }

@@ -143,16 +143,9 @@ func UnsafePatchTrampoline(target, replacement interface{}, trampoline interface
 
 // patchValue 对value进行应用代理
 func patchValue(target, replacement reflect.Value, trampoline interface{}) (uintptr, []byte, error) {
-	// 外部手动check(使用signature包) modified by @jake
-	//if target.Type() != replacement.Type() {
-	//	return 0, errors.New(fmt.Sprintf(
-	//	"target and replacement have to have the same type %s != %s", target.Type(), replacement.Type()))
-	//}
-	// 外部手动check(使用signature包) modified by @jake
-	//if target.Type() != reflect.TypeOf(trampoline).Elem() {
-	//	return 0, errors.New(fmt.Sprintf(
-	//	"target and trampoline have to have the same type %s != %s", target.Type(), trampolineElemType))
-	//}
+	// 参数对齐校验 modified by @jake
+	checkSignature(target.Type(), replacement.Type())
+
 	trampolinePtr, err := getTrampolinePtr(trampoline)
 	if err != nil {
 		return 0, nil, err
@@ -161,6 +154,27 @@ func patchValue(target, replacement reflect.Value, trampoline interface{}) (uint
 	ptrholder[trampolinePtr] = trampoline
 
 	return unsafePatchValue(target, replacement, trampolinePtr)
+}
+
+func checkSignature(targetType reflect.Type, replacementType reflect.Type) bool {
+	// 检测参数对齐
+	if targetType.NumIn() != replacementType.NumIn() {
+		panic(fmt.Sprintf("func signature mismatch, args len must:%d, actual:%d", targetType.NumIn(), replacementType.NumIn()))
+	}
+	if targetType.NumOut() != replacementType.NumOut() {
+		panic(fmt.Sprintf("func signature mismatch, returns len must:%d, actual:%d", targetType.NumOut(), replacementType.NumOut()))
+	}
+	for i := 0; i < targetType.NumIn(); i++ {
+		if targetType.In(i).Size() != replacementType.In(i).Size() {
+			panic(fmt.Sprintf("func signature mismatch, args %d's size must:%d, actual:%d", i, targetType.In(i).Size(), replacementType.In(i).Size()))
+		}
+	}
+	for i := 0; i < targetType.NumOut(); i++ {
+		if targetType.Out(i).Size() != replacementType.Out(i).Size() {
+			panic(fmt.Sprintf("func signature mismatch, returns %d's size must:%d, actual:%d", i, targetType.Out(i).Size(), replacementType.Out(i).Size()))
+		}
+	}
+	return true
 }
 
 // unsafePatchValue 不做类型检查

@@ -79,6 +79,10 @@ func outTypes(funTyp reflect.Type) []reflect.Type {
 
 // I2V []interface convert to []reflect.Value
 func I2V(args []interface{}, typs []reflect.Type) []reflect.Value {
+	if len(args) != len(typs) {
+		panic(fmt.Sprintf("args lenth mismatch,must:%d, actual:%d", len(typs), len(args)))
+	}
+
 	values := make([]reflect.Value, len(args))
 	for i, a := range args {
 		values[i] = toValue(a, typs[i])
@@ -92,21 +96,14 @@ func toValue(r interface{}, out reflect.Type) reflect.Value {
 	v := reflect.ValueOf(r)
 	if r != nil && v.Type() != out && (out.Kind() == reflect.Struct || out.Kind() == reflect.Ptr) {
 		if v.Type().Size() != out.Size() {
-			panic(fmt.Sprintf("type mismatch:%s %v", v.Type(), out))
+			panic(fmt.Sprintf("type mismatch,must:%s, actual:%v", v.Type(), out))
 		}
 		// 类型强制转换,适用于结构体fake场景
-		originV := (*hack.Value)(unsafe.Pointer(&v))
-		newV := reflect.NewAt(out, originV.Ptr).Elem()
-		newV1 := (*hack.Value)(unsafe.Pointer(&newV))
-
-		v = *(*reflect.Value)(unsafe.Pointer(&hack.Value{
-			Typ:  newV1.Typ,
-			Ptr:  originV.Ptr,
-			Flag: originV.Flag,
-		}))
+		v = cast(v, out)
 	}
 
-	if r == nil && (out.Kind() == reflect.Interface || out.Kind() == reflect.Ptr || out.Kind() == reflect.Slice) {
+	if r == nil && (out.Kind() == reflect.Interface || out.Kind() == reflect.Ptr || out.Kind() == reflect.Slice ||
+		out.Kind() == reflect.Map || out.Kind() == reflect.Array || out.Kind() == reflect.Chan) {
 		v = reflect.Zero(reflect.SliceOf(out).Elem())
 	} else if r != nil && out.Kind() == reflect.Interface {
 		ptr := reflect.New(out)
@@ -114,6 +111,20 @@ func toValue(r interface{}, out reflect.Type) reflect.Value {
 		ptr.Elem().Set(v)
 		v = ptr.Elem()
 	}
+
+	return v
+}
+
+// cast 类型强制转换
+func cast(v reflect.Value, typ reflect.Type) reflect.Value {
+	originV := (*hack.Value)(unsafe.Pointer(&v))
+	newV := reflect.NewAt(typ, originV.Ptr).Elem()
+	newV1 := (*hack.Value)(unsafe.Pointer(&newV))
+	v = *(*reflect.Value)(unsafe.Pointer(&hack.Value{
+		Typ:  newV1.Typ,
+		Ptr:  originV.Ptr,
+		Flag: originV.Flag,
+	}))
 
 	return v
 }

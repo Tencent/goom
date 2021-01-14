@@ -22,7 +22,7 @@ go get git.code.oa.com/goom/mocker
 
 ## Tips
 ```
-注意: 按照go编译规则，短函数会被内联优化，导致无法mock的情况，编译参数需要加上 -gcflags="-l" 关闭内联
+注意: 按照go编译规则，短函数会被内联优化，导致无法mock的情况，编译参数需要加上 -gcflags=all=-l 关闭内联
 例如: go test -gcflags=all=-l hello.go
 ```
 

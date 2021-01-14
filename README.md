@@ -190,6 +190,10 @@ mock.Func(foo1).Origin(&origin).Apply(func(i int) int {
 })
 ```
 
+## 问题答疑
+[问题答疑记录wiki地址](https://iwiki.woa.com/pages/viewpage.action?pageId=263748529)
+
 
 ## Contributor
 @yongfuchen、@adrewchen、@ivyyi、@miliao
+

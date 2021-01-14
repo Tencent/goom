@@ -23,7 +23,7 @@ go get git.code.oa.com/goom/mocker
 ## Tips
 ```
 注意: 按照go编译规则，短函数会被内联优化，导致无法mock的情况，编译参数需要加上 -gcflags="-l" 关闭内联
-例如: go test -gcflags="-l" hello.go
+例如: go test -gcflags=all=-l hello.go
 ```
 
 ## Example
@@ -46,7 +46,7 @@ mock := mocker.Create()
 // mock函数foo并设定返回值为1
 mock.Func(foo).Return(1)
 
-// mock函数foo并设置其代理函数
+// mock函数foo，使用Apply方法设置回调函数
 mock.Func(foo).Apply(func(int) int {
     return 1
 })
@@ -70,7 +70,7 @@ func (f *fake) call(i int) int {
 // 创建当前包的mocker
 mock := mocker.Create()
 
-// mock 结构体fake的方法Call并设置其代理函数
+// mock 结构体fake的方法Call并设置其回调函数
 mock.Struct(&fake{}).Method("Call").Apply(func(_ *fake, i int) int {
     return i * 2
  })
@@ -78,7 +78,7 @@ mock.Struct(&fake{}).Method("Call").Apply(func(_ *fake, i int) int {
 // mock 结构体fake的方法Call并返回1
 mock.Struct(&fake{}).Method("Call").Return(1)
 
-// mock 结构体fake的私有方法call, mock前先调用ExportMethod将其导出，并设置其代理函数
+// mock 结构体fake的私有方法call, mock前先调用ExportMethod将其导出，并设置其回调函数
 mock.Struct(&fake{}).ExportMethod("call").Apply(func(_ *fake, i int) int {
     return i * 2
 })
@@ -130,7 +130,7 @@ s.Equal(nil, i, "interface mock reset check")
 // 创建指定包的mocker，设置引用路径
 mock := mocker.Create()
 
-// mock函数foo1并设置其代理函数
+// mock函数foo1并设置其回调函数
 mock.Pkg("git.code.oa.com/goom/mocker_test").ExportFunc("foo1").Apply(func(i int) int {
     return i * 3
 })
@@ -147,8 +147,8 @@ mock.ExportFunc("foo1").As(func(i int) int {
 // 创建指定包的mocker，设置引用路径
 mock := mocker.Create()
 
-// mock其它包的私有结构体fake的私有方法call，并设置其代理函数
-// 如果参数是私有的，那么需要在当前包fake一个同等结构的struct，fake结构体要和原私有结构体的内存结构对齐
+// mock其它包的私有结构体fake的私有方法call，并设置其回调函数
+// 如果参数是私有的，那么需要在当前包fake一个同等结构的struct(只需要fake结构体，方法不需要fake)，fake结构体要和原私有结构体的内存结构对齐
 // 注意: 如果方法是指针方法，那么需要给struct加上*，比如:ExportStruct("*fake")
 mock.Pkg("git.code.oa.com/goom/mocker_test").ExportStruct("fake").Method("call").Apply(func(_ *fake, i int) int {
     return i * 2
@@ -168,7 +168,7 @@ mock := mocker.Create()
 mock.Func(foo).When(1).Return(3).AndReturn(2)
 ```
 
-#### 在代理函数中调用原函数
+#### 在回调函数中调用原函数
 ```golang
 mock := mocker.Create()
 
@@ -189,6 +189,7 @@ mock.Func(foo1).Origin(&origin).Apply(func(i int) int {
     return originResult + 100
 })
 ```
+
 
 ## Contributor
 @yongfuchen、@adrewchen、@ivyyi、@miliao

@@ -66,6 +66,10 @@ func MakeInterfaceImpl(iface interface{}, ctx *IContext, method string,
 	}
 
 	typ := ifaceType.Elem()
+	if typ.Kind() != reflect.Interface {
+		return errortype.NewIllegalParamTypeError("iface var", typ.String(), "interface")
+	}
+
 	funcTabIndex := 0
 
 	for i := 0; i < typ.NumMethod(); i++ {

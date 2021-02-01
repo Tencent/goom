@@ -103,10 +103,10 @@ type I interface {
 ```golang
 mock := mocker.Create()
 
-// 接口变量
+// 任意接口变量
 i := (I)(nil)
 
-// 将Mock应用到接口变量(仅对该变量有效)
+// 将Mock应用到接口变量(mock仅对该变量有效)
 mock.Interface(&i).Method("Call").Apply(func(ctx *mocker.IContext, i int) int {
     return 3
 })

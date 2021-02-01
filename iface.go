@@ -118,6 +118,10 @@ func (m *DefaultInterfaceMocker) When(args ...interface{}) *When {
 
 // nolint
 func (m *DefaultInterfaceMocker) Return(returns ...interface{}) *When {
+	if m.funcDef == nil {
+		panic("must use As before Return")
+	}
+
 	if m.method == "" {
 		panic("method is empty")
 	}

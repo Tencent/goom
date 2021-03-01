@@ -19,13 +19,13 @@ type Iface struct {
 // 注意: 最多兼容99个方法数量以内的接口
 type Itab struct {
 	// nolint
-	inter *uintptr
+	Inter *uintptr
 	// nolint
-	_type *uintptr
+	Type *uintptr
 	// nolint
-	hash uint32 // copy of _type.hash. Used for type switches.
+	hash uint32 // copy of Type.hash. Used for type switches.
 	_    [4]byte
-	Fun  [MaxMethod]uintptr // variable sized. fun[0]==0 means _type does not implement inter.
+	Fun  [MaxMethod]uintptr // variable sized. fun[0]==0 means Type does not implement Inter.
 }
 
 // Eface 接口结构

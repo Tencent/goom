@@ -7,6 +7,8 @@ import (
 	"strings"
 	"unsafe"
 
+	"git.code.oa.com/goom/mocker/internal/proxy"
+
 	"git.code.oa.com/goom/mocker/internal/hack"
 )
 
@@ -105,6 +107,9 @@ func toValue(r interface{}, out reflect.Type) reflect.Value {
 	if r == nil && (out.Kind() == reflect.Interface || out.Kind() == reflect.Ptr || out.Kind() == reflect.Slice ||
 		out.Kind() == reflect.Map || out.Kind() == reflect.Array || out.Kind() == reflect.Chan) {
 		v = reflect.Zero(reflect.SliceOf(out).Elem())
+	} else if v.Type().Kind() == reflect.Ptr &&
+		v.Type() == reflect.TypeOf(&proxy.IContext{}) {
+		panic("goom not support Return() API when returns mocked interface type, use Apply() API instead.")
 	} else if r != nil && out.Kind() == reflect.Interface {
 		ptr := reflect.New(out)
 

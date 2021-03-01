@@ -36,7 +36,7 @@ type Moduledata struct {
 	types, etypes uintptr
 	// nolint
 	textsectmap []textsect
-	// Original type was []*_type
+	// Original type was []*Type
 	// nolint
 	typelinks []int32
 	// nolint
@@ -98,7 +98,7 @@ type textsect struct {
 type typeOff int32 // offset to an *rtype
 
 // TODO 不同go版本兼容
-//Value Value
+//Value reflect.Value
 type Value struct {
 	Typ  *uintptr
 	Ptr  unsafe.Pointer

@@ -99,9 +99,13 @@ func MakeInterfaceImpl(iface interface{}, ctx *IContext, method string,
 		}
 		funcTabData[funcTabIndex] = itabFunc
 
-		iface := hack.Iface{
+		// 伪造iface
+		structType := reflect.TypeOf(&IContext{})
+		fakeIface := hack.Iface{
 			Tab: &hack.Itab{
-				Fun: funcTabData,
+				Inter: (*uintptr)((*hack.Iface)(unsafe.Pointer(&typ)).Data),
+				Type:  (*uintptr)((*hack.Iface)(unsafe.Pointer(&structType)).Data),
+				Fun:   funcTabData,
 			},
 			Data: unsafe.Pointer(ctx),
 		}
@@ -115,10 +119,10 @@ func MakeInterfaceImpl(iface interface{}, ctx *IContext, method string,
 			ctx.p.originIfaceValue = &originIfaceValue
 		}
 
-		// 伪装iface
-		*(*hack.Iface)(unsafe.Pointer(gen)) = iface
+		// 伪造的iface赋值到指针变量
+		*(*hack.Iface)(unsafe.Pointer(gen)) = fakeIface
 
-		ctx.p.ifaceCache[ifaceCacheKey] = &iface
+		ctx.p.ifaceCache[ifaceCacheKey] = &fakeIface
 	}
 
 	return nil

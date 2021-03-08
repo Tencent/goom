@@ -57,8 +57,8 @@ func init() {
 	Logger = logFile
 }
 
-// Log2Console 打印到控制台
-func Log2Console(b bool) {
+// SetLog2Console 打印到控制台
+func SetLog2Console(b bool) {
 	if b {
 		Logger = os.Stdout
 	} else {
@@ -195,6 +195,12 @@ func LogErrorf(format string, a ...interface{}) {
 			os.Stdout.Write(line)
 		}
 	}
+}
+
+// Log2Consolef 打印日志到控制台
+func Log2Consolef(format string, a ...interface{}) {
+	line := withPrefixStr("warn", format, a...)
+	os.Stdout.Write(line)
 }
 
 // withPrefix withPrefix

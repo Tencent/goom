@@ -304,7 +304,7 @@ var testCases = []*TestCase{
 // TestTestStaticProxy 测试静态代理
 func TestTestStaticProxy(t *testing.T) {
 	logger.LogLevel = logger.DebugLevel
-	logger.Log2Console(true)
+	logger.SetLog2Console(true)
 
 	for _, tc := range testCases {
 		trampoline := tc.trampoline()
@@ -326,7 +326,7 @@ func TestTestStaticProxy(t *testing.T) {
 // TestTestStaticProxy 测试静态代理
 func BenchmarkStaticProxy(b *testing.B) {
 	logger.LogLevel = logger.TraceLevel
-	logger.Log2Console(true)
+	logger.SetLog2Console(true)
 
 	for i := 0; i < b.N; i++ {
 		for _, tc := range testCases {
@@ -349,7 +349,7 @@ func BenchmarkStaticProxy(b *testing.B) {
 // TestStaticProxyConcurrent 测试并发支持
 func TestStaticProxyConcurrent(t *testing.T) {
 	logger.LogLevel = logger.WarningLevel
-	logger.Log2Console(true)
+	logger.SetLog2Console(true)
 
 	wait := make(chan int)
 
@@ -382,7 +382,7 @@ func TestStaticProxyConcurrent(t *testing.T) {
 // TestConcurrent 测试运行中patch并发支持
 func TestStaticProxyConcurrent1(t *testing.T) {
 	logger.LogLevel = logger.WarningLevel
-	logger.Log2Console(true)
+	logger.SetLog2Console(true)
 
 	for c := 0; c < 50; c++ {
 		go func() {
@@ -433,7 +433,7 @@ func TestStaticProxyConcurrent1(t *testing.T) {
 // TODO fix nil pointer
 func TestStaticProxyConcurrentOnce(t *testing.T) {
 	logger.LogLevel = logger.InfoLevel
-	logger.Log2Console(true)
+	logger.SetLog2Console(true)
 
 	for c := 0; c < 50; c++ {
 		go func() {

@@ -60,6 +60,9 @@ func getFuncName(f *runtime.Func) string {
 func FindFuncByPtr(ptr uintptr) (*runtime.Func, string, error) {
 	for moduleData := &hack.Firstmoduledata; moduleData != nil; moduleData = moduleData.Next {
 		for _, ftab := range moduleData.Ftab {
+			if ftab.Funcoff >= uintptr(len(moduleData.Pclntable)) {
+				break
+			}
 			f := (*runtime.Func)(unsafe.Pointer(&moduleData.Pclntable[ftab.Funcoff]))
 			if f == nil {
 				continue

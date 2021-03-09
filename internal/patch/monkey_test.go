@@ -20,7 +20,7 @@ func yes() bool { return true }
 
 //init 初始化
 func init() {
-	logger.Log2Console(true)
+	logger.SetLog2Console(true)
 }
 
 // TestTimePatch timePatch测试

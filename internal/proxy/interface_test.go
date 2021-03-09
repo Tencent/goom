@@ -31,7 +31,7 @@ func TestInterfaceCall(t *testing.T) {
 // TestAutoGen 测试生成任意接口实现
 func TestAutoGen(t *testing.T) {
 	logger.LogLevel = logger.DebugLevel
-	logger.Log2Console(true)
+	logger.SetLog2Console(true)
 
 	gen := (I)(nil)
 
@@ -129,7 +129,7 @@ func genInterfaceImpl(i interface{}, proxy interface{}) {
 // TestAutoGenImpl 测试生成任意接口实现
 func TestAutoGenImpl(t *testing.T) {
 	logger.LogLevel = logger.DebugLevel
-	logger.Log2Console(true)
+	logger.SetLog2Console(true)
 
 	gen := (I)(nil)
 

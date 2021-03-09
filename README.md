@@ -17,6 +17,7 @@
 
 ## Install
 ```bash
+# 支持的golang版本: go1.13-go1.16
 go get git.code.oa.com/goom/mocker
 ```
 

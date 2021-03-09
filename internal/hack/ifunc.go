@@ -1,4 +1,4 @@
-// +build !go1.16,go1.10 go1.11 go1.12 go1.13 go1.14 go1.15
+// +build !go1.16
 
 package hack
 
@@ -12,7 +12,7 @@ import (
 //go:linkname Firstmoduledata runtime.firstmoduledata
 var Firstmoduledata Moduledata
 
-//Moduledata Moduledata
+// Moduledata Moduledata
 type Moduledata struct {
 	Pclntable []byte
 	Ftab      []Functab
@@ -80,7 +80,7 @@ type Func struct {
 	CodePtr uintptr
 }
 
-//Bitvector Bitvector
+// Bitvector Bitvector
 type Bitvector struct {
 	// nolint
 	n int32 // # of bits
@@ -100,7 +100,7 @@ type textsect struct {
 type typeOff int32 // offset to an *rtype
 
 // TODO 不同go版本兼容
-//Value reflect.Value
+// Value reflect.Value
 type Value struct {
 	Typ  *uintptr
 	Ptr  unsafe.Pointer

@@ -111,9 +111,9 @@ i := (I)(nil)
 mock.Interface(&i).Method("Call").Apply(func(ctx *mocker.IContext, i int) int {
     return 3
 })
-mock.Interface(&i).Method("Call1").Apply(func(ctx *mocker.IContext, i string) string {
-    return "ok"
-})
+mock.Interface(&i).Method("Call1").As(func(ctx *mocker.IContext, i string) string {
+			return ""
+}).When("").Return("ok")
 
 s.Equal(3, i.Call(1), "interface mock check")
 s.Equal("ok", i.Call1(""), "interface mock check")

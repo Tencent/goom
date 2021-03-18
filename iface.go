@@ -1,3 +1,6 @@
+// Package mocker定义了mock的外层用户使用API定义,
+// 包括函数、方法、接口、未导出函数(或方法的)的Mocker的实现。
+// 当前文件实现了接口mock的能力。
 package mocker
 
 import (

@@ -1,3 +1,7 @@
+// Package mocker定义了mock的外层用户使用API定义,
+// 包括函数、方法、接口、未导出函数(或方法的)的Mocker的实现。
+// 当前文件实现了当对同一方法或函数名进行重复构造时可以沿用缓存中已建好的Mocker，
+// 以防止在一个单测内重复构造Mocker时, 对上一个Mocker的内容规则造成覆盖。
 package mocker
 
 import "git.code.oa.com/goom/mocker/internal/proxy"

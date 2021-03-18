@@ -1,3 +1,5 @@
+// Package mocker_test 对mocker包的测试
+// 当前文件实现了对iface.go的单测
 package mocker_test
 
 import (

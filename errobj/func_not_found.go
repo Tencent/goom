@@ -1,4 +1,4 @@
-package errortype
+package errobj
 
 // FuncNotFound 函数未找到异常
 type FuncNotFound struct {

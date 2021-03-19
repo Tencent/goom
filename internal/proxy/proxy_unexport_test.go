@@ -1,4 +1,5 @@
-package proxy
+// Package proxy_test 对proxy包的测试
+package proxy_test
 
 import (
 	"errors"
@@ -8,6 +9,8 @@ import (
 	"strconv"
 	"testing"
 	"time"
+
+	"git.code.oa.com/goom/mocker/internal/proxy"
 )
 
 // TestPrintMock
@@ -17,7 +20,7 @@ func TestPrintMock(t *testing.T) {
 	}
 
 	// 静态代理函数
-	patch, err := StaticProxyByName("fmt.Print", func(a ...interface{}) (n int, err error) {
+	patch, err := proxy.StaticProxyByName("fmt.Print", func(a ...interface{}) (n int, err error) {
 		// 调用原来的函数
 		return fmt.Println("called fmt.Print, args:", a)
 	}, &trampoline)
@@ -37,7 +40,7 @@ func TestNetConnMock(t *testing.T) {
 	var connWrite func(c *conn, b []byte) (int, error)
 
 	// 使用gomonkey进行切面
-	patch, err := StaticProxyByName("net.(*conn).Write", func(c *conn, b []byte) (int, error) {
+	patch, err := proxy.StaticProxyByName("net.(*conn).Write", func(c *conn, b []byte) (int, error) {
 		n, _ := connWrite(c, b)
 		// 修改返回结果
 		return n, errors.New("mocked")

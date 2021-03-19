@@ -1,3 +1,6 @@
+// Package mocker定义了mock的外层用户使用API定义,
+// 包括函数、方法、接口、未导出函数(或方法的)的Mocker的实现。
+// 当前文件实现了Mocker接口各实现类的构造链创建，以便通过链式构造一个Mocker对象。
 package mocker
 
 import (
@@ -10,7 +13,7 @@ import (
 
 const currentPackageIndex = 2
 
-// Builder Mock构建器
+// Builder Mock构建器, 负责创建一个链式构造器.
 type Builder struct {
 	pkgName string
 	mockers []Mocker

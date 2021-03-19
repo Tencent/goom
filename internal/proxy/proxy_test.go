@@ -1,4 +1,5 @@
-package proxy
+// Package proxy_test 对proxy包的测试
+package proxy_test
 
 import (
 	"fmt"
@@ -7,6 +8,8 @@ import (
 	"runtime"
 	"strings"
 	"testing"
+
+	"git.code.oa.com/goom/mocker/internal/proxy"
 
 	"git.code.oa.com/goom/mocker/internal/logger"
 )
@@ -310,7 +313,7 @@ func TestTestStaticProxy(t *testing.T) {
 		trampoline := tc.trampoline()
 
 		// 静态代理函数
-		patch, err := StaticProxyByName(basePath+"."+tc.funcName, tc.proxy(trampoline), trampoline)
+		patch, err := proxy.StaticProxyByName(basePath+"."+tc.funcName, tc.proxy(trampoline), trampoline)
 		if err != nil {
 			log.Println("mock print err:", err)
 			continue
@@ -335,7 +338,7 @@ func BenchmarkStaticProxy(b *testing.B) {
 			fun := tc.proxy(trampoline)
 
 			// 静态代理函数
-			patch, err := StaticProxyByName(basePath+"."+tc.funcName, fun, trampoline)
+			patch, err := proxy.StaticProxyByName(basePath+"."+tc.funcName, fun, trampoline)
 			if err != nil {
 				b.Errorf("mock %s print err:%s", tc.funcName, err)
 			}
@@ -360,7 +363,7 @@ func TestStaticProxyConcurrent(t *testing.T) {
 					trampoline := tc.trampoline()
 
 					// 静态代理函数
-					patch, err := StaticProxyByName(basePath+"."+tc.funcName, tc.proxy(trampoline), trampoline)
+					patch, err := proxy.StaticProxyByName(basePath+"."+tc.funcName, tc.proxy(trampoline), trampoline)
 					if err != nil {
 						t.Error("mock print err:", err)
 					}
@@ -400,7 +403,7 @@ func TestStaticProxyConcurrent1(t *testing.T) {
 				trampoline := tc.trampoline()
 
 				// 静态代理函数
-				patch, err := StaticProxyByName(basePath+"."+tc.funcName, tc.proxy(trampoline), trampoline)
+				patch, err := proxy.StaticProxyByName(basePath+"."+tc.funcName, tc.proxy(trampoline), trampoline)
 				if err != nil {
 					t.Error("mock print err:", err)
 				}
@@ -450,7 +453,7 @@ func TestStaticProxyConcurrentOnce(t *testing.T) {
 			trampoline := tc.trampoline()
 
 			// 静态代理函数
-			patch, err := StaticProxyByName(basePath+"."+tc.funcName, tc.proxy(trampoline), trampoline)
+			patch, err := proxy.StaticProxyByName(basePath+"."+tc.funcName, tc.proxy(trampoline), trampoline)
 			if err != nil {
 				t.Error("mock print err:", err)
 			}

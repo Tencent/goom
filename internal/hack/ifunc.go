@@ -1,3 +1,4 @@
+// Package hack 对go系统包的hack, 包含一些系统结构体的copy，需要和不同的go版本保持同步
 // +build !go1.16
 
 package hack
@@ -62,7 +63,7 @@ type Moduledata struct {
 	typemap map[typeOff]*interface{} // offset to *_rtype in previous module
 	// nolint
 	bad bool // module failed to load and should be ignored
-
+	// Next links next Moduledata
 	Next *Moduledata
 }
 

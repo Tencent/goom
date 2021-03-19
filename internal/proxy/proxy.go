@@ -1,3 +1,5 @@
+// Packge proxy封装了给各种类型的代理(或较patch)中间层
+// 负责比如外部传如私有函数名转换成uintptr，trampoline初始化，并发proxy等
 package proxy
 
 import (
@@ -15,19 +17,17 @@ import (
 // @param proxyFunc 代理函数实现
 // @param trampolineFunc 跳板函数,即代理后的原始函数定义;跳板函数的签名必须和原函数一致,值不能为空
 func StaticProxyByName(funcName string, proxyFunc interface{}, trampolineFunc interface{}) (*patch.PatchGuard, error) {
-	logger.LogInfo("start StaticProxyByName genCallableFunc=", funcName)
+	e := checkTrampolineFunc(trampolineFunc)
+	if e != nil {
+		return nil, e
+	}
 
 	originFuncPtr, err := unexports.FindFuncByName(funcName)
 	if err != nil {
 		return nil, err
 	}
 
-	if trampolineFunc != nil {
-		if reflect.ValueOf(trampolineFunc).Kind() != reflect.Func &&
-			reflect.ValueOf(trampolineFunc).Elem().Kind() != reflect.Func {
-			return nil, errors.New("trampolineFunc has to be a ExportFunc")
-		}
-	}
+	logger.LogInfo("start StaticProxyByName genCallableFunc=", funcName)
 
 	// 保证patch和Apply原子性
 	patch.PatchLock()
@@ -39,10 +39,9 @@ func StaticProxyByName(funcName string, proxyFunc interface{}, trampolineFunc in
 		logger.LogError("StaticProxyByName fail genCallableFunc=", funcName, ":", err)
 		return nil, err
 	}
+
 	// 构造原先方法实例值
 	logger.LogDebug("OrignUintptr is:", fmt.Sprintf("0x%x", patchGuard.OriginFunc()))
-	// 替换原函数调用指针
-	//patchGuard.Apply()
 	logger.LogInfo("static proxy[trampoline] ok, genCallableFunc=", funcName)
 
 	return patchGuard, nil
@@ -53,6 +52,11 @@ func StaticProxyByName(funcName string, proxyFunc interface{}, trampolineFunc in
 // @param proxyFunc 代理函数实现
 // @param originFunc 跳板函数即代理后的原始函数定义(值为nil时,使用公共的跳板函数, 不为nil时使用指定的跳板函数)
 func StaticProxyByFunc(funcDef interface{}, proxyFunc, trampolineFunc interface{}) (*patch.PatchGuard, error) {
+	e := checkTrampolineFunc(trampolineFunc)
+	if e != nil {
+		return nil, e
+	}
+
 	logger.LogInfo("start StaticProxyByFunc funcDef=", funcDef)
 
 	// 保证patch和Apply原子性
@@ -79,9 +83,6 @@ func StaticProxyByFunc(funcDef interface{}, proxyFunc, trampolineFunc interface{
 		}
 	}
 
-	// 替换原函数调用指针
-	//patchGuard.Apply()
-
 	logger.LogDebug("static proxy ok funcDef=", funcDef)
 
 	return patchGuard, nil
@@ -94,6 +95,11 @@ func StaticProxyByFunc(funcDef interface{}, proxyFunc, trampolineFunc interface{
 // @param trampolineFunc 跳板函数即代理后的原始方法定义(值为nil时,使用公共的跳板函数, 不为nil时使用指定的跳板函数)
 func StaticProxyByMethod(target reflect.Type, methodName string, proxyFunc,
 	trampolineFunc interface{}) (*patch.PatchGuard, error) {
+	e := checkTrampolineFunc(trampolineFunc)
+	if e != nil {
+		return nil, e
+	}
+
 	logger.LogInfo("start StaticProxyByMethod genCallableFunc=", target, ".", methodName)
 
 	// 保证patch和Apply原子性
@@ -106,6 +112,7 @@ func StaticProxyByMethod(target reflect.Type, methodName string, proxyFunc,
 		logger.LogError("StaticProxyByMethod fail type=", target, "methodName=", methodName, ":", err)
 		return nil, err
 	}
+
 	// 构造原先方法实例值
 	logger.LogDebug("OrignUintptr is:", fmt.Sprintf("0x%x", patchGuard.OriginFunc()))
 
@@ -118,10 +125,19 @@ func StaticProxyByMethod(target reflect.Type, methodName string, proxyFunc,
 			return nil, err
 		}
 	}
-	// 替换原函数调用指针
-	//patchGuard.Apply()
 
 	logger.LogDebug("static proxy ok genCallableFunc=", target, ".", methodName)
 
 	return patchGuard, nil
+}
+
+// checkTrampolineFunc 检测TrampolineFunc类型
+func checkTrampolineFunc(trampolineFunc interface{}) error {
+	if trampolineFunc != nil {
+		if reflect.ValueOf(trampolineFunc).Kind() != reflect.Func &&
+			reflect.ValueOf(trampolineFunc).Elem().Kind() != reflect.Func {
+			return errors.New("trampolineFunc has to be a exported func")
+		}
+	}
+	return nil
 }

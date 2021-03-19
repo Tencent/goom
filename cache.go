@@ -1,8 +1,12 @@
+// Package mocker定义了mock的外层用户使用API定义,
+// 包括函数、方法、接口、未导出函数(或方法的)的Mocker的实现。
+// 当前文件实现了当对同一方法或函数名进行重复构造时可以沿用缓存中已建好的Mocker，
+// 以防止在一个单测内重复构造Mocker时, 对上一个相同函数或方法的Mocker的内容规则造成覆盖。
 package mocker
 
 import "git.code.oa.com/goom/mocker/internal/proxy"
 
-// CachedMethodMocker 带缓存的方法Mocker
+// CachedMethodMocker 带缓存的方法Mocker,将同一个函数或方法的Mocker进行cache
 type CachedMethodMocker struct {
 	*MethodMocker
 	mCache  map[string]*MethodMocker
@@ -116,4 +120,11 @@ func (m *CachedInterfaceMocker) Method(name string) InterfaceMocker {
 	m.mCache[name] = mocker
 
 	return mocker
+}
+
+// Cancel 清除mock
+func (m *CachedInterfaceMocker) Cancel() {
+	for _, v := range m.mCache {
+		v.Cancel()
+	}
 }

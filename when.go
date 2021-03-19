@@ -1,10 +1,14 @@
+// Package mocker定义了mock的外层用户使用API定义,
+// 包括函数、方法、接口、未导出函数(或方法的)的Mocker的实现。
+// 当前文件实现了按照参数条件进行匹配, 返回对应的mock return值,
+// 支持了mocker.When(XXX).Return(YYY)的高效匹配。
 package mocker
 
 import (
 	"reflect"
 	"sync/atomic"
 
-	"git.code.oa.com/goom/mocker/errortype"
+	"git.code.oa.com/goom/mocker/errobj"
 )
 
 // Matcher 参数匹配接口
@@ -75,16 +79,16 @@ func CreateWhen(m ExportedMocker, funcDef interface{}, args []interface{},
 func checkParams(funcDef interface{}, impTyp reflect.Type,
 	args []interface{}, returns []interface{}, isMethod bool) error {
 	if returns != nil && len(returns) < impTyp.NumOut() {
-		return errortype.NewReturnsNotMatchError(funcDef, len(returns), impTyp.NumOut())
+		return errobj.NewReturnsNotMatchError(funcDef, len(returns), impTyp.NumOut())
 	}
 
 	if isMethod {
 		if args != nil && len(args)+1 < impTyp.NumIn() {
-			return errortype.NewArgsNotMatchError(funcDef, len(args), impTyp.NumIn()-1)
+			return errobj.NewArgsNotMatchError(funcDef, len(args), impTyp.NumIn()-1)
 		}
 	} else {
 		if args != nil && len(args) < impTyp.NumIn() {
-			return errortype.NewArgsNotMatchError(funcDef, len(args), impTyp.NumIn())
+			return errobj.NewArgsNotMatchError(funcDef, len(args), impTyp.NumIn())
 		}
 	}
 

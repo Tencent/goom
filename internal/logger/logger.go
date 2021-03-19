@@ -1,3 +1,4 @@
+// Package logger 负责日志收敛，给日志添加前缀和独立文件输出，以便在本框架被集成之后的日志可读
 package logger
 
 import (

@@ -1,4 +1,4 @@
-package errortype
+package errobj
 
 // TypeNotFound 类型没有找到
 type TypeNotFound struct {

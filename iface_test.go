@@ -1,3 +1,5 @@
+// Package mocker_test 对mocker包的测试
+// 当前文件实现了对iface.go的单测
 package mocker_test
 
 import (
@@ -29,9 +31,9 @@ func (s *IfaceMockerTestSuite) TestUnitInterfaceApply() {
 		mock.Interface(&i).Method("Call").Apply(func(ctx *mocker.IContext, i int) int {
 			return 3
 		})
-		mock.Interface(&i).Method("Call1").Apply(func(ctx *mocker.IContext, i string) string {
-			return "ok"
-		})
+		mock.Interface(&i).Method("Call1").As(func(ctx *mocker.IContext, i string) string {
+			return ""
+		}).When("").Return("ok")
 
 		s.Equal(3, i.Call(1), "interface mock check")
 		s.Equal("ok", i.Call1(""), "interface mock check")

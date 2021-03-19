@@ -1,4 +1,4 @@
-package errortype
+package errobj
 
 // IllegalStatus 状态错误异常
 type IllegalStatus struct {

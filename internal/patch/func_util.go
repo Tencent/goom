@@ -15,13 +15,15 @@ import (
 	"git.code.oa.com/goom/mocker/internal/x86asm"
 )
 
+var (
+	funcSizeCache   = make(map[uintptr]int)
+	funcSizeGetLock sync.Mutex
+)
+
 //pageStart pageStart
 func pageStart(ptr uintptr) uintptr {
 	return ptr & ^(uintptr(syscall.Getpagesize() - 1))
 }
-
-var funcSizeCache = make(map[uintptr]int)
-var funcSizeGetLock sync.Mutex
 
 // get func binary size
 // not absolutly safe
@@ -38,12 +40,6 @@ func GetFuncSize(mode int, start uintptr, minimal bool) (lenth int, err error) {
 
 	prologueLen := len(funcPrologue)
 	code := rawMemoryRead(start, 16) // instruction takes at most 16 bytes
-
-	/* prologue is not required
-	if !bytes.Equal(funcPrologue, code[:prologueLen]) { // not valid function start or invalid prologue
-		return 0, errors.New(fmt.Sprintf("no func prologue, addr:0x%x", start))
-	}
-	*/
 
 	int3Found := false
 	curLen := 0

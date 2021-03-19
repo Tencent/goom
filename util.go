@@ -15,13 +15,24 @@ import (
 	"git.code.oa.com/goom/mocker/internal/hack"
 )
 
-// CurrentPackage 获取当前调用的包路径
+// currentPackageIndex 获取当前包的堆栈层次
+const currentPackageIndex = 3
+
+// currentPackageIndex 获取当前包的堆栈层次
+const defaultCurrentPackageIndex = 2
+
+// currentPackage 获取当前调用的包路径
 func CurrentPackage() string {
-	return currentPackage(currentPackageIndex)
+	return currentPkg(defaultCurrentPackageIndex)
 }
 
-// currentPackage 获取调用者的包路径
-func currentPackage(skip int) string {
+// currentPackage 获取当前调用的包路径
+func currentPackage() string {
+	return currentPkg(currentPackageIndex)
+}
+
+// currentPkg 获取调用者的包路径
+func currentPkg(skip int) string {
 	pc, _, _, _ := runtime.Caller(skip)
 	callerName := runtime.FuncForPC(pc).Name()
 

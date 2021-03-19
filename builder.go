@@ -11,8 +11,6 @@ import (
 	"git.code.oa.com/goom/mocker/internal/proxy"
 )
 
-const currentPackageIndex = 2
-
 // Builder Mock构建器, 负责创建一个链式构造器.
 type Builder struct {
 	pkgName string
@@ -36,7 +34,7 @@ func (b *Builder) GetPkgName() string {
 // Create 创建Mock构建器
 // 非线程安全的,不能在多协程中并发地mock或reset同一个函数
 func Create() *Builder {
-	return &Builder{pkgName: currentPackage(currentPackageIndex), mCache: make(map[interface{}]interface{}, 30)}
+	return &Builder{pkgName: currentPackage(), mCache: make(map[interface{}]interface{}, 30)}
 }
 
 // Interface 指定接口类型的变量定义
@@ -44,7 +42,7 @@ func Create() *Builder {
 func (b *Builder) Interface(iface interface{}) *CachedInterfaceMocker {
 	mKey := reflect.TypeOf(iface).String()
 	if mocker, ok := b.mCache[mKey]; ok {
-		b.pkgName = currentPackage(currentPackageIndex)
+		b.reset2CurPkg()
 
 		return mocker.(*CachedInterfaceMocker)
 	}
@@ -52,14 +50,18 @@ func (b *Builder) Interface(iface interface{}) *CachedInterfaceMocker {
 	// 创建InterfaceMocker
 	// context和interface类型绑定
 	mocker := NewDefaultInterfaceMocker(b.pkgName, iface, proxy.NewContext())
-
 	cachedMocker := NewCachedInterfaceMocker(mocker)
-	b.mockers = append(b.mockers, cachedMocker)
-	b.mCache[mKey] = cachedMocker
 
-	b.pkgName = currentPackage(currentPackageIndex)
+	b.cache(mKey, cachedMocker)
+	b.reset2CurPkg()
 
 	return cachedMocker
+}
+
+// cache 添加到缓存
+func (b *Builder) cache(mKey interface{}, cachedMocker Mocker) {
+	b.mockers = append(b.mockers, cachedMocker)
+	b.mCache[mKey] = cachedMocker
 }
 
 // Struct 指定结构体名称
@@ -67,7 +69,7 @@ func (b *Builder) Interface(iface interface{}) *CachedInterfaceMocker {
 func (b *Builder) Struct(obj interface{}) *CachedMethodMocker {
 	mKey := reflect.ValueOf(obj).Type().String()
 	if mocker, ok := b.mCache[mKey]; ok {
-		b.pkgName = currentPackage(currentPackageIndex)
+		b.reset2CurPkg()
 
 		return mocker.(*CachedMethodMocker)
 	}
@@ -75,10 +77,9 @@ func (b *Builder) Struct(obj interface{}) *CachedMethodMocker {
 	mocker := NewMethodMocker(b.pkgName, obj)
 
 	cachedMocker := NewCachedMethodMocker(mocker)
-	b.mockers = append(b.mockers, cachedMocker)
-	b.mCache[mKey] = cachedMocker
 
-	b.pkgName = currentPackage(currentPackageIndex)
+	b.cache(mKey, cachedMocker)
+	b.reset2CurPkg()
 
 	return cachedMocker
 }
@@ -88,17 +89,15 @@ func (b *Builder) Struct(obj interface{}) *CachedMethodMocker {
 // 方法的mock, 比如 &Struct{}.method
 func (b *Builder) Func(obj interface{}) *DefMocker {
 	if mocker, ok := b.mCache[reflect.ValueOf(obj)]; ok {
-		b.pkgName = currentPackage(currentPackageIndex)
+		b.reset2CurPkg()
 
 		return mocker.(*DefMocker)
 	}
 
 	mocker := NewDefMocker(b.pkgName, obj)
 
-	b.mockers = append(b.mockers, mocker)
-	b.mCache[reflect.ValueOf(obj)] = mocker
-
-	b.pkgName = currentPackage(currentPackageIndex)
+	b.cache(reflect.ValueOf(obj), mocker)
+	b.reset2CurPkg()
 
 	return mocker
 }
@@ -107,7 +106,7 @@ func (b *Builder) Func(obj interface{}) *DefMocker {
 // 比如需要mock结构体函数 (*conn).Write(b []byte)，则name="conn"
 func (b *Builder) ExportStruct(name string) *CachedUnexportedMethodMocker {
 	if mocker, ok := b.mCache[b.pkgName+"_"+name]; ok {
-		b.pkgName = currentPackage(currentPackageIndex)
+		b.reset2CurPkg()
 
 		return mocker.(*CachedUnexportedMethodMocker)
 	}
@@ -121,10 +120,9 @@ func (b *Builder) ExportStruct(name string) *CachedUnexportedMethodMocker {
 	mocker := NewUnexportedMethodMocker(b.pkgName, structName)
 
 	cachedMocker := NewCachedUnexportedMethodMocker(mocker)
-	b.mockers = append(b.mockers, cachedMocker)
-	b.mCache[b.pkgName+"_"+name] = cachedMocker
 
-	b.pkgName = currentPackage(currentPackageIndex)
+	b.cache(b.pkgName+"_"+name, cachedMocker)
+	b.reset2CurPkg()
 
 	return cachedMocker
 }
@@ -139,16 +137,15 @@ func (b *Builder) ExportFunc(name string) *UnexportedFuncMocker {
 	}
 
 	if mocker, ok := b.mCache[b.pkgName+"_"+name]; ok {
-		b.pkgName = currentPackage(currentPackageIndex)
+		b.reset2CurPkg()
 
 		return mocker.(*UnexportedFuncMocker)
 	}
 
 	mocker := NewUnexportedFuncMocker(b.pkgName, name)
-	b.mockers = append(b.mockers, mocker)
-	b.mCache[b.pkgName+"_"+name] = mocker
 
-	b.pkgName = currentPackage(currentPackageIndex)
+	b.cache(b.pkgName+"_"+name, mocker)
+	b.reset2CurPkg()
 
 	return mocker
 }
@@ -160,4 +157,9 @@ func (b *Builder) Reset() *Builder {
 	}
 
 	return b
+}
+
+// reset2CurPkg 设置回当前的包
+func (b *Builder) reset2CurPkg() {
+	b.pkgName = currentPackage()
 }

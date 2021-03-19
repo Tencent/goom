@@ -9,9 +9,9 @@ import (
 	"git.code.oa.com/goom/mocker/internal/patch"
 )
 
-// MakeStub 构造生成桩函数并放到.text区
+// MakeIfaceCaller 构造生成桩函数并放到.text区
 // to 桩函数跳转到的地址
-func MakeStub(to unsafe.Pointer) (uintptr, error) {
+func MakeIfaceCaller(to unsafe.Pointer) (uintptr, error) {
 	// acqure space
 	placehlder, _, err := acqureSpace(30)
 	if err != nil {
@@ -33,10 +33,10 @@ func MakeStub(to unsafe.Pointer) (uintptr, error) {
 	return placehlder, nil
 }
 
-// MakeStubWithCtx 构造桩函数
-// ctx 上下文地址,即 @see reflect.makeFuncImpl
+// MakeIfaceCallerWithCtx 构造生成桩函数并放到.text区
+// ctx make Func对象的上下文地址,即 @see reflect.makeFuncImpl
 // to 桩函数最终跳转到另一个地址
-func MakeStubWithCtx(ctx unsafe.Pointer, to uintptr) (uintptr, error) {
+func MakeIfaceCallerWithCtx(ctx unsafe.Pointer, to uintptr) (uintptr, error) {
 	// acqure space
 	placehlder, _, err := acqureSpace(30)
 	if err != nil {
@@ -76,9 +76,10 @@ func jmpWithRdx(dx uintptr) (value []byte) {
 }
 
 // jmpWithRdxAndCtx Assembles a jump to a function value
-// dx DX寄存器
+// ctx context地址
 // to 跳转目标地址
-func jmpWithRdxAndCtx(dx, to, from uintptr) (value []byte) {
+// from 跳转来源地址
+func jmpWithRdxAndCtx(ctx, to, from uintptr) (value []byte) {
 	var dis uint32
 	if to > from {
 		dis = uint32(int32(to-from) - 5)
@@ -90,14 +91,14 @@ func jmpWithRdxAndCtx(dx, to, from uintptr) (value []byte) {
 
 	return []byte{
 		0x48, 0xBA,
-		byte(dx),
-		byte(dx >> 8),
-		byte(dx >> 16),
-		byte(dx >> 24),
-		byte(dx >> 32),
-		byte(dx >> 40),
-		byte(dx >> 48),
-		byte(dx >> 56), // movabs rdx,dx
+		byte(ctx),
+		byte(ctx >> 8),
+		byte(ctx >> 16),
+		byte(ctx >> 24),
+		byte(ctx >> 32),
+		byte(ctx >> 40),
+		byte(ctx >> 48),
+		byte(ctx >> 56), // movabs rdx,ctx
 
 		0xe9,
 		byte(dis),

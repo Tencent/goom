@@ -169,7 +169,7 @@ func dynamicGenImpl(t *testing.T, i interface{}) {
 	callStub := reflect.ValueOf(stub.MakeFuncStub).Pointer()
 
 	mockFuncPtr := (*hack.Value)(unsafe.Pointer(&mockfunc)).Ptr
-	genStub, err := stub.MakeStubWithCtx(mockFuncPtr, callStub)
+	genStub, err := stub.MakeIfaceCallerWithCtx(mockFuncPtr, callStub)
 
 	if err != nil {
 		panic(err)

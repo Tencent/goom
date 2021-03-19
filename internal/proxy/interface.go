@@ -153,7 +153,7 @@ func genCallableFunc(ctx *IContext, apply interface{},
 		applyValue := reflect.ValueOf(apply)
 		mockFuncPtr := (*hack.Value)(unsafe.Pointer(&applyValue)).Ptr
 
-		genStub, err = stub.MakeStub(mockFuncPtr)
+		genStub, err = stub.MakeIfaceCaller(mockFuncPtr)
 		if err != nil {
 			panic(err)
 		}
@@ -165,7 +165,7 @@ func genCallableFunc(ctx *IContext, apply interface{},
 
 		mockFuncPtr := (*hack.Value)(unsafe.Pointer(&mockfunc)).Ptr
 
-		genStub, err = stub.MakeStubWithCtx(mockFuncPtr, callStub)
+		genStub, err = stub.MakeIfaceCallerWithCtx(mockFuncPtr, callStub)
 		if err != nil {
 			panic(err)
 		}

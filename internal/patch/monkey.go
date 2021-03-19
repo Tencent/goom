@@ -10,6 +10,13 @@ import (
 	"git.code.oa.com/goom/mocker/internal/logger"
 )
 
+var (
+	lock      = sync.Mutex{}
+	patches   = make(map[uintptr]patch)
+	ptrholder = make(map[uintptr]interface{})
+	redirect  = make(map[uintptr]uintptr)
+)
+
 // patch is an applied patch
 // needed to undo a patch
 type patch struct {
@@ -18,13 +25,6 @@ type patch struct {
 	replacement   *reflect.Value
 	originPtr     uintptr
 }
-
-var (
-	lock      = sync.Mutex{}
-	patches   = make(map[uintptr]patch)
-	ptrholder = make(map[uintptr]interface{})
-	redirect  = make(map[uintptr]uintptr)
-)
 
 // PatchGuard 代理执行控制句柄, 可通过此对象进行代理还原
 type PatchGuard struct {

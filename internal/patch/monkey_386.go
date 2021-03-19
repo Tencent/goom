@@ -1,5 +1,6 @@
 package patch
 
+// funcPrologue 函数的开头指纹,用于不同OS获取不同的默认值
 var funcPrologue = defaultFuncPrologue32
 
 const NOP_OPCODE = 0x90

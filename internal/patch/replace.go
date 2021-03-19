@@ -10,6 +10,7 @@ import (
 	"git.code.oa.com/goom/mocker/internal/logger"
 )
 
+// memoryAccessLock .text区内存操作度协作
 var memoryAccessLock sync.RWMutex
 
 // ReplaceApply 函数调用指针替换执行器

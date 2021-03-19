@@ -121,3 +121,10 @@ func (m *CachedInterfaceMocker) Method(name string) InterfaceMocker {
 
 	return mocker
 }
+
+// Cancel 清除mock
+func (m *CachedInterfaceMocker) Cancel() {
+	for _, v := range m.mCache {
+		v.Cancel()
+	}
+}

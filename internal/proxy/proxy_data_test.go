@@ -1,4 +1,5 @@
-package proxy
+// Package proxy_test 对proxy包的测试
+package proxy_test
 
 import (
 	"fmt"

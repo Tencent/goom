@@ -13,7 +13,7 @@ import (
 
 const currentPackageIndex = 2
 
-// Builder Mock构建器
+// Builder Mock构建器, 负责创建一个链式构造器.
 type Builder struct {
 	pkgName string
 	mockers []Mocker

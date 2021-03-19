@@ -11,7 +11,7 @@ import (
 )
 
 // InterfaceMocker 接口Mock
-// 生成和替代接口变量实现Mock
+// 通过生成和替代接口变量实现Mock
 type InterfaceMocker interface {
 	ExportedMocker
 	// Method 指定接口方法

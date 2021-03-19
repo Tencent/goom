@@ -13,7 +13,7 @@ import (
 	"git.code.oa.com/goom/mocker/internal/proxy"
 )
 
-// Mocker mock接口
+// Mocker mock接口, 所有类型(函数、方法、未导出函数、接口等)的Mocker的抽象
 type Mocker interface {
 	// Apply 代理方法实现
 	// 注意: Apply会覆盖之前设定的When条件和Return

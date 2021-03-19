@@ -1,3 +1,5 @@
+// Package unexports 实现了对未导出函数的获取
+// 基于github.com/alangpierce/go-forceexport进行了修改和扩展。
 package unexports
 
 import (
@@ -7,7 +9,7 @@ import (
 	"runtime"
 	"unsafe"
 
-	"git.code.oa.com/goom/mocker/errortype"
+	"git.code.oa.com/goom/mocker/errobj"
 	"git.code.oa.com/goom/mocker/internal/hack"
 	"git.code.oa.com/goom/mocker/internal/logger"
 )
@@ -34,7 +36,7 @@ func FindFuncByName(name string) (uintptr, error) {
 				continue
 			}
 
-			fName := getFuncName(f)
+			fName := funcName(f)
 			if fName == name {
 				return f.Entry(), nil
 			}
@@ -42,24 +44,26 @@ func FindFuncByName(name string) (uintptr, error) {
 	}
 	logger.LogDebugf("FindFuncByName not found %s", name)
 
-	return 0, errortype.NewFuncNotFoundError(name)
+	return 0, errobj.NewFuncNotFoundError(name)
 }
 
-// getFuncName 获取函数名字
-func getFuncName(f *runtime.Func) string {
+// funcName 获取函数名字
+func funcName(f *runtime.Func) string {
 	defer func() {
 		if err := recover(); err != nil {
 			var buf = make([]byte, 1024)
 
 			runtime.Stack(buf, true)
-			logger.LogErrorf("getFuncName error:[%+v]\n%s", err, buf)
+			logger.LogErrorf("funcName error:[%+v]\n%s", err, buf)
 		}
 	}()
 
 	return f.Name()
 }
 
-// FindFuncByPtr 根据地址函数
+// FindFuncByPtr 根据地址找到函数信息
+// 返回: *runtime.Func 函数信息结构体
+// string 函数名
 func FindFuncByPtr(ptr uintptr) (*runtime.Func, string, error) {
 	for moduleData := &hack.Firstmoduledata; moduleData != nil; moduleData = moduleData.Next {
 		for _, ftab := range moduleData.Ftab {
@@ -75,7 +79,7 @@ func FindFuncByPtr(ptr uintptr) (*runtime.Func, string, error) {
 				continue
 			}
 
-			fName := getFuncName(f)
+			fName := funcName(f)
 
 			if f.Entry() == ptr {
 				return f, fName, nil
@@ -116,7 +120,7 @@ func CreateFuncForCodePtr(outFuncPtr interface{}, codePtr uintptr) (*hack.Func, 
 	return funcPtr, nil
 }
 
-// NewFuncWithCodePtr 构造全局函数,函数可长期保留
+// NewFuncWithCodePtr 根据类型和函数地址进行构造reflect.Value
 func NewFuncWithCodePtr(typ reflect.Type, codePtr uintptr) reflect.Value {
 	var ptr2Ptr *uintptr = &codePtr
 	pointer := unsafe.Pointer(ptr2Ptr)

@@ -1,3 +1,4 @@
+// Package stub负责生成和应用桩函数
 package stub
 
 import (
@@ -43,8 +44,7 @@ func init() {
 		count: 0,
 		off:   offset,
 		min:   offset,
-		//max:   uintptr(len(PlaceHolderVar)) + offset,
-		max: uintptr(size) + offset,
+		max:   uintptr(size) + offset,
 	}
 
 	logger.LogDebugf("Placeholder pointer: %d %d\n", placeHolderIns.min, offset)

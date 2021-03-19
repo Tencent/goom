@@ -1,3 +1,4 @@
+// Package stub负责生成和应用桩函数
 package stub
 
 import (
@@ -8,9 +9,9 @@ import (
 	"git.code.oa.com/goom/mocker/internal/patch"
 )
 
-// GenStub 构造桩函数
-// to 桩函数最终跳转到另一个地址
-func GenStub(to unsafe.Pointer) (uintptr, error) {
+// MakeStub 构造生成桩函数并放到.text区
+// to 桩函数跳转到的地址
+func MakeStub(to unsafe.Pointer) (uintptr, error) {
 	// acqure space
 	placehlder, _, err := acqureSpace(30)
 	if err != nil {
@@ -32,10 +33,10 @@ func GenStub(to unsafe.Pointer) (uintptr, error) {
 	return placehlder, nil
 }
 
-// GenStubWithCtx 构造桩函数
-// ctx 上下文地址 @see reflect.makeFuncImpl
+// MakeStubWithCtx 构造桩函数
+// ctx 上下文地址,即 @see reflect.makeFuncImpl
 // to 桩函数最终跳转到另一个地址
-func GenStubWithCtx(ctx unsafe.Pointer, to uintptr) (uintptr, error) {
+func MakeStubWithCtx(ctx unsafe.Pointer, to uintptr) (uintptr, error) {
 	// acqure space
 	placehlder, _, err := acqureSpace(30)
 	if err != nil {

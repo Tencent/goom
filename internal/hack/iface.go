@@ -1,3 +1,4 @@
+// Package hack 对go系统包的hack, 包含一些系统结构体的copy，需要和不同的go版本保持同步
 package hack
 
 import "unsafe"
@@ -11,7 +12,9 @@ const (
 // TODO 不同go版本兼容
 // Iface 接口结构
 type Iface struct {
-	Tab  *Itab
+	// Tab 为接口类型的方法表
+	Tab *Itab
+	// Data 为接口变量所持有的对实现类型接收体的地址
 	Data unsafe.Pointer
 }
 
@@ -25,14 +28,16 @@ type Itab struct {
 	// nolint
 	hash uint32 // copy of Type.hash. Used for type switches.
 	_    [4]byte
-	Fun  [MaxMethod]uintptr // variable sized. fun[0]==0 means Type does not implement Inter.
+	// Fun 为方法表映射、排序同接口方法定义的顺序
+	Fun [MaxMethod]uintptr // variable sized. fun[0]==0 means Type does not implement Inter.
 }
 
 // Eface 接口结构
 type Eface struct {
 	// nolint
 	rtype unsafe.Pointer
-	Data  unsafe.Pointer
+	// Data 为interface{}类型变量指向的Iface类型变量的地址
+	Data unsafe.Pointer
 }
 
 // UnpackEFace 取出接口

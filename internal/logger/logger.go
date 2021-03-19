@@ -43,9 +43,9 @@ var logFile *os.File
 
 // init() 初始化
 func init() {
-	loggerPath, err := getLoggerPath()
+	loggerPath, err := loggerPath()
 	if err != nil {
-		fmt.Println("getLoggerPath error:", err)
+		fmt.Println("loggerPath error:", err)
 		return
 	}
 
@@ -244,7 +244,7 @@ func withPrefixStr(level, format string, a ...interface{}) []byte {
 }
 
 // 获取日志存储路径
-func getLoggerPath() (string, error) {
+func loggerPath() (string, error) {
 	var logFileLocation = "."
 	// 获取当前目录
 	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))

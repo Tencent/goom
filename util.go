@@ -49,14 +49,14 @@ func currentPkg(skip int) string {
 	return callerName
 }
 
-// getFunctionName 获取函数名称
-func getFunctionName(i interface{}) string {
-	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
+// functionName 获取函数名称
+func functionName(fnc interface{}) string {
+	return runtime.FuncForPC(reflect.ValueOf(fnc).Pointer()).Name()
 }
 
-// getTypeName 获取类型名称
-func getTypeName(val interface{}) string {
-	t := reflect.TypeOf(val)
+// typeName 获取类型名称
+func typeName(fnc interface{}) string {
+	t := reflect.TypeOf(fnc)
 	if t.Kind() == reflect.Ptr {
 		return "*" + t.Elem().Name()
 	}

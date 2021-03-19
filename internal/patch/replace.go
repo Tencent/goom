@@ -14,26 +14,27 @@ import (
 var memoryAccessLock sync.RWMutex
 
 // rawMemoryAccess 内存数据读取(非线程安全的)
-func rawMemoryAccess(p uintptr, length int) []byte {
+func rawMemoryAccess(ptr uintptr, length int) []byte {
 	return *(*[]byte)(unsafe.Pointer(&reflect.SliceHeader{
-		Data: p,
+		Data: ptr,
 		Len:  length,
 		Cap:  length,
 	}))
 }
 
 // rawMemoryRead 内存数据读取(线程安全的)
-func rawMemoryRead(p uintptr, length int) []byte {
+func rawMemoryRead(ptr uintptr, length int) []byte {
 	memoryAccessLock.RLock()
 	defer memoryAccessLock.RUnlock()
 
-	data := rawMemoryAccess(p, length)
+	data := rawMemoryAccess(ptr, length)
 	duplucate := make([]byte, length)
 	copy(duplucate, data)
 
 	return duplucate
 }
 
+// replaceFunction 在函数from里面, 织入对to的调用指令，同时将from织入前的指令恢复至trampoline这个地址
 // from is a pointer to the actual function
 // to is a pointer to a go funcvalue
 // trampoline 跳板函数地址, 不传递用0表示
@@ -59,6 +60,22 @@ func replaceFunction(from, to, proxy, trampoline uintptr) (original []byte, orig
 
 	// 构造跳转到代理函数的指令
 	jumpData = jmpToFunctionValue(from, to)
+
+	// get origin func size
+	funcSize, err := GetFuncSize(defaultArchMod, from, false)
+	if err != nil {
+		logger.LogError("GetFuncSize error", err)
+
+		funcSize = defaultFuncSize
+	}
+
+	// 如果需要织入的跳转指令的长度大于原函数指令长度,则任务是无法织入指令
+	if len(jumpData) >= funcSize {
+		Debug("origin inst > ", from, insSizePrintShort, logger.InfoLevel)
+		return nil, 0, nil, fmt.Errorf(
+			"jumpInstSize[%d] is bigger than origin FuncSize[%d], cannot do pathes", len(jumpData), funcSize)
+	}
+
 	// 保存原始指令
 	original = rawMemoryRead(from, len(jumpData))
 	// 判断是否已经被patch过

@@ -5,7 +5,7 @@ var funcPrologue = defaultFuncPrologue32
 
 const NOP_OPCODE = 0x90
 
-// Assembles a jump to a function value
+// jmpToFunctionValue Assembles a jump to a function value
 func jmpToFunctionValue(to uintptr) []byte {
 	return []byte{
 		0xBA,

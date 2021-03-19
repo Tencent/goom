@@ -212,7 +212,7 @@ func (m *MethodMocker) ExportMethod(name string) UnexportedMocker {
 	}
 
 	// 转换结构体名
-	structName := getTypeName(m.structDef)
+	structName := typeName(m.structDef)
 	if strings.Contains(structName, "*") {
 		structName = fmt.Sprintf("(%s)", structName)
 	}
@@ -465,7 +465,7 @@ func (m *DefMocker) Apply(imp interface{}) {
 		panic("funcdef is empty")
 	}
 
-	var funcname = getFunctionName(m.funcdef)
+	var funcname = functionName(m.funcdef)
 
 	if strings.HasSuffix(funcname, "-fm") {
 		m.applyByName(strings.TrimRight(funcname, "-fm"), imp)

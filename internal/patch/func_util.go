@@ -16,8 +16,10 @@ import (
 )
 
 var (
-	funcSizeCache   = make(map[uintptr]int)
-	funcSizeGetLock sync.Mutex
+	// funcSizeCache 函数长度缓存
+	funcSizeCache = make(map[uintptr]int)
+	// funcSizeReadLock 并发读写funcSizeCache锁
+	funcSizeReadLock sync.Mutex
 )
 
 // pageStart page start of memory
@@ -28,10 +30,10 @@ func pageStart(ptr uintptr) uintptr {
 // GetFuncSize get func binary size
 // not absolutly safe
 func GetFuncSize(mode int, start uintptr, minimal bool) (lenth int, err error) {
-	funcSizeGetLock.Lock()
+	funcSizeReadLock.Lock()
 	defer func() {
 		funcSizeCache[start] = lenth
-		funcSizeGetLock.Unlock()
+		funcSizeReadLock.Unlock()
 	}()
 
 	if lenth, ok := funcSizeCache[start]; ok {

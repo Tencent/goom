@@ -50,7 +50,6 @@ func PatchUnlock() {
 // Apply() 执行
 func (g *PatchGuard) Apply() {
 	PatchLock()
-
 	defer PatchUnlock()
 
 	g.applied = true
@@ -100,7 +99,7 @@ func Patch(target, replacement interface{}) (*PatchGuard, error) {
 	return PatchTrampoline(target, replacement, nil)
 }
 
-// Patch 将函数调用指定代理函数
+// PatchTrampoline 将函数调用指定代理函数
 // target 原始函数
 // replacement 代理函数
 // trampoline 指定跳板函数(可不指定,传nil)
@@ -123,7 +122,7 @@ func UnsafePatch(target, replacement interface{}) (*PatchGuard, error) {
 	return UnsafePatchTrampoline(target, replacement, nil)
 }
 
-// Patch replaces a function with another
+// UnsafePatchTrampoline replaces a function with another
 func UnsafePatchTrampoline(target, replacement interface{}, trampoline interface{}) (*PatchGuard, error) {
 	t := reflect.ValueOf(target)
 	r := reflect.ValueOf(replacement)
@@ -158,6 +157,7 @@ func patchValue(target, replacement reflect.Value, trampoline interface{}) (uint
 	return unsafePatchValue(target, replacement, trampolinePtr)
 }
 
+// checkSignature 检测两个函数类型的参数的内存区段是否一致
 func checkSignature(targetType reflect.Type, replacementType reflect.Type) bool {
 	// 检测参数对齐
 	if targetType.NumIn() != replacementType.NumIn() {
@@ -316,7 +316,7 @@ func UnpatchAll() {
 	}
 }
 
-// Unpatch removes a monkeypatch from the specified function
+// unpatchValue removes a monkeypatch from the specified function
 // returns whether the function was patched in the first place
 func unpatchValue(target uintptr) bool {
 	p, ok := patches[target]
@@ -331,7 +331,7 @@ func unpatchValue(target uintptr) bool {
 	return true
 }
 
-//unpatch unpatch
+// unpatch unpatch
 func unpatch(target uintptr, p patch) {
 	_ = CopyToLocation(target, p.originalBytes)
 	Debug(fmt.Sprintf("unpatch copy to 0x%x", target), target, 20, logger.DebugLevel)

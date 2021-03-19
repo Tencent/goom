@@ -8,7 +8,7 @@ var funcPrologue = defaultFuncPrologue64
 // NOP_OPCODE 空指令插入到原函数开头第一个字节, 用于判断原函数是否已经被Patch过
 const NopOpcode = 0x90
 
-// Assembles a jump to a function value
+// jmpToFunctionValue Assembles a jump to a function value
 func jmpToFunctionValue(from, to uintptr) (value []byte) {
 	return []byte{
 		0x90, // NOP
@@ -25,7 +25,7 @@ func jmpToFunctionValue(from, to uintptr) (value []byte) {
 	}
 }
 
-// Assembles a jump to a function value
+// jmpToOriginFunctionValue Assembles a jump to a function value
 func jmpToOriginFunctionValue(from, to uintptr) (value []byte) {
 	if relative(from, to) {
 		var dis uint32

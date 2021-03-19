@@ -10,28 +10,8 @@ import (
 	"time"
 )
 
-// 默认日志前缀
-const defaultPrefix = "[goom-mocker]"
-
-// ShowError2Console 把错误同步打印到控制台
-var ShowError2Console = false
-
-// LogLevel 日志级别
-// level总共分5个级别：debug < info< warning< error< critical
-var LogLevel = 6
-
-// Logger 独立日志文件
-var Logger io.Writer = os.Stdout
-
-// EnableLogColor 开启并发日志染色
-var EnableLogColor = false
-var colorGetter func() string
-
-// logFile 日志路径
-var logFile *os.File
-
 // 日志级别定义
-var (
+const (
 	TraceLevel    = 6
 	DebugLevel    = 5
 	InfoLevel     = 4
@@ -39,6 +19,27 @@ var (
 	ErrorLevel    = 2
 	CriticalLevel = 1
 )
+
+// 默认日志前缀
+const defaultPrefix = "[goom-mocker]"
+
+// LogLevel 日志级别
+// level总共分5个级别：debug < info< warning< error< critical
+var LogLevel = 6
+
+// ShowError2Console 把错误同步打印到控制台
+var ShowError2Console = false
+
+// Logger 独立日志文件
+var Logger io.Writer = os.Stdout
+
+// EnableLogColor 开启并发日志染色
+var EnableLogColor = false
+
+var colorGetter func() string
+
+// logFile 日志路径
+var logFile *os.File
 
 // init() 初始化
 func init() {

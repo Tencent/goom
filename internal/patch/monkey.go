@@ -1,3 +1,5 @@
+// Package patch生成指令跳转(到代理函数)并替换.text区内存
+// 对于trampoline模式的使用场景，本包实现了指令移动后的修复
 package patch
 
 import (
@@ -57,7 +59,7 @@ func (g *PatchGuard) Apply() {
 		logger.LogWarningf("Apply to 0x%x error: %s", g.target, err)
 	}
 
-	ShowInst(fmt.Sprintf("apply copy to 0x%x", g.target), g.target, 20, logger.DebugLevel)
+	Debug(fmt.Sprintf("apply copy to 0x%x", g.target), g.target, 20, logger.DebugLevel)
 }
 
 // Unpatch 取消代理,还原指令码
@@ -197,7 +199,7 @@ func unsafePatchValue(target, replacement reflect.Value, trampoline uintptr) (ui
 	if err != nil {
 		if strings.Contains(err.Error(), "already patched") {
 			if p, ok := patches[targetPointer]; ok {
-				showInst("origin bytes", targetPointer, p.originalBytes, logger.WarningLevel)
+				debug("origin bytes", targetPointer, p.originalBytes, logger.WarningLevel)
 			}
 		}
 
@@ -332,7 +334,7 @@ func unpatchValue(target uintptr) bool {
 //unpatch unpatch
 func unpatch(target uintptr, p patch) {
 	_ = CopyToLocation(target, p.originalBytes)
-	ShowInst(fmt.Sprintf("unpatch copy to 0x%x", target), target, 20, logger.DebugLevel)
+	Debug(fmt.Sprintf("unpatch copy to 0x%x", target), target, 20, logger.DebugLevel)
 }
 
 // UnpatchInstanceMethod removes the patch on methodName of the target

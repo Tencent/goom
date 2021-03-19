@@ -38,10 +38,12 @@ func (s *IfaceMockerTestSuite) TestUnitInterfaceApply() {
 		s.Equal(3, i.Call(1), "interface mock check")
 		s.Equal("ok", i.Call1(""), "interface mock check")
 
+		s.NotNil(i, "interface var nil check")
+
 		// Mock重置, 接口变量将恢复原来的值
 		mock.Reset()
 
-		s.Equal(nil, i, "interface mock reset check")
+		s.Nil(i, "interface mock reset check")
 	})
 }
 
@@ -66,9 +68,11 @@ func (s *IfaceMockerTestSuite) TestUnitInterfaceReturn() {
 		s.Equal("ok", i.Call1(""), "interface mock check")
 		s.Equal(int32(5), i.call2(0), "interface mock check")
 
+		s.NotNil(i, "interface var nil check")
+
 		mock.Reset()
 
-		s.Equal(nil, i, "interface mock reset check")
+		s.Nil(i, "interface mock reset check")
 	})
 }
 

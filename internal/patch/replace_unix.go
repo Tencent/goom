@@ -21,7 +21,7 @@ func mprotectCrossPage(addr uintptr, length int, prot int) {
 
 		err := syscall.Mprotect(page, prot)
 		if err != nil {
-			panic("go-instrument access mem error:" + err.Error())
+			panic("access mem error:" + err.Error())
 		}
 	}
 }

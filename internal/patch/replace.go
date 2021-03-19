@@ -3,7 +3,7 @@ package patch
 import (
 	"fmt"
 	"reflect"
-	"runtime/debug"
+	rtdebug "runtime/debug"
 	"sync"
 	"unsafe"
 
@@ -12,9 +12,6 @@ import (
 
 // memoryAccessLock .text区内存操作度协作
 var memoryAccessLock sync.RWMutex
-
-// ReplaceApply 函数调用指针替换执行器
-type ReplaceApply func()
 
 // rawMemoryAccess 内存数据读取(非线程安全的)
 func rawMemoryAccess(p uintptr, length int) []byte {
@@ -45,7 +42,7 @@ func replaceFunction(from, to, proxy, trampoline uintptr) (original []byte, orig
 	defer func() {
 		if err1 := recover(); err1 != nil {
 			logger.LogErrorf("replaceFunction from=%d to=%d trampoline=%d error:%s", from, to, trampoline, err1)
-			logger.LogError(string(debug.Stack()))
+			logger.LogError(string(rtdebug.Stack()))
 
 			var ok bool
 
@@ -58,7 +55,7 @@ func replaceFunction(from, to, proxy, trampoline uintptr) (original []byte, orig
 
 	logger.LogInfof("starting replace func from=0x%x to=0x%x proxy=0x%x trampoline=0x%x ...", from, to, proxy, trampoline)
 
-	ShowInst("show proxy inst >>>>> ", proxy, 30, logger.DebugLevel)
+	Debug("show proxy inst >>>>> ", proxy, 30, logger.DebugLevel)
 
 	// 构造跳转到代理函数的指令
 	jumpData = jmpToFunctionValue(from, to)
@@ -70,7 +67,7 @@ func replaceFunction(from, to, proxy, trampoline uintptr) (original []byte, orig
 		return
 	}
 
-	showInst("origin >>>>> ", from, rawMemoryRead(from, 30), logger.DebugLevel)
+	debug("origin >>>>> ", from, rawMemoryRead(from, 30), logger.DebugLevel)
 
 	// 检测是否支持自动分配跳板函数
 	if trampoline > 0 {

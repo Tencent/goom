@@ -6,7 +6,7 @@ import (
 )
 
 // 注意: 此版本暂时不能完整支持windows
-
+// PAGE_EXECUTE_READWRITE
 const PAGE_EXECUTE_READWRITE = 0x40
 
 var (

@@ -1,3 +1,7 @@
+# [0.2.8](https://git.code.oa.com/goom/mocker/compare/0.2.2...0.2.8)(2021-03-19)
+### Features
+* 支持go1.16版本
+
 # [0.2.2](https://git.code.oa.com/goom/mocker/compare/0.1.6...0.2.2)(2020-08-19)
 ### Features
 * 支持接口Mock

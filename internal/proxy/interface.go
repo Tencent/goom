@@ -54,6 +54,9 @@ func notImplement() {
 	panic("method not implements. (please write a mocker on it)")
 }
 
+// ProxyFunc 代理函数类型的签名
+type ProxyFunc func(args []reflect.Value) (results []reflect.Value)
+
 // MakeInterfaceImpl 构造接口代理，自动生成接口实现的桩指令织入到内存中
 // iface 接口类型变量,指针类型
 // ctx 接口代理上下文
@@ -62,7 +65,7 @@ func notImplement() {
 // proxy 动态代理函数, 用于反射的方式回调, proxy参数会覆盖apply参数值
 // return error 异常
 func MakeInterfaceImpl(iface interface{}, ctx *IContext, method string,
-	imp interface{}, proxy func(args []reflect.Value) (results []reflect.Value)) error {
+	imp interface{}, proxy ProxyFunc) error {
 	ifaceType := reflect.TypeOf(iface)
 	if ifaceType.Kind() != reflect.Ptr {
 		return errobj.NewIllegalParamTypeError("iface", ifaceType.String(), "ptr")
@@ -150,7 +153,7 @@ func backUp2Context(ctx *IContext, iface unsafe.Pointer) {
 
 // genCallableFunc 生成可以直接CALL的函数, 带上下文(rdx)
 func genCallableFunc(ctx *IContext, apply interface{},
-	proxy func(args []reflect.Value) (results []reflect.Value)) uintptr {
+	proxy ProxyFunc) uintptr {
 	var (
 		genStub uintptr
 		err     error

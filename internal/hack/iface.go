@@ -3,7 +3,6 @@ package hack
 
 import "unsafe"
 
-// MaxMethod 支持类型的最大方法数量
 const (
 	// MaxMethod 支持类型的最大方法数量
 	MaxMethod = 999

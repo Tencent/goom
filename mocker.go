@@ -47,6 +47,9 @@ type UnexportedMocker interface {
 	Origin(orign interface{}) UnexportedMocker
 }
 
+// ProxyFunc 代理函数类型的签名
+type ProxyFunc func(args []reflect.Value) (results []reflect.Value)
+
 // baseMocker mocker基础类型
 type baseMocker struct {
 	pkgName string
@@ -103,14 +106,14 @@ func (m *baseMocker) applyByMethod(structDef interface{}, method string, imp int
 
 // applyByIfaceMethod 根据接口方法应用mock
 func (m *baseMocker) applyByIfaceMethod(ctx *proxy.IContext, iface interface{}, method string, imp interface{},
-	implV func(args []reflect.Value) (results []reflect.Value)) {
+	implV ProxyFunc) {
 
 	impV := reflect.TypeOf(imp)
 	if impV.In(0) != reflect.TypeOf(&IContext{}) {
 		panic(errobj.NewIllegalParamTypeError("<first arg>", impV.In(0).Name(), "*IContext"))
 	}
 
-	err := proxy.MakeInterfaceImpl(iface, ctx, method, imp, implV)
+	err := proxy.MakeInterfaceImpl(iface, ctx, method, imp, proxy.ProxyFunc(implV))
 	if err != nil {
 		panic(errobj.NewWrapErrorS("interface mock apply error", err))
 	}
@@ -128,7 +131,7 @@ func (m *baseMocker) whens(when *When) error {
 	return nil
 }
 
-// if 指定的返回值
+// if 指定的返回值 TODO 功能在适配中
 // func (m *baseMocker) ifs(_if *If) error {
 // 	m.imp = reflect.MakeFunc(_if.funcTyp, m.callback).Interface()
 // 	m._if = _if

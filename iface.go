@@ -52,7 +52,7 @@ func NewDefaultInterfaceMocker(pkgName string, iface interface{}, ctx *proxy.ICo
 	}
 }
 
-// Method 名字转化为接口
+// Method 指定mock的方法名
 func (m *DefaultInterfaceMocker) Method(name string) InterfaceMocker {
 	if name == "" {
 		panic("method is empty")
@@ -74,7 +74,7 @@ func (m *DefaultInterfaceMocker) checkMethod(name string) {
 	}
 }
 
-// Apply Apply
+// Apply 应用接口方法mock为实际的接收体方法
 func (m *DefaultInterfaceMocker) Apply(imp interface{}) {
 	if m.method == "" {
 		panic("method is empty")
@@ -83,7 +83,7 @@ func (m *DefaultInterfaceMocker) Apply(imp interface{}) {
 	m.applyByIfaceMethod(m.ctx, m.iface, m.method, imp, nil)
 }
 
-// nolint
+// As 将接口方法mock为实际的接收体方法
 func (m *DefaultInterfaceMocker) As(imp interface{}) InterfaceMocker {
 	if m.method == "" {
 		panic("method is empty")
@@ -94,7 +94,7 @@ func (m *DefaultInterfaceMocker) As(imp interface{}) InterfaceMocker {
 	return m
 }
 
-// nolint
+// When 执行参数匹配时的返回值
 func (m *DefaultInterfaceMocker) When(args ...interface{}) *When {
 	if m.method == "" {
 		panic("method is empty")
@@ -119,7 +119,7 @@ func (m *DefaultInterfaceMocker) When(args ...interface{}) *When {
 	return when
 }
 
-// nolint
+// Return 指定返回值
 func (m *DefaultInterfaceMocker) Return(returns ...interface{}) *When {
 	if m.funcDef == nil {
 		panic("must use As before Return")
@@ -148,17 +148,17 @@ func (m *DefaultInterfaceMocker) Return(returns ...interface{}) *When {
 	return when
 }
 
-// nolint
+// Origin 回调原函数(暂时不支持)
 func (m *DefaultInterfaceMocker) Origin(orign interface{}) ExportedMocker {
 	panic("implement me")
 }
 
-// nolint
+// Inject 回调原函数(暂时不支持)
 func (m *DefaultInterfaceMocker) Inject(iface interface{}) InterfaceMocker {
 	panic("implement me")
 }
 
-// nolint
+// If 回调原函数(暂时不支持)
 func (m *DefaultInterfaceMocker) If() *If {
 	panic("implement me")
 }

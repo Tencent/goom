@@ -41,11 +41,3 @@ func NewWrapErrorS(errStr string, cause error) error {
 		cause:  cause,
 	}
 }
-
-// UnWrap 异常转述解包
-func UnWrap(err error) error {
-	if w, ok := err.(*WrapError); ok {
-		return w.cause
-	}
-	return nil
-}

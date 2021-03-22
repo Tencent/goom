@@ -100,7 +100,7 @@ func (s *IfaceMockerTestSuite) TestUnitArgsNotMatch() {
 			})
 		}()
 
-		s.IsType(&errobj.IllegalParam{}, errobj.UnWrap(expectErr), "param check fail test")
+		s.IsType(&errobj.IllegalParam{}, errobj.UnWrapCause(expectErr), "param check fail test")
 	})
 }
 

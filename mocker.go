@@ -112,7 +112,7 @@ func (m *baseMocker) applyByIfaceMethod(ctx *proxy.IContext, iface interface{}, 
 
 	err := proxy.MakeInterfaceImpl(iface, ctx, method, imp, implV)
 	if err != nil {
-		panic(fmt.Sprintf("proxy interface method error: %v", err))
+		panic(errobj.NewWrapErrorS("interface mock apply error", err))
 	}
 
 	m.guard = NewIfaceMockGuard(ctx)

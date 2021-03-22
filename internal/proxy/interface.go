@@ -62,7 +62,7 @@ func notImplement() {
 // proxy 动态代理函数, 用于反射的方式回调, proxy参数会覆盖apply参数值
 // return error 异常
 func MakeInterfaceImpl(iface interface{}, ctx *IContext, method string,
-	apply interface{}, proxy func(args []reflect.Value) (results []reflect.Value)) error {
+	imp interface{}, proxy func(args []reflect.Value) (results []reflect.Value)) error {
 	ifaceType := reflect.TypeOf(iface)
 	if ifaceType.Kind() != reflect.Ptr {
 		return errobj.NewIllegalParamTypeError("iface", ifaceType.String(), "ptr")
@@ -83,13 +83,21 @@ func MakeInterfaceImpl(iface interface{}, ctx *IContext, method string,
 		}
 	}
 
+	// check args len match
+	applyArgLen := reflect.TypeOf(imp).NumIn()
+	ifaceMArgLen := typ.Method(funcTabIndex).Type.NumIn()
+	if ifaceMArgLen >= applyArgLen {
+		aErr := errobj.NewArgsNotMatchError(imp, applyArgLen, ifaceMArgLen+1)
+		return errobj.NewIllegalParamCError("imp", reflect.ValueOf(imp).String(), aErr)
+	}
+
 	gen := hack.UnpackEFace(iface).Data
 
 	// 首次调用备份iface
 	backUp2Context(ctx, gen)
 
 	// mock接口方法
-	var itabFunc = genCallableFunc(ctx, apply, proxy)
+	var itabFunc = genCallableFunc(ctx, imp, proxy)
 
 	ifaceCacheKey := typ.PkgPath() + "/" + typ.String()
 	// 上下文中查找接口代理对象的缓存

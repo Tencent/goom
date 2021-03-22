@@ -5,6 +5,8 @@ package mocker_test
 import (
 	"testing"
 
+	"git.code.oa.com/goom/mocker/errobj"
+
 	"git.code.oa.com/goom/mocker"
 	"github.com/stretchr/testify/suite"
 )
@@ -73,6 +75,32 @@ func (s *IfaceMockerTestSuite) TestUnitInterfaceReturn() {
 		mock.Reset()
 
 		s.Nil(i, "interface mock reset check")
+	})
+}
+
+// TestUnitArgsNotMatch 测试接口mock参数不匹配情况
+func (s *IfaceMockerTestSuite) TestUnitArgsNotMatch() {
+	s.Run("success", func() {
+
+		var expectErr error
+		func() {
+			defer func() {
+				if err := recover(); err != nil {
+					expectErr = err.(error)
+				}
+			}()
+			mock := mocker.Create()
+
+			// 接口变量
+			i := (I)(nil)
+
+			// 将Mock应用到接口变量(仅对该变量有效)
+			mock.Interface(&i).Method("Call").Apply(func(ctx *mocker.IContext) int {
+				return 3
+			})
+		}()
+
+		s.IsType(&errobj.IllegalParam{}, errobj.UnWrap(expectErr), "param check fail test")
 	})
 }
 

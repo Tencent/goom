@@ -15,11 +15,12 @@ import (
 	"git.code.oa.com/goom/mocker/internal/hack"
 )
 
-// currentPackageIndex 获取当前包的堆栈层次
-const currentPackageIndex = 3
-
-// currentPackageIndex 获取当前包的堆栈层次
-const defaultCurrentPackageIndex = 2
+const (
+	// currentPackageIndex 获取当前包的堆栈层次
+	currentPackageIndex = 3
+	// currentPackageIndex 获取当前包的堆栈层次
+	defaultCurrentPackageIndex = 2
+)
 
 // currentPackage 获取当前调用的包路径
 func CurrentPackage() string {

@@ -7,6 +7,7 @@ type WrapError struct {
 	cause  error
 }
 
+// Error 错误描述
 func (w *WrapError) Error() string {
 	s := ""
 	if w.err != nil {

@@ -26,8 +26,8 @@ func (b *Builder) Pkg(name string) *Builder {
 	return b
 }
 
-// 返回包名
-func (b *Builder) GetPkgName() string {
+// PkgName 返回包名
+func (b *Builder) PkgName() string {
 	return b.pkgName
 }
 

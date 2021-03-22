@@ -120,7 +120,7 @@ func (m *baseMocker) applyByIfaceMethod(ctx *proxy.IContext, iface interface{}, 
 	m.imp = imp
 }
 
-// when 指定的返回值
+// whens 指定的返回值
 func (m *baseMocker) whens(when *When) error {
 	m.imp = reflect.MakeFunc(when.funcTyp, m.callback).Interface()
 	m.when = when
@@ -270,7 +270,7 @@ func (m *MethodMocker) When(args ...interface{}) *When {
 	return when
 }
 
-// Matcher 代理方法返回
+// Return 指定返回值
 func (m *MethodMocker) Return(returns ...interface{}) *When {
 	if m.method == "" {
 		panic("method is empty")
@@ -298,7 +298,7 @@ func (m *MethodMocker) Return(returns ...interface{}) *When {
 	return when
 }
 
-// Origin 调用原函数
+// Origin 指定调用的原函数
 func (m *MethodMocker) Origin(orign interface{}) ExportedMocker {
 	m.origin = orign
 
@@ -328,8 +328,8 @@ func NewUnexportedMethodMocker(pkgName string, structName string) *UnexportedMet
 	}
 }
 
-// getObjName 获取对象名
-func (m *UnexportedMethodMocker) getObjName() string {
+// objName 获取对象名
+func (m *UnexportedMethodMocker) objName() string {
 	return fmt.Sprintf("%s.%s.%s", m.pkgName, m.structName, m.methodName)
 }
 
@@ -344,7 +344,7 @@ func (m *UnexportedMethodMocker) Method(name string) UnexportedMocker {
 // mock回调函数, 需要和mock模板函数的签名保持一致
 // 方法的参数签名写法比如: func(s *Struct, arg1, arg2 type), 其中第一个参数必须是接收体类型
 func (m *UnexportedMethodMocker) Apply(imp interface{}) {
-	name := m.getObjName()
+	name := m.objName()
 	if name == "" {
 		panic("method name is empty")
 	}
@@ -365,7 +365,7 @@ func (m *UnexportedMethodMocker) Origin(orign interface{}) UnexportedMocker {
 
 // As 将未导出函数(或方法)转换为导出函数(或方法)
 func (m *UnexportedMethodMocker) As(funcdef interface{}) ExportedMocker {
-	name := m.getObjName()
+	name := m.objName()
 	if name == "" {
 		panic("method name is empty")
 	}
@@ -405,8 +405,8 @@ func NewUnexportedFuncMocker(pkgName, funcName string) *UnexportedFuncMocker {
 	}
 }
 
-// getObjName 获取对象名
-func (m *UnexportedFuncMocker) getObjName() string {
+// objName 获取对象名
+func (m *UnexportedFuncMocker) objName() string {
 	return fmt.Sprintf("%s.%s", m.pkgName, m.funcName)
 }
 
@@ -414,7 +414,7 @@ func (m *UnexportedFuncMocker) getObjName() string {
 // mock回调函数, 需要和mock模板函数的签名保持一致
 // 方法的参数签名写法比如: func(s *Struct, arg1, arg2 type), 其中第一个参数必须是接收体类型
 func (m *UnexportedFuncMocker) Apply(imp interface{}) {
-	name := m.getObjName()
+	name := m.objName()
 
 	m.applyByName(name, imp)
 }
@@ -428,7 +428,7 @@ func (m *UnexportedFuncMocker) Origin(orign interface{}) UnexportedMocker {
 
 // As 将未导出函数(或方法)转换为导出函数(或方法)
 func (m *UnexportedFuncMocker) As(funcdef interface{}) ExportedMocker {
-	name := m.getObjName()
+	name := m.objName()
 
 	originFuncPtr, err := unexports.FindFuncByName(name)
 	if err != nil {

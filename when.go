@@ -21,7 +21,8 @@ type Matcher interface {
 	AddResult([]interface{})
 }
 
-// When Mock条件匹配
+// When Mock条件匹配。
+// 当参数等于指定的值时,会return对应的指定值
 type When struct {
 	ExportedMocker
 
@@ -166,7 +167,7 @@ func (w *When) Returns(resultsmap map[interface{}]interface{}) *When {
 	return w
 }
 
-// invoke invoke
+// invoke 执行When参数匹配并返回值
 func (w *When) invoke(args1 []reflect.Value) (results []reflect.Value) {
 	if len(w.matches) != 0 {
 		for _, c := range w.matches {
@@ -203,7 +204,7 @@ type BaseMatcher struct {
 	funTyp  reflect.Type
 }
 
-//newBaseMatcher 创建新参数匹配基类
+// newBaseMatcher 创建新参数匹配基类
 func newBaseMatcher(results []interface{}, funTyp reflect.Type) *BaseMatcher {
 	resultVs := make([][]reflect.Value, 0)
 	if results != nil {
@@ -248,7 +249,7 @@ type DefaultMatcher struct {
 	args     []reflect.Value
 }
 
-//newDefaultMatch 创建新参数匹配
+// newDefaultMatch 创建新参数匹配
 func newDefaultMatch(args []interface{}, results []interface{}, isMethod bool, funTyp reflect.Type) *DefaultMatcher {
 	argVs := I2V(args, inTypes(isMethod, funTyp))
 

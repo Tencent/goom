@@ -12,12 +12,12 @@ import (
 
 // 日志级别定义
 const (
-	TraceLevel    = 6
-	DebugLevel    = 5
-	InfoLevel     = 4
-	WarningLevel  = 3
-	ErrorLevel    = 2
-	CriticalLevel = 1
+	TraceLevel    = 6 // 可详细跟踪
+	DebugLevel    = 5 // 可调式
+	InfoLevel     = 4 // 日常使用关键信息
+	WarningLevel  = 3 // 警告级别信息
+	ErrorLevel    = 2 // 错误级别信息
+	CriticalLevel = 1 // 严重错误
 )
 
 // 默认日志前缀

@@ -29,12 +29,12 @@ func NewIfaceMockGuard(ctx *proxy.IContext) *IfaceMockGuard {
 	return &IfaceMockGuard{ctx: ctx}
 }
 
-//noLint
+// Apply 应用mock
 func (i *IfaceMockGuard) Apply() {
-	// do nothing
+	// 无需操作
 }
 
-// Cancel() Cancel()
+// Cancel 取消mock
 func (i *IfaceMockGuard) Cancel() {
 	i.ctx.Cancel()
 }
@@ -49,12 +49,12 @@ func NewPatchMockGuard(patchGuard *patch.PatchGuard) *PatchMockGuard {
 	return &PatchMockGuard{patchGuard: patchGuard}
 }
 
-//noLint
+// Apply 应用mock
 func (p *PatchMockGuard) Apply() {
 	p.patchGuard.Apply()
 }
 
-// Cancel() Cancel()
+// Cancel 取消mock
 func (p *PatchMockGuard) Cancel() {
 	p.patchGuard.UnpatchWithLock()
 }

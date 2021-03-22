@@ -1,3 +1,4 @@
+// Package errobj 收拢了所有的错误类型,错误溯源模板类型等
 package errobj
 
 // Cause 带原因的异常类型

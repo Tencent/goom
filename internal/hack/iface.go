@@ -39,7 +39,7 @@ type Eface struct {
 	Data unsafe.Pointer
 }
 
-// UnpackEFace 取出接口
+// UnpackEFace 取出接口对象
 func UnpackEFace(obj interface{}) *Eface {
 	return (*Eface)(unsafe.Pointer(&obj))
 }

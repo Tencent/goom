@@ -17,7 +17,7 @@ type InterfaceMocker interface {
 	// Method 指定接口方法
 	Method(name string) InterfaceMocker
 	// As 将接口方法应用为函数类型
-	As(funcdef interface{}) InterfaceMocker
+	As(imp interface{}) InterfaceMocker
 	// Inject 将mock设置到变量
 	Inject(iface interface{}) InterfaceMocker
 	// If 条件表达式匹配
@@ -84,12 +84,12 @@ func (m *DefaultInterfaceMocker) Apply(imp interface{}) {
 }
 
 // nolint
-func (m *DefaultInterfaceMocker) As(funcdef interface{}) InterfaceMocker {
+func (m *DefaultInterfaceMocker) As(imp interface{}) InterfaceMocker {
 	if m.method == "" {
 		panic("method is empty")
 	}
 
-	m.funcDef = funcdef
+	m.funcDef = imp
 
 	return m
 }

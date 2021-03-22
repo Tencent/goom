@@ -112,7 +112,7 @@ i := (I)(nil)
 mock.Interface(&i).Method("Call").Apply(func(ctx _\*mocker.IContext_ , i int) int {
     return 3
 })
-mock.Interface(&i).Method("Call1").As(func(ctx _*mocker.IContext_ , i string) string {
+mock.Interface(&i).Method("Call1").As(func(ctx _\*mocker.IContext_ , i string) string {
 			return ""
 }).When("").Return("ok")
 

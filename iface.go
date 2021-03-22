@@ -17,6 +17,8 @@ type InterfaceMocker interface {
 	// Method 指定接口方法
 	Method(name string) InterfaceMocker
 	// As 将接口方法应用为函数类型
+	// As调用之后,请使用Return或When API的方式来指定mock返回。
+	// imp函数的第一个参数必须为*mocker.IContext, 作用是指定接口实现的接收体; 后续的参数原样照抄。
 	As(imp interface{}) InterfaceMocker
 	// Inject 将mock设置到变量
 	Inject(iface interface{}) InterfaceMocker
@@ -75,6 +77,7 @@ func (m *DefaultInterfaceMocker) checkMethod(name string) {
 }
 
 // Apply 应用接口方法mock为实际的接收体方法
+// imp函数的第一个参数必须为*mocker.IContext, 作用是指定接口实现的接收体; 后续的参数原样照抄。
 func (m *DefaultInterfaceMocker) Apply(imp interface{}) {
 	if m.method == "" {
 		panic("method is empty")
@@ -84,6 +87,7 @@ func (m *DefaultInterfaceMocker) Apply(imp interface{}) {
 }
 
 // As 将接口方法mock为实际的接收体方法
+// imp函数的第一个参数必须为*mocker.IContext, 作用是指定接口实现的接收体; 后续的参数原样照抄。
 func (m *DefaultInterfaceMocker) As(imp interface{}) InterfaceMocker {
 	if m.method == "" {
 		panic("method is empty")

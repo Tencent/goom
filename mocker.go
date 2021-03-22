@@ -42,6 +42,7 @@ type ExportedMocker interface {
 type UnexportedMocker interface {
 	Mocker
 	// As 将未导出函数(或方法)转换为导出函数(或方法)
+	// As调用之后,请使用Return或When API的方式来指定mock返回。
 	As(funcdef interface{}) ExportedMocker
 	// Origin 指定Mock之后的原函数, orign签名和mock的函数一致
 	Origin(orign interface{}) UnexportedMocker

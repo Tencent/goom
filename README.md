@@ -85,6 +85,7 @@ mock.Struct(&fake{}).ExportMethod("call").Apply(func(_ *fake, i int) int {
 })
 
 // mock 结构体fake的私有方法call, mock前先调用ExportMethod将其导出为函数类型，后续支持设置When, Return等
+// As调用之后，请使用Return或When API的方式来指定mock返回。
 mock.Struct(&fake{}).ExportMethod("call").As(func(_ *fake, i int) int {
     return i * 2
 }).Return(1)

@@ -126,7 +126,7 @@ func (m *DefaultInterfaceMocker) When(args ...interface{}) *When {
 // Return 指定返回值
 func (m *DefaultInterfaceMocker) Return(returns ...interface{}) *When {
 	if m.funcDef == nil {
-		panic("must use As() before Return()")
+		panic("must use As() API before call Return()")
 	}
 
 	if m.method == "" {

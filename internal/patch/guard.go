@@ -15,7 +15,7 @@ type PatchGuard struct {
 	applied       bool    // 是否已经被应用
 }
 
-// Apply() 执行
+// Apply 执行
 func (g *PatchGuard) Apply() {
 	Lock()
 	defer Unlock()

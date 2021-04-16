@@ -39,9 +39,9 @@ func Create() *Builder {
 }
 
 // Interface 指定接口类型的变量定义
-// iface 必须是指针类型, 比如 i为interface类型变量, iface传递&i
-func (b *Builder) Interface(iface interface{}) *CachedInterfaceMocker {
-	mKey := reflect.TypeOf(iface).String()
+// iFace 必须是指针类型, 比如 i为interface类型变量, iFace传递&i
+func (b *Builder) Interface(iFace interface{}) *CachedInterfaceMocker {
+	mKey := reflect.TypeOf(iFace).String()
 	if mocker, ok := b.mCache[mKey]; ok {
 		b.reset2CurPkg()
 
@@ -50,7 +50,7 @@ func (b *Builder) Interface(iface interface{}) *CachedInterfaceMocker {
 
 	// 创建InterfaceMocker
 	// context和interface类型绑定
-	mocker := NewDefaultInterfaceMocker(b.pkgName, iface, proxy.NewContext())
+	mocker := NewDefaultInterfaceMocker(b.pkgName, iFace, proxy.NewContext())
 	cachedMocker := NewCachedInterfaceMocker(mocker)
 
 	b.cache(mKey, cachedMocker)
@@ -86,7 +86,7 @@ func (b *Builder) Struct(obj interface{}) *CachedMethodMocker {
 }
 
 // Func 指定函数定义
-// funcdef 函数，比如 foo
+// funcDef 函数，比如 foo
 // 方法的mock, 比如 &Struct{}.method
 func (b *Builder) Func(obj interface{}) *DefMocker {
 	if mocker, ok := b.mCache[reflect.ValueOf(obj)]; ok {
@@ -129,8 +129,8 @@ func (b *Builder) ExportStruct(name string) *CachedUnexportedMethodMocker {
 }
 
 // ExportFunc 导出私有函数
-// 比如需要mock函数 foo()， 则name="pkgname.foo"
-// 比如需要mock方法, pkgname.(*struct_name).method_name
+// 比如需要mock函数 foo()， 则name="pkg_name.foo"
+// 比如需要mock方法, pkg_name.(*struct_name).method_name
 // name string foo或者(*struct_name).method_name
 func (b *Builder) ExportFunc(name string) *UnexportedFuncMocker {
 	if name == "" {
@@ -171,11 +171,6 @@ const (
 	// currentPackageIndex 获取当前包的堆栈层次
 	defaultCurrentPackageIndex = 2
 )
-
-// CurrentPackage 获取当前调用的包路径
-func CurrentPackage() string {
-	return currentPkg(defaultCurrentPackageIndex)
-}
 
 // currentPackage 获取当前调用的包路径
 func currentPackage() string {

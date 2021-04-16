@@ -30,7 +30,7 @@ type PContext struct {
 	originIface *hack.Iface
 	// originIfaceValue 原始接口值
 	originIfaceValue *hack.Iface
-	// proxyfunc 代理函数, 需要内存持续持有
+	// proxyFunc 代理函数, 需要内存持续持有
 	proxyFunc reflect.Value
 }
 
@@ -171,17 +171,17 @@ func genCallableFunc(ctx *IContext, apply interface{},
 	} else {
 		// 生成桩代码,rdx寄存器还原, 生成的调用将跳转到proxy函数
 		methodTyp := reflect.TypeOf(apply)
-		mockfunc := reflect.MakeFunc(methodTyp, proxy)
+		mockFunc := reflect.MakeFunc(methodTyp, proxy)
 		callStub := reflect.ValueOf(stub.MakeFuncStub).Pointer()
 
-		mockFuncPtr := (*hack.Value)(unsafe.Pointer(&mockfunc)).Ptr
+		mockFuncPtr := (*hack.Value)(unsafe.Pointer(&mockFunc)).Ptr
 
 		genStub, err = stub.MakeIfaceCallerWithCtx(mockFuncPtr, callStub)
 		if err != nil {
 			panic(err)
 		}
 
-		ctx.p.proxyFunc = mockfunc
+		ctx.p.proxyFunc = mockFunc
 	}
 
 	return genStub

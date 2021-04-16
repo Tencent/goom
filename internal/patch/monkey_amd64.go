@@ -9,7 +9,7 @@ const nopOpcode = 0x90
 var funcPrologue = defaultFuncPrologue64
 
 // jmpToFunctionValue Assembles a jump to a function value
-func jmpToFunctionValue(from, to uintptr) (value []byte) {
+func jmpToFunctionValue(_, to uintptr) (value []byte) {
 	return []byte{
 		0x90, // NOP
 		0x48, 0xBA,

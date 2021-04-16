@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"git.code.oa.com/goom/mocker"
+	"git.code.oa.com/goom/mocker/testdata"
 )
 
 // TestUnitBuilderTestSuite 测试入口
@@ -133,8 +134,8 @@ func (s *MockerTestSuite) TestUnitMethodReturn() {
 	})
 }
 
-// TestUnitUnexportMethodApply 测试结构体的未导出方法mock apply
-func (s *MockerTestSuite) TestUnitUnexportedMethodApply() {
+// TestUnitUnExportedMethodApply 测试结构体的未导出方法mock apply
+func (s *MockerTestSuite) TestUnitUnExportedMethodApply() {
 	s.Run("success", func() {
 		mock := mocker.Create()
 		mock.Struct(&fake{}).ExportMethod("call").Apply(func(_ *fake, i int) int {
@@ -169,23 +170,23 @@ func (s *MockerTestSuite) TestUnitUnexportedMethodReturn() {
 	})
 }
 
-// TestUnitUnexportStruct 测试未导出结构体的方法mock apply
-func (s *MockerTestSuite) TestUnitUnexportStruct() {
+// TestUnitUnExportStruct 测试未导出结构体的方法mock apply
+func (s *MockerTestSuite) TestUnitUnExportStruct() {
 	s.Run("success", func() {
 		// 指定包名
 		mock := mocker.Create()
-		mock.Pkg("git.code.oa.com/goom/mocker_test").ExportStruct("*fake").
+		mock.Pkg("git.code.oa.com/goom/mocker/testdata").ExportStruct("*Fake").
 			Method("call").Apply(func(_ *fake, i int) int {
 			return i * 2
 		})
 
-		f := &fake{}
+		f := &testdata.Fake{}
 
-		s.Equal(2, f.call(1), "call mock check")
+		s.Equal(2, f.Call(1), "call mock check")
 
 		mock.Reset()
 
-		s.Equal(1, f.call(1), "call mock reset check")
+		s.Equal(1, f.Call(1), "call mock reset check")
 	})
 }
 

@@ -13,7 +13,7 @@ import (
 // to 桩函数跳转到的地址
 func MakeIfaceCaller(to unsafe.Pointer) (uintptr, error) {
 	// acqure space
-	placehlder, _, err := acqureSpace(30)
+	placehlder, _, err := acquireSpace(30)
 	if err != nil {
 		return 0, err
 	}
@@ -38,7 +38,7 @@ func MakeIfaceCaller(to unsafe.Pointer) (uintptr, error) {
 // to 桩函数最终跳转到另一个地址
 func MakeIfaceCallerWithCtx(ctx unsafe.Pointer, to uintptr) (uintptr, error) {
 	// acqure space
-	placehlder, _, err := acqureSpace(30)
+	placehlder, _, err := acquireSpace(30)
 	if err != nil {
 		return 0, err
 	}

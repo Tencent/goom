@@ -21,7 +21,7 @@ type InterfaceMocker interface {
 	// imp函数的第一个参数必须为*mocker.IContext, 作用是指定接口实现的接收体; 后续的参数原样照抄。
 	As(imp interface{}) InterfaceMocker
 	// Inject 将mock设置到变量
-	Inject(iface interface{}) InterfaceMocker
+	Inject(iFace interface{}) InterfaceMocker
 	// If 条件表达式匹配
 }
 
@@ -38,19 +38,19 @@ type IContext struct {
 type DefaultInterfaceMocker struct {
 	*baseMocker
 	ctx     *proxy.IContext
-	iface   interface{}
+	iFace   interface{}
 	method  string
 	funcDef interface{}
 }
 
 // NewDefaultInterfaceMocker 创建默认接口Mocker
 // pkgName 包路径
-// iface 接口变量定义
-func NewDefaultInterfaceMocker(pkgName string, iface interface{}, ctx *proxy.IContext) *DefaultInterfaceMocker {
+// iFace 接口变量定义
+func NewDefaultInterfaceMocker(pkgName string, iFace interface{}, ctx *proxy.IContext) *DefaultInterfaceMocker {
 	return &DefaultInterfaceMocker{
 		baseMocker: newBaseMocker(pkgName),
 		ctx:        ctx,
-		iface:      iface,
+		iFace:      iFace,
 	}
 }
 
@@ -68,7 +68,7 @@ func (m *DefaultInterfaceMocker) Method(name string) InterfaceMocker {
 
 // checkMethod 检查是否能找到函数
 func (m *DefaultInterfaceMocker) checkMethod(name string) {
-	sTyp := reflect.TypeOf(m.iface).Elem()
+	sTyp := reflect.TypeOf(m.iFace).Elem()
 
 	_, ok := sTyp.MethodByName(name)
 	if !ok {
@@ -83,7 +83,7 @@ func (m *DefaultInterfaceMocker) Apply(imp interface{}) {
 		panic("method is empty")
 	}
 
-	m.applyByIfaceMethod(m.ctx, m.iface, m.method, imp, nil)
+	m.applyByIFaceMethod(m.ctx, m.iFace, m.method, imp, nil)
 }
 
 // As 将接口方法mock为实际的接收体方法
@@ -117,7 +117,7 @@ func (m *DefaultInterfaceMocker) When(args ...interface{}) *When {
 		panic(err)
 	}
 
-	m.applyByIfaceMethod(m.ctx, m.iface, m.method, m.funcDef, m.callback)
+	m.applyByIFaceMethod(m.ctx, m.iFace, m.method, m.funcDef, m.callback)
 	m.when = when
 
 	return when
@@ -146,19 +146,19 @@ func (m *DefaultInterfaceMocker) Return(returns ...interface{}) *When {
 		panic(err)
 	}
 
-	m.applyByIfaceMethod(m.ctx, m.iface, m.method, m.funcDef, m.callback)
+	m.applyByIFaceMethod(m.ctx, m.iFace, m.method, m.funcDef, m.callback)
 	m.when = when
 
 	return when
 }
 
 // Origin 回调原函数(暂时不支持)
-func (m *DefaultInterfaceMocker) Origin(orign interface{}) ExportedMocker {
+func (m *DefaultInterfaceMocker) Origin(origin interface{}) ExportedMocker {
 	panic("implement me")
 }
 
 // Inject 回调原函数(暂时不支持)
-func (m *DefaultInterfaceMocker) Inject(iface interface{}) InterfaceMocker {
+func (m *DefaultInterfaceMocker) Inject(iFace interface{}) InterfaceMocker {
 	panic("implement me")
 }
 

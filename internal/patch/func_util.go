@@ -28,7 +28,7 @@ func pageStart(ptr uintptr) uintptr {
 }
 
 // GetFuncSize get func binary size
-// not absolutly safe
+// not absolutely safe
 func GetFuncSize(mode int, start uintptr, minimal bool) (lenth int, err error) {
 	funcSizeReadLock.Lock()
 	defer func() {
@@ -110,12 +110,6 @@ func getTrampolinePtr(trampoline interface{}) (uintptr, error) {
 			trampolinePtr = reflect.ValueOf(trampoline).Pointer()
 		}
 
-		firsPtr := unsafe.Pointer(&trampoline)
-		secondPtr := ((*uintptr)(unsafe.Pointer(uintptr(firsPtr))))
-		// nolint hack用法
-		thirdPtr := ((*uintptr)(unsafe.Pointer(*secondPtr)))
-
-		logger.LogDebugf("trampoline caller: 0x%x 0x%x 0x%x", uintptr(firsPtr), *secondPtr, *thirdPtr)
 		logger.LogDebugf("trampoline value: 0x%x 0x%x", getPtr(reflect.ValueOf(trampoline)), trampolinePtr)
 	}
 
@@ -131,25 +125,6 @@ func IsPtr(value interface{}) bool {
 	t := reflect.TypeOf(value)
 
 	return t.Kind() == reflect.Ptr
-}
-
-// LoadUnit 内存占用单位换算
-func LoadUnit(s int64) string {
-	suffix := ""
-	b := s
-
-	if s > (1 << 40) {
-		suffix = "G"
-		b = s / (1 << 30)
-	} else if s > (1 << 30) {
-		suffix = "M"
-		b = s / (1 << 20)
-	} else if s > (1 << 20) {
-		suffix = "K"
-		b = s / (1 << 10)
-	}
-
-	return fmt.Sprintf("%d%s", b, suffix)
 }
 
 // Debug Debug 调试内存指令替换,对原指令、替换之后的指令进行输出对比
@@ -170,7 +145,7 @@ func debug(title string, from uintptr, copyOrigin []byte, level int) {
 	startAddr := (uint64)(from)
 
 	for pos := 0; pos < len(copyOrigin); {
-		// read 16 bytes atmost each time
+		// read 16 bytes at most each time
 		endPos := pos + 16
 		if endPos > len(copyOrigin) {
 			endPos = len(copyOrigin)

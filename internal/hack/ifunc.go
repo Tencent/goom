@@ -73,7 +73,7 @@ type Functab struct {
 	Funcoff uintptr
 }
 
-// Convenience struct for modifying the underlying code pointer of a function
+// Func Convenience struct for modifying the underlying code pointer of a function
 // value. The actual struct has other values, but always starts with a code
 // pointer.
 // TODO 不同go版本兼容
@@ -100,8 +100,8 @@ type textsect struct {
 // nolint
 type typeOff int32 // offset to an *rtype
 
-// TODO 不同go版本兼容
 // Value reflect.Value
+// TODO 不同go版本兼容
 type Value struct {
 	Typ  *uintptr
 	Ptr  unsafe.Pointer

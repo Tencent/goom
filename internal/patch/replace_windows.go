@@ -6,8 +6,8 @@ import (
 )
 
 // 注意: 此版本暂时不能完整支持windows
-// pageExcuteReadwrite page窗口大小
-const pageExcuteReadwrite = 0x40
+// pageExecuteReadwrite page窗口大小
+const pageExecuteReadwrite = 0x40
 
 var (
 	defaultFuncPrologue32 = []byte{0x65, 0x8b, 0x0d, 0x00, 0x00, 0x00, 0x00, 0x8b, 0x89, 0xfc, 0xff, 0xff, 0xff}
@@ -36,7 +36,7 @@ func CopyToLocation(location uintptr, data []byte) error {
 	f := rawMemoryAccess(location, len(data))
 
 	var oldPerms uint32
-	err := virtualProtect(location, len(data), pageExcuteReadwrite, unsafe.Pointer(&oldPerms))
+	err := virtualProtect(location, len(data), pageExecuteReadwrite, unsafe.Pointer(&oldPerms))
 	if err != nil {
 		panic(err)
 	}

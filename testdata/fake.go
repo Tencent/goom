@@ -1,4 +1,5 @@
-package test
+// Package testdata 测试数据包, 包含被测函数层
+package testdata
 
 type Fake struct{}
 

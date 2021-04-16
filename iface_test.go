@@ -11,18 +11,18 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-// TestUnitIfaceTestSuite 接口Mock测试入口
-func TestUnitIfaceTestSuite(t *testing.T) {
-	suite.Run(t, new(IfaceMockerTestSuite))
+// TestUnitIFaceTestSuite 接口Mock测试入口
+func TestUnitIFaceTestSuite(t *testing.T) {
+	suite.Run(t, new(IFaceMockerTestSuite))
 }
 
 // MockerTestSuite Builder测试套件
-type IfaceMockerTestSuite struct {
+type IFaceMockerTestSuite struct {
 	suite.Suite
 }
 
 // TestUnitInterfaceApply 测试接口mock apply
-func (s *IfaceMockerTestSuite) TestUnitInterfaceApply() {
+func (s *IFaceMockerTestSuite) TestUnitInterfaceApply() {
 	s.Run("success", func() {
 		mock := mocker.Create()
 
@@ -50,7 +50,7 @@ func (s *IfaceMockerTestSuite) TestUnitInterfaceApply() {
 }
 
 // TestUnitInterfaceReturn 测试接口mock return
-func (s *IfaceMockerTestSuite) TestUnitInterfaceReturn() {
+func (s *IFaceMockerTestSuite) TestUnitInterfaceReturn() {
 	s.Run("success", func() {
 		mock := mocker.Create()
 
@@ -79,7 +79,7 @@ func (s *IfaceMockerTestSuite) TestUnitInterfaceReturn() {
 }
 
 // TestUnitArgsNotMatch 测试接口mock参数不匹配情况
-func (s *IfaceMockerTestSuite) TestUnitArgsNotMatch() {
+func (s *IFaceMockerTestSuite) TestUnitArgsNotMatch() {
 	s.Run("success", func() {
 
 		var expectErr error

@@ -10,7 +10,7 @@ import (
 // Patch 将函数调用指定代理函数
 // target 原始函数
 // replacement 代理函数
-func Patch(target, replacement interface{}) (*PatchGuard, error) {
+func Patch(target, replacement interface{}) (*Guard, error) {
 	return PatchTrampoline(target, replacement, nil)
 }
 
@@ -18,7 +18,7 @@ func Patch(target, replacement interface{}) (*PatchGuard, error) {
 // target 原始函数
 // replacement 代理函数
 // trampoline 指定跳板函数(可不指定,传nil)
-func PatchTrampoline(target, replacement interface{}, trampoline interface{}) (*PatchGuard, error) {
+func PatchTrampoline(target, replacement interface{}, trampoline interface{}) (*Guard, error) {
 	patch := &patch{
 		target:      target,
 		replacement: replacement,
@@ -36,7 +36,7 @@ func PatchTrampoline(target, replacement interface{}, trampoline interface{}) (*
 // UnsafePatch 未受类型检查的patch
 // target 原始函数
 // replacement 代理函数
-func UnsafePatch(target, replacement interface{}) (*PatchGuard, error) {
+func UnsafePatch(target, replacement interface{}) (*Guard, error) {
 	return UnsafePatchTrampoline(target, replacement, nil)
 }
 
@@ -44,7 +44,7 @@ func UnsafePatch(target, replacement interface{}) (*PatchGuard, error) {
 // target 原始函数
 // replacement 代理函数
 // trampoline 指定跳板函数(可不指定,传nil)
-func UnsafePatchTrampoline(target, replacement interface{}, trampoline interface{}) (*PatchGuard, error) {
+func UnsafePatchTrampoline(target, replacement interface{}, trampoline interface{}) (*Guard, error) {
 	patch := &patch{
 		target:      target,
 		replacement: replacement,
@@ -66,7 +66,7 @@ func UnsafePatchTrampoline(target, replacement interface{}, trampoline interface
 // 此方式为经过函数签名检查,可能会导致栈帧无法对其导致堆栈调用异常，因此不安全请谨慎使用
 // targetPtr 原始函数地址
 // replacement 代理函数
-func PatchPtr(targetPtr uintptr, replacement interface{}) (*PatchGuard, error) {
+func PatchPtr(targetPtr uintptr, replacement interface{}) (*Guard, error) {
 	return PatchPtrTrampoline(targetPtr, replacement, nil)
 }
 
@@ -75,7 +75,7 @@ func PatchPtr(targetPtr uintptr, replacement interface{}) (*PatchGuard, error) {
 // targetPtr 原始函数地址
 // replacement 代理函数
 // trampoline 跳板函数地址(可不指定,传nil)
-func PatchPtrTrampoline(targetPtr uintptr, replacement, trampoline interface{}) (*PatchGuard, error) {
+func PatchPtrTrampoline(targetPtr uintptr, replacement, trampoline interface{}) (*Guard, error) {
 	patch := &patch{
 		replacement: replacement,
 		trampoline:  trampoline,
@@ -95,14 +95,14 @@ func PatchPtrTrampoline(targetPtr uintptr, replacement, trampoline interface{}) 
 
 // PatchInstanceMethod replaces an instance method methodName for the type target with replacementValue
 // Replacement should expect the receiver (of type target) as the first argument
-func PatchInstanceMethod(target reflect.Type, methodName string, replacement interface{}) (*PatchGuard, error) {
+func PatchInstanceMethod(target reflect.Type, methodName string, replacement interface{}) (*Guard, error) {
 	return PatchInstanceMethodTrampoline(target, methodName, replacement, nil)
 }
 
-// PatchInstanceMethod replaces an instance method methodName for the type target with replacementValue
+// PatchInstanceMethodTrampoline replaces an instance method methodName for the type target with replacementValue
 // Replacement should expect the receiver (of type target) as the first argument
 func PatchInstanceMethodTrampoline(target reflect.Type, methodName string, replacement interface{},
-	trampoline interface{}) (*PatchGuard, error) {
+	trampoline interface{}) (*Guard, error) {
 	m, ok := target.MethodByName(methodName)
 	if !ok {
 		return nil, fmt.Errorf("unknown method %s", methodName)
@@ -142,7 +142,7 @@ func UnpatchInstanceMethod(target reflect.Type, methodName string) bool {
 	return unpatchValue(m.Func.Pointer())
 }
 
-// UnpatchAll removes all applied monkeypatches
+// UnpatchAll removes all applied monkey patches
 func UnpatchAll() {
 	for target, p := range patches {
 		p.unpatch()

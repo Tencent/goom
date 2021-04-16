@@ -58,14 +58,14 @@ func outTypes(funTyp reflect.Type) []reflect.Type {
 }
 
 // I2V []interface convert to []reflect.Value
-func I2V(args []interface{}, typs []reflect.Type) []reflect.Value {
-	if len(args) != len(typs) {
-		panic(fmt.Sprintf("args lenth mismatch,must:%d, actual:%d", len(typs), len(args)))
+func I2V(args []interface{}, types []reflect.Type) []reflect.Value {
+	if len(args) != len(types) {
+		panic(fmt.Sprintf("args lenth mismatch,must:%d, actual:%d", len(types), len(args)))
 	}
 
 	values := make([]reflect.Value, len(args))
 	for i, a := range args {
-		values[i] = toValue(a, typs[i])
+		values[i] = toValue(a, types[i])
 	}
 
 	return values
@@ -113,11 +113,11 @@ func cast(v reflect.Value, typ reflect.Type) reflect.Value {
 }
 
 // V2I []reflect.Value convert to []interface
-func V2I(args []reflect.Value, typs []reflect.Type) []interface{} {
+func V2I(args []reflect.Value, types []reflect.Type) []interface{} {
 	values := make([]interface{}, len(args))
 
 	for i, a := range args {
-		if (typs[i].Kind() == reflect.Interface || typs[i].Kind() == reflect.Ptr) && a.IsZero() {
+		if (types[i].Kind() == reflect.Interface || types[i].Kind() == reflect.Ptr) && a.IsZero() {
 			values[i] = nil
 		} else {
 			values[i] = a.Interface()

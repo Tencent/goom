@@ -37,7 +37,7 @@ type patch struct {
 	originalBytes []byte
 	jumpBytes     []byte
 
-	guard *PatchGuard
+	guard *Guard
 }
 
 // patchValue 对value进行应用代理
@@ -125,18 +125,18 @@ func (p *patch) unpatch() {
 	Debug(fmt.Sprintf("unpatch copy to 0x%x", p.targetPtr), p.targetPtr, 20, logger.DebugLevel)
 }
 
-// restore repatch by target uintptr
+// restore re patch by target uintptr
 func (p *patch) restore() {
 	p.Guard().Restore()
 	Debug(fmt.Sprintf("unpatch copy to 0x%x", p.targetPtr), p.targetPtr, 20, logger.DebugLevel)
 }
 
 // Guard 获取PatchGuard
-func (p *patch) Guard() *PatchGuard {
+func (p *patch) Guard() *Guard {
 	if p.guard != nil {
 		return p.guard
 	}
-	p.guard = &PatchGuard{p.targetPtr,
+	p.guard = &Guard{p.targetPtr,
 		p.originFuncPtr,
 		p.jumpBytes,
 		p.originalBytes,

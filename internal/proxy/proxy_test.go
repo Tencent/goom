@@ -24,8 +24,8 @@ var testCases = []*TestCase{
 		eval: func() {
 			_ = Caller(1000)
 		},
-		evalMakeFunc: func(makefunc interface{}) {
-			makefunc.(func(i int) int)(5)
+		evalMakeFunc: func(makeFunc interface{}) {
+			makeFunc.(func(i int) int)(5)
 		},
 		trampoline: func() interface{} {
 			var result = func(i int) int {
@@ -49,8 +49,8 @@ var testCases = []*TestCase{
 		eval: func() {
 			_ = Caller1(5)
 		},
-		evalMakeFunc: func(makefunc interface{}) {
-			makefunc.(func(i int) int)(5)
+		evalMakeFunc: func(makeFunc interface{}) {
+			makeFunc.(func(i int) int)(5)
 		},
 		trampoline: func() interface{} {
 			var result = func(i int) int {
@@ -75,8 +75,8 @@ var testCases = []*TestCase{
 		eval: func() {
 			_ = Caller2(5)
 		},
-		evalMakeFunc: func(makefunc interface{}) {
-			makefunc.(func(i int) int)(5)
+		evalMakeFunc: func(makeFunc interface{}) {
+			makeFunc.(func(i int) int)(5)
 		},
 		trampoline: func() interface{} {
 			var result = func(i int) int {
@@ -105,8 +105,8 @@ var testCases = []*TestCase{
 				field2: nil,
 			})
 		},
-		evalMakeFunc: func(makefunc interface{}) {
-			makefunc.(func(arg Arg) int)(Arg{
+		evalMakeFunc: func(makeFunc interface{}) {
+			makeFunc.(func(arg Arg) int)(Arg{
 				field1: field1,
 				field2: nil,
 			})
@@ -132,8 +132,8 @@ var testCases = []*TestCase{
 		funcName: "Caller4",
 		funcDef:  Caller4,
 		eval:     Caller4Eval,
-		evalMakeFunc: func(makefunc interface{}) {
-			makefunc.(func(arg *Arg) int)(&Arg{
+		evalMakeFunc: func(makeFunc interface{}) {
+			makeFunc.(func(arg *Arg) int)(&Arg{
 				field1: field1,
 				field2: nil,
 			})
@@ -161,8 +161,8 @@ var testCases = []*TestCase{
 		eval: func() {
 			Caller5()
 		},
-		evalMakeFunc: func(makefunc interface{}) {
-			makefunc.(func() int)()
+		evalMakeFunc: func(makeFunc interface{}) {
+			makeFunc.(func() int)()
 		},
 		trampoline: func() interface{} {
 			var result = func() int {
@@ -186,8 +186,8 @@ var testCases = []*TestCase{
 		eval: func() {
 			Caller6(3)()
 		},
-		evalMakeFunc: func(makefunc interface{}) {
-			makefunc.(func(a int) func() int)(3)()
+		evalMakeFunc: func(makeFunc interface{}) {
+			makeFunc.(func(a int) func() int)(3)()
 		},
 		trampoline: func() interface{} {
 			var result = func(a int) func() int {
@@ -213,8 +213,8 @@ var testCases = []*TestCase{
 		eval: func() {
 			Caller7(2)
 		},
-		evalMakeFunc: func(makefunc interface{}) {
-			makefunc.(func(a int))(2)
+		evalMakeFunc: func(makeFunc interface{}) {
+			makeFunc.(func(a int))(2)
 		},
 		trampoline: func() interface{} {
 			var result = func(i int) {
@@ -241,8 +241,8 @@ var testCases = []*TestCase{
 				fmt.Println(j)
 			}
 		},
-		evalMakeFunc: func(makefunc interface{}) {
-			makefunc.(func(i int) *Result)(5)
+		evalMakeFunc: func(makeFunc interface{}) {
+			makeFunc.(func(i int) *Result)(5)
 		},
 		trampoline: func() interface{} {
 			var result = func(i int) *Result {
@@ -276,8 +276,8 @@ var testCases = []*TestCase{
 				fmt.Println(j)
 			}
 		},
-		evalMakeFunc: func(makefunc interface{}) {
-			makefunc.(func(i int) Result)(5)
+		evalMakeFunc: func(makeFunc interface{}) {
+			makeFunc.(func(i int) Result)(5)
 		},
 		trampoline: func() interface{} {
 			var result = func(i int) Result {

@@ -79,7 +79,7 @@ func TestSimple(t *testing.T) {
 
 // TestGuard TestGuard
 func TestGuard(t *testing.T) {
-	var guard *patch.PatchGuard
+	var guard *patch.Guard
 	guard, _ = patch.Patch(no, func() bool {
 		guard.Unpatch()
 		defer guard.Restore()

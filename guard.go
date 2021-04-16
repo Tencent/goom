@@ -19,33 +19,33 @@ type MockGuard interface {
 	Cancel()
 }
 
-// IfaceMockGuard 接口Mock守卫
-type IfaceMockGuard struct {
+// IFaceMockGuard 接口Mock守卫
+type IFaceMockGuard struct {
 	ctx *proxy.IContext
 }
 
-// NewIfaceMockGuard 创建IfaceMockGuard
-func NewIfaceMockGuard(ctx *proxy.IContext) *IfaceMockGuard {
-	return &IfaceMockGuard{ctx: ctx}
+// NewIFaceMockGuard 创建IFaceMockGuard
+func NewIFaceMockGuard(ctx *proxy.IContext) *IFaceMockGuard {
+	return &IFaceMockGuard{ctx: ctx}
 }
 
 // Apply 应用mock
-func (i *IfaceMockGuard) Apply() {
+func (i *IFaceMockGuard) Apply() {
 	// 无需操作
 }
 
 // Cancel 取消mock
-func (i *IfaceMockGuard) Cancel() {
+func (i *IFaceMockGuard) Cancel() {
 	i.ctx.Cancel()
 }
 
 // PatchMockGuard Patch类型的Mock守卫
 type PatchMockGuard struct {
-	patchGuard *patch.PatchGuard
+	patchGuard *patch.Guard
 }
 
 // NewPatchMockGuard 创建PatchMockGuard
-func NewPatchMockGuard(patchGuard *patch.PatchGuard) *PatchMockGuard {
+func NewPatchMockGuard(patchGuard *patch.Guard) *PatchMockGuard {
 	return &PatchMockGuard{patchGuard: patchGuard}
 }
 

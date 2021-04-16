@@ -144,12 +144,12 @@ func (w *When) AndReturn(results ...interface{}) *When {
 }
 
 // Returns 多个条件匹配
-func (w *When) Returns(resultsmap map[interface{}]interface{}) *When {
-	if len(resultsmap) == 0 {
+func (w *When) Returns(resultsMap map[interface{}]interface{}) *When {
+	if len(resultsMap) == 0 {
 		return w
 	}
 
-	for k, v := range resultsmap {
+	for k, v := range resultsMap {
 		args, ok := k.([]interface{})
 		if !ok {
 			args = []interface{}{k}

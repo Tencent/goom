@@ -1,4 +1,4 @@
-// Packge proxy封装了给各种类型的代理(或较patch)中间层
+// Package proxy封装了给各种类型的代理(或较patch)中间层
 // 负责比如外部传如私有函数名转换成uintptr，trampoline初始化，并发proxy等
 package proxy
 
@@ -160,7 +160,7 @@ func genCallableFunc(ctx *IContext, apply interface{},
 	)
 
 	if proxy == nil {
-		// 生成桩代码,rdx寄存去还原
+		// 生成桩代码,rdx寄存器还原
 		applyValue := reflect.ValueOf(apply)
 		mockFuncPtr := (*hack.Value)(unsafe.Pointer(&applyValue)).Ptr
 
@@ -169,7 +169,7 @@ func genCallableFunc(ctx *IContext, apply interface{},
 			panic(err)
 		}
 	} else {
-		// 生成桩代码,rdx寄存器还原
+		// 生成桩代码,rdx寄存器还原, 生成的调用将跳转到proxy函数
 		methodTyp := reflect.TypeOf(apply)
 		mockfunc := reflect.MakeFunc(methodTyp, proxy)
 		callStub := reflect.ValueOf(stub.MakeFuncStub).Pointer()

@@ -23,23 +23,21 @@ const (
 // 默认日志前缀
 const defaultPrefix = "[goom-mocker]"
 
-// LogLevel 日志级别
-// level总共分5个级别：debug < info< warning< error< critical
-var LogLevel = 6
-
-// ShowError2Console 把错误同步打印到控制台
-var ShowError2Console = false
-
-// Logger 独立日志文件
-var Logger io.Writer = os.Stdout
-
-// EnableLogColor 开启并发日志染色
-var EnableLogColor = false
-
-var colorGetter func() string
-
-// logFile 日志路径
-var logFile *os.File
+var (
+	// LogLevel 日志级别
+	// level总共分5个级别：debug < info< warning< error< critical
+	LogLevel = 6
+	// ShowError2Console 把错误同步打印到控制台
+	ShowError2Console = false
+	// Logger 独立日志文件
+	Logger io.Writer = os.Stdout
+	// EnableLogColor 开启并发日志染色
+	EnableLogColor = false
+	// colorGetter 日志染色器, 用于并发测试区分协程ID
+	colorGetter func() string
+	// logFile 日志路径
+	logFile *os.File
+)
 
 // init() 初始化
 func init() {
@@ -211,7 +209,7 @@ func Log2Consolef(format string, a ...interface{}) {
 	os.Stdout.Write(line)
 }
 
-// withPrefix withPrefix
+// withPrefix 给日志带上[goom]前缀, 方便与业务日志区分
 func withPrefix(level string, v []interface{}) []byte {
 	arr := make([]string, 0, len(v)+1)
 	arr = append(arr, time.Now().Format("2006-01-02 15:04:05"))
@@ -230,7 +228,7 @@ func withPrefix(level string, v []interface{}) []byte {
 	return []byte(strings.Join(arr, " "))
 }
 
-//withPrefixStr withPrefixStr
+// withPrefixStr 给日志带上[goom]前缀
 func withPrefixStr(level, format string, a ...interface{}) []byte {
 	time := time.Now().Format("2006-01-02 15:04:05")
 
@@ -243,7 +241,7 @@ func withPrefixStr(level, format string, a ...interface{}) []byte {
 		fmt.Sprintf(format, a...) + "\n")
 }
 
-// 获取日志存储路径
+// loggerPath 获取日志存储路径
 func loggerPath() (string, error) {
 	var logFileLocation = "."
 	// 获取当前目录

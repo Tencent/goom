@@ -22,7 +22,7 @@ func (i *IllegalParam) Error() (s string) {
 	return "Illegal param error, param=" + i.paramName + ", value=" + i.paramValue
 }
 
-// Cause 获取错误的原因
+// Traceable 获取错误的原因
 func (i *IllegalParam) Cause() error {
 	return i.cause
 }

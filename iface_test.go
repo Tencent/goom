@@ -5,9 +5,9 @@ package mocker_test
 import (
 	"testing"
 
+	"git.code.oa.com/goom/mocker"
 	"git.code.oa.com/goom/mocker/errobj"
 
-	"git.code.oa.com/goom/mocker"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -100,7 +100,7 @@ func (s *IfaceMockerTestSuite) TestUnitArgsNotMatch() {
 			})
 		}()
 
-		s.IsType(&errobj.IllegalParam{}, errobj.UnWrapCause(expectErr), "param check fail test")
+		s.IsType(&errobj.IllegalParam{}, errobj.CauseOf(expectErr), "param check fail test")
 	})
 }
 

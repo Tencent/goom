@@ -1,4 +1,4 @@
-// Packge proxy封装了给各种类型的代理(或较patch)中间层
+// Package proxy封装了给各种类型的代理(或较patch)中间层
 // 负责比如外部传如类型校验、私有函数名转换成uintptr、trampoline初始化、并发proxy等
 package proxy
 

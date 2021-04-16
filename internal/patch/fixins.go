@@ -10,7 +10,7 @@ import (
 	"git.code.oa.com/goom/mocker/internal/x86asm"
 )
 
-const CallInsName = "CALL"
+const callInsName = "CALL"
 
 // replaceRelativeAddr 替换函数字节码中的相对地址(如果有的话)
 // from 函数起始地址
@@ -51,7 +51,7 @@ func doReplaceRelativeAddr(from uintptr, copyOrigin []byte, placehlder uintptr, 
 		}
 
 		if ins != nil && ins.Opcode != 0 {
-			if !allowCopyCall && ins.Op.String() == CallInsName {
+			if !allowCopyCall && ins.Op.String() == callInsName {
 				return nil, fmt.Errorf("copy call instruction is not allowed in auto trampoline model. size: %d", leastSize)
 			}
 
@@ -139,7 +139,7 @@ func replaceIns(ins *x86asm.Inst, pos int, copyOrigin []byte, funcSize int,
 
 	if (isAdd && (int)(relativeAddr)+pos+ins.Len >= funcSize) ||
 		(!isAdd && (int)(relativeAddr)+pos+ins.Len < 0) {
-		if ins.Op.String() == CallInsName {
+		if ins.Op.String() == callInsName {
 			logger.LogDebug((int64)(startAddr)-(int64)(placehlder), startAddr, placehlder, int32(relativeAddr))
 		}
 
@@ -156,7 +156,7 @@ func replaceIns(ins *x86asm.Inst, pos int, copyOrigin []byte, funcSize int,
 			return encoded
 		}
 	} else {
-		if ins.Op.String() == CallInsName {
+		if ins.Op.String() == callInsName {
 			logger.LogDebug((int)(relativeAddr)+pos+ins.Len, funcSize, (int)(relativeAddr)+pos+ins.Len)
 			logger.LogDebug("called")
 		}

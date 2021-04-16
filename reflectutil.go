@@ -7,48 +7,11 @@ import (
 	"fmt"
 	"reflect"
 	"runtime"
-	"strings"
 	"unsafe"
 
-	"git.code.oa.com/goom/mocker/internal/proxy"
-
 	"git.code.oa.com/goom/mocker/internal/hack"
+	"git.code.oa.com/goom/mocker/internal/proxy"
 )
-
-const (
-	// currentPackageIndex 获取当前包的堆栈层次
-	currentPackageIndex = 3
-	// currentPackageIndex 获取当前包的堆栈层次
-	defaultCurrentPackageIndex = 2
-)
-
-// currentPackage 获取当前调用的包路径
-func CurrentPackage() string {
-	return currentPkg(defaultCurrentPackageIndex)
-}
-
-// currentPackage 获取当前调用的包路径
-func currentPackage() string {
-	return currentPkg(currentPackageIndex)
-}
-
-// currentPkg 获取调用者的包路径
-func currentPkg(skip int) string {
-	pc, _, _, _ := runtime.Caller(skip)
-	callerName := runtime.FuncForPC(pc).Name()
-
-	if i := strings.Index(callerName, ".("); i > -1 {
-		return callerName[:i]
-	}
-
-	if i := strings.LastIndex(callerName, "/"); i > -1 {
-		realIndex := strings.Index(callerName[i:len(callerName)-1], ".")
-
-		return callerName[:realIndex+i]
-	}
-
-	return callerName
-}
 
 // functionName 获取函数名称
 func functionName(fnc interface{}) string {

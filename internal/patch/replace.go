@@ -3,7 +3,7 @@ package patch
 import (
 	"fmt"
 	"reflect"
-	rtdebug "runtime/debug"
+	deb "runtime/debug"
 	"sync"
 	"unsafe"
 
@@ -43,7 +43,7 @@ func replaceFunction(from, to, proxy, trampoline uintptr) (original []byte, orig
 	defer func() {
 		if err1 := recover(); err1 != nil {
 			logger.LogErrorf("replaceFunction from=%d to=%d trampoline=%d error:%s", from, to, trampoline, err1)
-			logger.LogError(string(rtdebug.Stack()))
+			logger.LogError(string(deb.Stack()))
 
 			var ok bool
 
@@ -79,7 +79,7 @@ func replaceFunction(from, to, proxy, trampoline uintptr) (original []byte, orig
 	// 保存原始指令
 	original = rawMemoryRead(from, len(jumpData))
 	// 判断是否已经被patch过
-	if original[0] == NopOpcode {
+	if original[0] == nopOpcode {
 		err = fmt.Errorf("from:0x%x is already patched", from)
 		return
 	}

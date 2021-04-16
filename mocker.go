@@ -9,10 +9,8 @@ import (
 	"strings"
 
 	"git.code.oa.com/goom/mocker/errobj"
-
-	"git.code.oa.com/goom/mocker/internal/unexports"
-
 	"git.code.oa.com/goom/mocker/internal/proxy"
+	"git.code.oa.com/goom/mocker/internal/unexports"
 )
 
 // Mocker mock接口, 所有类型(函数、方法、未导出函数、接口等)的Mocker的抽象
@@ -113,7 +111,7 @@ func (m *baseMocker) applyByIfaceMethod(ctx *proxy.IContext, iface interface{}, 
 
 	err := proxy.MakeInterfaceImpl(iface, ctx, method, imp, implV)
 	if err != nil {
-		panic(errobj.NewWrapErrorS("interface mock apply error", err))
+		panic(errobj.NewTraceableErrorf("interface mock apply error", err))
 	}
 
 	m.guard = NewIfaceMockGuard(ctx)
@@ -137,7 +135,7 @@ func (m *baseMocker) whens(when *When) error {
 // 	return nil
 // }
 
-//callback callback
+// callback 通用的makefunc callback
 func (m *baseMocker) callback(args []reflect.Value) (results []reflect.Value) {
 	if m.when != nil {
 		results = m.when.invoke(args)

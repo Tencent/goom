@@ -28,7 +28,7 @@ func MakeIfaceCaller(to unsafe.Pointer) (uintptr, error) {
 		return 0, err
 	}
 
-	patch.Debug("genstub", placehlder, 30, logger.DebugLevel)
+	patch.Debug("gen stub", placehlder, 30, logger.DebugLevel)
 
 	return placehlder, nil
 }

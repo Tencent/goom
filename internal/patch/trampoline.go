@@ -58,7 +58,7 @@ func fixOriginFuncToTrampoline(from uintptr, trampoline uintptr, jumpInstSize in
 	// copy origin function
 	fixOrigin := rawMemoryRead(from, originFuncSize)
 
-	debug("origin inst >>>>> ", from, fixOrigin[:minSize(insSizePrintMiddle, fixOrigin)], logger.DebugLevel)
+	Debugf("origin inst >>>>> ", from, fixOrigin[:minSize(insSizePrintMiddle, fixOrigin)], logger.DebugLevel)
 
 	// replace relative address to placeholder
 	firstFewIns, replaceSize, err := replaceRelativeAddr(from, fixOrigin, trampoline, originFuncSize, jumpInstSize, true)
@@ -94,7 +94,7 @@ func fixOriginFuncToTrampoline(from uintptr, trampoline uintptr, jumpInstSize in
 	}
 
 	Debug("trampoline inst > ", trampoline, insSizePrintLong, logger.DebugLevel)
-	debug("fixed inst >>>>> ", trampoline, fixOrigin, logger.DebugLevel)
+	Debugf("fixed inst >>>>> ", trampoline, fixOrigin, logger.DebugLevel)
 
 	if err := CopyToLocation(trampoline, fixOrigin); err != nil {
 		return 0, err

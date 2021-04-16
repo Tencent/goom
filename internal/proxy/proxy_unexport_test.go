@@ -28,10 +28,10 @@ func TestPrintMock(t *testing.T) {
 		t.Error("mock print err:", err)
 	}
 
-	fmt.Print("ok", "1")
+	fmt.Println("ok", "1")
 	patch.Unpatch()
 	fmt.Println("unpatched")
-	fmt.Print("ok", "2")
+	fmt.Println("ok", "2")
 }
 
 // TestNetConnMock

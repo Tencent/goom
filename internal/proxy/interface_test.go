@@ -4,7 +4,6 @@ package proxy_test
 import (
 	"fmt"
 	"reflect"
-	"runtime/debug"
 	"testing"
 	"unsafe"
 
@@ -142,7 +141,7 @@ func TestAutoGenImpl(t *testing.T) {
 	fmt.Println("ok")
 }
 
-//dynamicGenImpl 生成任意接口实现
+// dynamicGenImpl 生成任意接口实现
 func dynamicGenImpl(t *testing.T, i interface{}) {
 	typ := reflect.TypeOf(i).Elem()
 	for i := 0; i < typ.NumMethod(); i++ {
@@ -158,9 +157,9 @@ func dynamicGenImpl(t *testing.T, i interface{}) {
 	})
 
 	mockFunc := reflect.MakeFunc(methodTyp, func(args []reflect.Value) (results []reflect.Value) {
-		fmt.Println("called", args[1].Interface())
-		debug.PrintStack()
-		t.Log("ok")
+		//fmt.Println("called", args[1].Interface())
+		//debug.PrintStack()
+		//t.Log("ok")
 		return []reflect.Value{reflect.ValueOf(3)}
 	})
 	ifc := *(*uintptr)(gen)

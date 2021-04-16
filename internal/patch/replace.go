@@ -84,7 +84,7 @@ func replaceFunction(from, to, proxy, trampoline uintptr) (original []byte, orig
 		return
 	}
 
-	debug("origin >>>>> ", from, rawMemoryRead(from, 30), logger.DebugLevel)
+	Debugf("origin >>>>> ", from, rawMemoryRead(from, 30), logger.DebugLevel)
 
 	// 检测是否支持自动分配跳板函数
 	if trampoline > 0 {

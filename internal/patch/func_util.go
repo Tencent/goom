@@ -131,11 +131,11 @@ func IsPtr(value interface{}) bool {
 func Debug(name string, from uintptr, size int, level int) {
 	_, funcName, _ := unexports.FindFuncByPtr(from)
 	instBytes := rawMemoryRead(from, size)
-	debug(fmt.Sprintf("show [%s = %s] inst>>: ", name, funcName), from, instBytes, level)
+	Debugf(fmt.Sprintf("show [%s = %s] inst>>: ", name, funcName), from, instBytes, level)
 }
 
-// debug 调试内存指令替换,对原指令、替换之后的指令进行输出对比
-func debug(title string, from uintptr, copyOrigin []byte, level int) {
+// Debugf 调试内存指令替换,对原指令、替换之后的指令进行输出对比
+func Debugf(title string, from uintptr, copyOrigin []byte, level int) {
 	if logger.LogLevel < level {
 		return
 	}

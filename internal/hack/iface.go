@@ -8,8 +8,8 @@ const (
 	MaxMethod = 999
 )
 
-// TODO 不同go版本兼容
 // Iface 接口结构
+// TODO 不同go版本兼容
 type Iface struct {
 	// Tab 为接口类型的方法表
 	Tab *Itab
@@ -17,6 +17,7 @@ type Iface struct {
 	Data unsafe.Pointer
 }
 
+// Itab keeps sync with runtime.itab
 // TODO 不同go版本兼容
 // 注意: 最多兼容99个方法数量以内的接口
 type Itab struct {

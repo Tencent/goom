@@ -1,4 +1,4 @@
-// Package mocker定义了mock的外层用户使用API定义,
+// Package mocker 定义了mock的外层用户使用API定义,
 // 包括函数、方法、接口、未导出函数(或方法的)的Mocker的实现。
 // 当前文件定义了函数、方法、未导出函数(或方法)的Mocker的行为。
 package mocker
@@ -102,7 +102,7 @@ func (m *baseMocker) applyByMethod(structDef interface{}, method string, imp int
 
 // applyByIFaceMethod 根据接口方法应用mock
 func (m *baseMocker) applyByIFaceMethod(ctx *proxy.IContext, iFace interface{}, method string, imp interface{},
-	implV proxy.ProxyFunc) {
+	implV proxy.PFunc) {
 
 	impV := reflect.TypeOf(imp)
 	if impV.In(0) != reflect.TypeOf(&IContext{}) {

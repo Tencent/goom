@@ -1,4 +1,4 @@
-// Package patch生成指令跳转(到代理函数)并替换.text区内存
+// Package patch 生成指令跳转(到代理函数)并替换.text区内存
 // 对于trampoline模式的使用场景，本包实现了指令移动后的修复
 package patch
 

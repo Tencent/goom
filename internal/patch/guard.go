@@ -1,3 +1,4 @@
+// Package patch 生成指令跳转(到代理函数)并替换.text区内存
 package patch
 
 import (

@@ -21,27 +21,27 @@ type WhenTestSuite struct {
 	suite.Suite
 }
 
-//noLint
+// simple 普通函数
 func simple(int) int {
 	return 0
 }
 
-//noLint
+// Arg 普通参数
 type Arg struct {
 	field1 string
 }
 
-//noLint
+// Result 普通返回结果
 type Result struct {
 	field1 int
 }
 
-//noLint
+// complex 复杂返回结果函数
 func complex(Arg) Result {
 	return Result{0}
 }
 
-//noLint
+// complex1 复杂带指针的返回结果函数
 func complex1(Arg) *Result {
 	return &Result{0}
 }
@@ -49,12 +49,13 @@ func complex1(Arg) *Result {
 // Struct for结构体方法When
 type Struct struct{}
 
+// Div 除法操作
 //go:noinline
 func (s *Struct) Div(a int, b int) int {
 	return a / b
 }
 
-//noLint
+// StructOuter 嵌套结构外层
 type StructOuter struct {
 }
 

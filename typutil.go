@@ -19,7 +19,7 @@ package mocker
 //
 //THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 //IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
 //AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 //LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 //OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
@@ -195,7 +195,7 @@ func equal(lhsV, rhsV reflect.Value) bool {
 	// Compare a string and a number.
 	// This will attempt to convert the string to a number,
 	// while leaving the other side alone. Code further
-	// down takes care of converting ints and floats as needed.
+	// down takes care of converting int values and floats as needed.
 	if isNum(lhsV) && rhsV.Kind() == reflect.String {
 		rhsF, err := tryToFloat64(rhsV)
 		if err != nil {
@@ -223,7 +223,7 @@ func equal(lhsV, rhsV reflect.Value) bool {
 		return fmt.Sprintf("%v", lhsV) == fmt.Sprintf("%v", rhsV)
 	}
 
-	// Try to compare bools to strings and numbers
+	// Try to compare bool values to strings and numbers
 	if lhsV.Kind() == reflect.Bool || rhsV.Kind() == reflect.Bool {
 		lhsB, err := tryToBool(lhsV)
 		if err != nil {

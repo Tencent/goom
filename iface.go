@@ -153,12 +153,12 @@ func (m *DefaultInterfaceMocker) Return(returns ...interface{}) *When {
 }
 
 // Origin 回调原函数(暂时不支持)
-func (m *DefaultInterfaceMocker) Origin(origin interface{}) ExportedMocker {
+func (m *DefaultInterfaceMocker) Origin(interface{}) ExportedMocker {
 	panic("implement me")
 }
 
 // Inject 回调原函数(暂时不支持)
-func (m *DefaultInterfaceMocker) Inject(iFace interface{}) InterfaceMocker {
+func (m *DefaultInterfaceMocker) Inject(interface{}) InterfaceMocker {
 	panic("implement me")
 }
 

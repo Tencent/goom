@@ -22,7 +22,7 @@ type WhenTestSuite struct {
 }
 
 //noLint
-func simple(a int) int {
+func simple(int) int {
 	return 0
 }
 
@@ -37,12 +37,12 @@ type Result struct {
 }
 
 //noLint
-func complex(a Arg) Result {
+func complex(Arg) Result {
 	return Result{0}
 }
 
 //noLint
-func complex1(a Arg) *Result {
+func complex1(Arg) *Result {
 	return &Result{0}
 }
 

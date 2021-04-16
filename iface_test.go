@@ -110,23 +110,3 @@ type I interface {
 	Call1(string) string
 	call2(int32) int32
 }
-
-// I 接口实现1
-// nolint
-type Impl1 struct {
-}
-
-// nolint
-func (i Impl1) Call(int) int {
-	return 1
-}
-
-// nolint
-func (i Impl1) Call1(string) string {
-	return "not ok"
-}
-
-// nolint
-func (i Impl1) call2(int32) int32 {
-	return 1
-}

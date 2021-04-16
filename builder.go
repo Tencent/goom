@@ -168,8 +168,6 @@ func (b *Builder) reset2CurPkg() {
 const (
 	// currentPackageIndex 获取当前包的堆栈层次
 	currentPackageIndex = 3
-	// currentPackageIndex 获取当前包的堆栈层次
-	defaultCurrentPackageIndex = 2
 )
 
 // currentPackage 获取当前调用的包路径

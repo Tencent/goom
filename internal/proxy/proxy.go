@@ -29,10 +29,6 @@ func StaticProxyByName(funcName string, proxyFunc interface{}, trampolineFunc in
 
 	logger.LogInfo("start StaticProxyByName genCallableFunc=", funcName)
 
-	// 保证patch和Apply原子性
-	patch.PatchLock()
-	defer patch.PatchUnlock()
-
 	// gomonkey添加函数hook
 	patchGuard, err := patch.PatchPtrTrampoline(originFuncPtr, proxyFunc, trampolineFunc)
 	if err != nil {
@@ -58,10 +54,6 @@ func StaticProxyByFunc(funcDef interface{}, proxyFunc, trampolineFunc interface{
 	}
 
 	logger.LogInfo("start StaticProxyByFunc funcDef=", funcDef)
-
-	// 保证patch和Apply原子性
-	patch.PatchLock()
-	defer patch.PatchUnlock()
 
 	// gomonkey添加函数hook
 	patchGuard, err := patch.PatchTrampoline(
@@ -101,10 +93,6 @@ func StaticProxyByMethod(target reflect.Type, methodName string, proxyFunc,
 	}
 
 	logger.LogInfo("start StaticProxyByMethod genCallableFunc=", target, ".", methodName)
-
-	// 保证patch和Apply原子性
-	patch.PatchLock()
-	defer patch.PatchUnlock()
 
 	// gomonkey添加函数hook
 	patchGuard, err := patch.PatchInstanceMethodTrampoline(target, methodName, proxyFunc, trampolineFunc)

@@ -26,4 +26,3 @@ generate:
 test: clean generate
 	go test -gcflags=all=-l -coverpkg=./... -coverprofile=coverage.data ./... -run=^TestUnit.*$
 	go tool cover -html=coverage.data -o coverage.html
-	go tool cover -func=coverage.data -o coverage.txtbpatch -env ${env} -app ${app} -server ${server} -bin ${server} -user ${username} -instances "" -lang "go"

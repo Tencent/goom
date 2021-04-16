@@ -130,6 +130,7 @@ func replaceIns(ins *x86asm.Inst, pos int, copyOrigin []byte, funcSize int,
 		relativeAddr = -relativeAddr
 	}
 
+	// TODO 待实现
 	//if ins.PCRel <= 1 {
 	//	// 1字节相对地址暂时忽略, 不太可能跳出当前函数地址范围
 	//	return

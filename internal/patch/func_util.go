@@ -112,6 +112,7 @@ func getTrampolinePtr(trampoline interface{}) (uintptr, error) {
 
 		firsPtr := unsafe.Pointer(&trampoline)
 		secondPtr := ((*uintptr)(unsafe.Pointer(uintptr(firsPtr))))
+		// nolint hack用法
 		thirdPtr := ((*uintptr)(unsafe.Pointer(*secondPtr)))
 
 		logger.LogDebugf("trampoline caller: 0x%x 0x%x 0x%x", uintptr(firsPtr), *secondPtr, *thirdPtr)

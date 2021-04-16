@@ -8,9 +8,9 @@ import (
 	"reflect"
 	"strings"
 
-	"git.code.oa.com/goom/mocker/internal/unexports"
-
+	"git.code.oa.com/goom/mocker/errobj"
 	"git.code.oa.com/goom/mocker/internal/proxy"
+	"git.code.oa.com/goom/mocker/internal/unexports"
 )
 
 // Mocker mock接口, 所有类型(函数、方法、未导出函数、接口等)的Mocker的抽象
@@ -40,6 +40,7 @@ type ExportedMocker interface {
 type UnexportedMocker interface {
 	Mocker
 	// As 将未导出函数(或方法)转换为导出函数(或方法)
+	// As调用之后,请使用Return或When API的方式来指定mock返回。
 	As(funcdef interface{}) ExportedMocker
 	// Origin 指定Mock之后的原函数, orign签名和mock的函数一致
 	Origin(orign interface{}) UnexportedMocker
@@ -101,10 +102,16 @@ func (m *baseMocker) applyByMethod(structDef interface{}, method string, imp int
 
 // applyByIfaceMethod 根据接口方法应用mock
 func (m *baseMocker) applyByIfaceMethod(ctx *proxy.IContext, iface interface{}, method string, imp interface{},
-	implV func(args []reflect.Value) (results []reflect.Value)) {
+	implV proxy.ProxyFunc) {
+
+	impV := reflect.TypeOf(imp)
+	if impV.In(0) != reflect.TypeOf(&IContext{}) {
+		panic(errobj.NewIllegalParamTypeError("<first arg>", impV.In(0).Name(), "*IContext"))
+	}
+
 	err := proxy.MakeInterfaceImpl(iface, ctx, method, imp, implV)
 	if err != nil {
-		panic(fmt.Sprintf("proxy interface method error: %v", err))
+		panic(errobj.NewTraceableErrorf("interface mock apply error", err))
 	}
 
 	m.guard = NewIfaceMockGuard(ctx)
@@ -112,7 +119,7 @@ func (m *baseMocker) applyByIfaceMethod(ctx *proxy.IContext, iface interface{}, 
 	m.imp = imp
 }
 
-// when 指定的返回值
+// whens 指定的返回值
 func (m *baseMocker) whens(when *When) error {
 	m.imp = reflect.MakeFunc(when.funcTyp, m.callback).Interface()
 	m.when = when
@@ -120,7 +127,7 @@ func (m *baseMocker) whens(when *When) error {
 	return nil
 }
 
-// if 指定的返回值
+// if 指定的返回值 TODO 功能在适配中
 // func (m *baseMocker) ifs(_if *If) error {
 // 	m.imp = reflect.MakeFunc(_if.funcTyp, m.callback).Interface()
 // 	m._if = _if
@@ -128,7 +135,7 @@ func (m *baseMocker) whens(when *When) error {
 // 	return nil
 // }
 
-//callback callback
+// callback 通用的makefunc callback
 func (m *baseMocker) callback(args []reflect.Value) (results []reflect.Value) {
 	if m.when != nil {
 		results = m.when.invoke(args)
@@ -204,7 +211,7 @@ func (m *MethodMocker) ExportMethod(name string) UnexportedMocker {
 	}
 
 	// 转换结构体名
-	structName := getTypeName(m.structDef)
+	structName := typeName(m.structDef)
 	if strings.Contains(structName, "*") {
 		structName = fmt.Sprintf("(%s)", structName)
 	}
@@ -262,7 +269,7 @@ func (m *MethodMocker) When(args ...interface{}) *When {
 	return when
 }
 
-// Matcher 代理方法返回
+// Return 指定返回值
 func (m *MethodMocker) Return(returns ...interface{}) *When {
 	if m.method == "" {
 		panic("method is empty")
@@ -290,7 +297,7 @@ func (m *MethodMocker) Return(returns ...interface{}) *When {
 	return when
 }
 
-// Origin 调用原函数
+// Origin 指定调用的原函数
 func (m *MethodMocker) Origin(orign interface{}) ExportedMocker {
 	m.origin = orign
 
@@ -320,8 +327,8 @@ func NewUnexportedMethodMocker(pkgName string, structName string) *UnexportedMet
 	}
 }
 
-// getObjName 获取对象名
-func (m *UnexportedMethodMocker) getObjName() string {
+// objName 获取对象名
+func (m *UnexportedMethodMocker) objName() string {
 	return fmt.Sprintf("%s.%s.%s", m.pkgName, m.structName, m.methodName)
 }
 
@@ -336,7 +343,7 @@ func (m *UnexportedMethodMocker) Method(name string) UnexportedMocker {
 // mock回调函数, 需要和mock模板函数的签名保持一致
 // 方法的参数签名写法比如: func(s *Struct, arg1, arg2 type), 其中第一个参数必须是接收体类型
 func (m *UnexportedMethodMocker) Apply(imp interface{}) {
-	name := m.getObjName()
+	name := m.objName()
 	if name == "" {
 		panic("method name is empty")
 	}
@@ -357,7 +364,7 @@ func (m *UnexportedMethodMocker) Origin(orign interface{}) UnexportedMocker {
 
 // As 将未导出函数(或方法)转换为导出函数(或方法)
 func (m *UnexportedMethodMocker) As(funcdef interface{}) ExportedMocker {
-	name := m.getObjName()
+	name := m.objName()
 	if name == "" {
 		panic("method name is empty")
 	}
@@ -397,8 +404,8 @@ func NewUnexportedFuncMocker(pkgName, funcName string) *UnexportedFuncMocker {
 	}
 }
 
-// getObjName 获取对象名
-func (m *UnexportedFuncMocker) getObjName() string {
+// objName 获取对象名
+func (m *UnexportedFuncMocker) objName() string {
 	return fmt.Sprintf("%s.%s", m.pkgName, m.funcName)
 }
 
@@ -406,7 +413,7 @@ func (m *UnexportedFuncMocker) getObjName() string {
 // mock回调函数, 需要和mock模板函数的签名保持一致
 // 方法的参数签名写法比如: func(s *Struct, arg1, arg2 type), 其中第一个参数必须是接收体类型
 func (m *UnexportedFuncMocker) Apply(imp interface{}) {
-	name := m.getObjName()
+	name := m.objName()
 
 	m.applyByName(name, imp)
 }
@@ -420,7 +427,7 @@ func (m *UnexportedFuncMocker) Origin(orign interface{}) UnexportedMocker {
 
 // As 将未导出函数(或方法)转换为导出函数(或方法)
 func (m *UnexportedFuncMocker) As(funcdef interface{}) ExportedMocker {
-	name := m.getObjName()
+	name := m.objName()
 
 	originFuncPtr, err := unexports.FindFuncByName(name)
 	if err != nil {
@@ -457,7 +464,7 @@ func (m *DefMocker) Apply(imp interface{}) {
 		panic("funcdef is empty")
 	}
 
-	var funcname = getFunctionName(m.funcdef)
+	var funcname = functionName(m.funcdef)
 
 	if strings.HasSuffix(funcname, "-fm") {
 		m.applyByName(strings.TrimRight(funcname, "-fm"), imp)

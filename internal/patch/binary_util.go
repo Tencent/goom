@@ -1,6 +1,6 @@
 package patch
 
-// A ByteOrder specifies how to convert byte sequences into
+// ByteOrder A ByteOrder specifies how to convert byte sequences into
 // 16-, 32-, or 64-bit unsigned integers.
 type ByteOrder interface {
 	Uint16([]byte) uint16

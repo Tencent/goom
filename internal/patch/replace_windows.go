@@ -6,8 +6,8 @@ import (
 )
 
 // 注意: 此版本暂时不能完整支持windows
-
-const PAGE_EXECUTE_READWRITE = 0x40
+// pageExcuteReadwrite page窗口大小
+const pageExcuteReadwrite = 0x40
 
 var (
 	defaultFuncPrologue32 = []byte{0x65, 0x8b, 0x0d, 0x00, 0x00, 0x00, 0x00, 0x8b, 0x89, 0xfc, 0xff, 0xff, 0xff}
@@ -16,7 +16,7 @@ var (
 
 var procVirtualProtect = syscall.NewLazyDLL("kernel32.dll").NewProc("VirtualProtect")
 
-//virtualProtect virtualProtect
+// virtualProtect 获取page读写权限
 func virtualProtect(lpAddress uintptr, dwSize int, flNewProtect uint32, lpflOldProtect unsafe.Pointer) error {
 	ret, _, _ := procVirtualProtect.Call(
 		lpAddress,
@@ -29,14 +29,14 @@ func virtualProtect(lpAddress uintptr, dwSize int, flNewProtect uint32, lpflOldP
 	return nil
 }
 
-// this function is super unsafe
+// CopyToLocation this function is super unsafe
 // aww yeah
 // It copies a slice to a raw memory location, disabling all memory protection before doing so.
 func CopyToLocation(location uintptr, data []byte) error {
 	f := rawMemoryAccess(location, len(data))
 
 	var oldPerms uint32
-	err := virtualProtect(location, len(data), PAGE_EXECUTE_READWRITE, unsafe.Pointer(&oldPerms))
+	err := virtualProtect(location, len(data), pageExcuteReadwrite, unsafe.Pointer(&oldPerms))
 	if err != nil {
 		panic(err)
 	}

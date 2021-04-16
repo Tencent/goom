@@ -112,6 +112,7 @@ func CreateFuncForCodePtr(outFuncPtr interface{}, codePtr uintptr) (*hack.Func, 
 	// pointer. The function value is a struct that starts with its code
 	// pointer, so we can swap out the code pointer with our desired value.
 	funcValuePtr := reflect.ValueOf(newFuncVal).FieldByName("ptr").Pointer()
+	// nolint hack用法
 	funcPtr := (*hack.Func)(unsafe.Pointer(funcValuePtr))
 	funcPtr.CodePtr = codePtr
 

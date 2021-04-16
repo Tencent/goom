@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	"git.code.oa.com/goom/mocker"
+	"git.code.oa.com/goom/mocker/errobj"
+
 	"github.com/stretchr/testify/suite"
 )
 
@@ -38,10 +40,12 @@ func (s *IfaceMockerTestSuite) TestUnitInterfaceApply() {
 		s.Equal(3, i.Call(1), "interface mock check")
 		s.Equal("ok", i.Call1(""), "interface mock check")
 
+		s.NotNil(i, "interface var nil check")
+
 		// Mock重置, 接口变量将恢复原来的值
 		mock.Reset()
 
-		s.Equal(nil, i, "interface mock reset check")
+		s.Nil(i, "interface mock reset check")
 	})
 }
 
@@ -66,9 +70,37 @@ func (s *IfaceMockerTestSuite) TestUnitInterfaceReturn() {
 		s.Equal("ok", i.Call1(""), "interface mock check")
 		s.Equal(int32(5), i.call2(0), "interface mock check")
 
+		s.NotNil(i, "interface var nil check")
+
 		mock.Reset()
 
-		s.Equal(nil, i, "interface mock reset check")
+		s.Nil(i, "interface mock reset check")
+	})
+}
+
+// TestUnitArgsNotMatch 测试接口mock参数不匹配情况
+func (s *IfaceMockerTestSuite) TestUnitArgsNotMatch() {
+	s.Run("success", func() {
+
+		var expectErr error
+		func() {
+			defer func() {
+				if err := recover(); err != nil {
+					expectErr = err.(error)
+				}
+			}()
+			mock := mocker.Create()
+
+			// 接口变量
+			i := (I)(nil)
+
+			// 将Mock应用到接口变量(仅对该变量有效)
+			mock.Interface(&i).Method("Call").Apply(func(ctx *mocker.IContext) int {
+				return 3
+			})
+		}()
+
+		s.IsType(&errobj.IllegalParam{}, errobj.CauseOf(expectErr), "param check fail test")
 	})
 }
 

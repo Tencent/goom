@@ -21,7 +21,8 @@ type Matcher interface {
 	AddResult([]interface{})
 }
 
-// When Mock条件匹配
+// When Mock条件匹配。
+// 当参数等于指定的值时,会return对应的指定值
 type When struct {
 	ExportedMocker
 
@@ -118,7 +119,7 @@ func (w *When) In(slices ...interface{}) *When {
 	return w
 }
 
-// Matcher 指定返回值
+// Return 指定返回值
 func (w *When) Return(results ...interface{}) *When {
 	if w.curMatch == nil {
 		w.defaultReturns = newAlwaysMatch(results, w.funcTyp)
@@ -131,7 +132,7 @@ func (w *When) Return(results ...interface{}) *When {
 	return w
 }
 
-// Matcher 指定第二次调用返回值,之后的调用以最后一个指定的值返回
+// AndReturn 指定第二次调用返回值,之后的调用以最后一个指定的值返回
 func (w *When) AndReturn(results ...interface{}) *When {
 	if w.curMatch == nil {
 		return w.Return(results...)
@@ -166,7 +167,7 @@ func (w *When) Returns(resultsmap map[interface{}]interface{}) *When {
 	return w
 }
 
-// invoke invoke
+// invoke 执行When参数匹配并返回值
 func (w *When) invoke(args1 []reflect.Value) (results []reflect.Value) {
 	if len(w.matches) != 0 {
 		for _, c := range w.matches {
@@ -203,7 +204,7 @@ type BaseMatcher struct {
 	funTyp  reflect.Type
 }
 
-//newBaseMatcher 创建新参数匹配基类
+// newBaseMatcher 创建新参数匹配基类
 func newBaseMatcher(results []interface{}, funTyp reflect.Type) *BaseMatcher {
 	resultVs := make([][]reflect.Value, 0)
 	if results != nil {
@@ -248,7 +249,7 @@ type DefaultMatcher struct {
 	args     []reflect.Value
 }
 
-//newDefaultMatch 创建新参数匹配
+// newDefaultMatch 创建新参数匹配
 func newDefaultMatch(args []interface{}, results []interface{}, isMethod bool, funTyp reflect.Type) *DefaultMatcher {
 	argVs := I2V(args, inTypes(isMethod, funTyp))
 
@@ -259,7 +260,7 @@ func newDefaultMatch(args []interface{}, results []interface{}, isMethod bool, f
 	}
 }
 
-//Match 判断是否匹配
+// Match 判断是否匹配
 func (c *DefaultMatcher) Match(args []reflect.Value) bool {
 	if c.isMethod {
 		if len(args) != len(c.args)+1 {
@@ -293,7 +294,7 @@ type ContainsMatcher struct {
 	isMethod bool
 }
 
-//newContainsMatch 创建新的包含类型的参数匹配
+// newContainsMatch 创建新的包含类型的参数匹配
 func newContainsMatch(args []interface{}, results []interface{}, isMethod bool, funTyp reflect.Type) *ContainsMatcher {
 	argVs := make([][]reflect.Value, 0)
 
@@ -314,7 +315,7 @@ func newContainsMatch(args []interface{}, results []interface{}, isMethod bool, 
 	}
 }
 
-//Match 判断是否匹配
+// Match 判断是否匹配
 func (c *ContainsMatcher) Match(args []reflect.Value) bool {
 outer:
 	for _, one := range c.args {
@@ -370,6 +371,7 @@ type EmptyMatch struct {
 	*AlwaysMatcher
 }
 
+// newEmptyMatch 创建无参数匹配器
 func newEmptyMatch() *EmptyMatch {
 	return &EmptyMatch{}
 }

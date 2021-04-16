@@ -1,6 +1,7 @@
 package patch_test
 
 import (
+	"fmt"
 	"reflect"
 	"runtime"
 	"testing"
@@ -12,8 +13,15 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var toggle = false
+
 //go:noinline
-func no() bool { return false }
+func no() bool {
+	if toggle {
+		fmt.Println("false")
+	}
+	return false
+}
 
 //go:noinline
 func yes() bool { return true }
@@ -48,9 +56,10 @@ func TestTimePatch(t *testing.T) {
 // TestGC GC测试
 func TestGC(t *testing.T) {
 	value := true
-	_, _ = patch.Patch(no, func() bool {
+	g, _ := patch.Patch(no, func() bool {
 		return value
 	})
+	g.Apply()
 
 	defer patch.UnpatchAll()
 	runtime.GC()
@@ -60,7 +69,8 @@ func TestGC(t *testing.T) {
 // TestSimple TestSimple
 func TestSimple(t *testing.T) {
 	assert.False(t, no())
-	_, _ = patch.Patch(no, yes)
+	g, _ := patch.Patch(no, yes)
+	g.Apply()
 	assert.True(t, no())
 	assert.True(t, patch.Unpatch(no))
 	assert.False(t, no())
@@ -75,6 +85,7 @@ func TestGuard(t *testing.T) {
 		defer guard.Restore()
 		return !no()
 	})
+	guard.Apply()
 
 	for i := 0; i < 100; i++ {
 		assert.True(t, no())
@@ -85,7 +96,8 @@ func TestGuard(t *testing.T) {
 //TestUnpatchAll TestUnpatchAll
 func TestUnpatchAll(t *testing.T) {
 	assert.False(t, no())
-	_, _ = patch.Patch(no, yes)
+	g, _ := patch.Patch(no, yes)
+	g.Apply()
 	assert.True(t, no())
 	patch.UnpatchAll()
 	assert.False(t, no())
@@ -103,7 +115,8 @@ func TestWithInstanceMethod(t *testing.T) {
 
 	assert.False(t, no())
 
-	_, _ = patch.Patch(no, i.yes)
+	g, _ := patch.Patch(no, i.yes)
+	g.Apply()
 
 	assert.True(t, no())
 
@@ -121,7 +134,8 @@ func (f *f) No() bool { return false }
 func TestOnInstanceMethod(t *testing.T) {
 	i := &f{}
 	assert.False(t, i.No())
-	_, _ = patch.PatchInstanceMethod(reflect.TypeOf(i), "No", func(_ *f) bool { return true })
+	g, _ := patch.PatchInstanceMethod(reflect.TypeOf(i), "No", func(_ *f) bool { return true })
+	g.Apply()
 	assert.True(t, i.No())
 	assert.True(t, patch.UnpatchInstanceMethod(reflect.TypeOf(i), "No"))
 	assert.False(t, i.No())
@@ -130,16 +144,19 @@ func TestOnInstanceMethod(t *testing.T) {
 //TestNotFunction TestNotFunction
 func TestNotFunction(t *testing.T) {
 	assert.Panics(t, func() {
-		_, _ = patch.Patch(no, 1)
+		g, _ := patch.Patch(no, 1)
+		g.Apply()
 	})
 	assert.Panics(t, func() {
-		_, _ = patch.Patch(1, yes)
+		g, _ := patch.Patch(1, yes)
+		g.Apply()
 	})
 }
 
 //TestNotCompatible TestNotCompatible
 func TestNotCompatible(t *testing.T) {
 	assert.Panics(t, func() {
-		_, _ = patch.Patch(no, func() {})
+		g, _ := patch.Patch(no, func() {})
+		g.Apply()
 	})
 }

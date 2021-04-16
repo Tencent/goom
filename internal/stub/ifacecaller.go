@@ -28,7 +28,7 @@ func MakeIfaceCaller(to unsafe.Pointer) (uintptr, error) {
 		return 0, err
 	}
 
-	patch.ShowInst("genstub", placehlder, 30, logger.DebugLevel)
+	patch.Debug("genstub", placehlder, 30, logger.DebugLevel)
 
 	return placehlder, nil
 }
@@ -53,7 +53,7 @@ func MakeIfaceCallerWithCtx(ctx unsafe.Pointer, to uintptr) (uintptr, error) {
 		return 0, err
 	}
 
-	patch.ShowInst("genstub", placehlder, 30, logger.DebugLevel)
+	patch.Debug("genstub", placehlder, 30, logger.DebugLevel)
 
 	return placehlder, nil
 }

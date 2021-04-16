@@ -12,6 +12,9 @@ import (
 	"git.code.oa.com/goom/mocker/internal/logger"
 )
 
+// placeHolderIns 占位实例
+var placeHolderIns *PlaceHolder
+
 // PlaceHolder 占位对象
 type PlaceHolder struct {
 	// count hook次数统计
@@ -26,9 +29,6 @@ type PlaceHolder struct {
 
 // Placeholder 汇编函数声明: 占位函数
 func Placeholder()
-
-// placeHolderIns 占位实例
-var placeHolderIns *PlaceHolder
 
 func init() {
 	offset := reflect.ValueOf(Placeholder).Pointer()

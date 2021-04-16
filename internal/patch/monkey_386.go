@@ -1,11 +1,12 @@
 package patch
 
+// nopOpcode 空指令插入到原函数开头第一个字节, 用于判断原函数是否已经被Patch过
+const nopOpcode = 0x90
+
 // funcPrologue 函数的开头指纹,用于不同OS获取不同的默认值
 var funcPrologue = defaultFuncPrologue32
 
-const NOP_OPCODE = 0x90
-
-// Assembles a jump to a function value
+// jmpToFunctionValue Assembles a jump to a function value
 func jmpToFunctionValue(to uintptr) []byte {
 	return []byte{
 		0xBA,

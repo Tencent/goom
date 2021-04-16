@@ -1,4 +1,4 @@
-// Packge proxy封装了给各种类型的代理(或较patch)中间层
+// Package proxy封装了给各种类型的代理(或较patch)中间层
 // 负责比如外部传如私有函数名转换成uintptr，trampoline初始化，并发proxy等
 package proxy
 
@@ -54,6 +54,9 @@ func notImplement() {
 	panic("method not implements. (please write a mocker on it)")
 }
 
+// ProxyFunc 代理函数类型的签名
+type ProxyFunc func(args []reflect.Value) (results []reflect.Value)
+
 // MakeInterfaceImpl 构造接口代理，自动生成接口实现的桩指令织入到内存中
 // iface 接口类型变量,指针类型
 // ctx 接口代理上下文
@@ -62,7 +65,7 @@ func notImplement() {
 // proxy 动态代理函数, 用于反射的方式回调, proxy参数会覆盖apply参数值
 // return error 异常
 func MakeInterfaceImpl(iface interface{}, ctx *IContext, method string,
-	apply interface{}, proxy func(args []reflect.Value) (results []reflect.Value)) error {
+	imp interface{}, proxy ProxyFunc) error {
 	ifaceType := reflect.TypeOf(iface)
 	if ifaceType.Kind() != reflect.Ptr {
 		return errobj.NewIllegalParamTypeError("iface", ifaceType.String(), "ptr")
@@ -83,13 +86,21 @@ func MakeInterfaceImpl(iface interface{}, ctx *IContext, method string,
 		}
 	}
 
+	// check args len match
+	applyArgLen := reflect.TypeOf(imp).NumIn()
+	ifaceMArgLen := typ.Method(funcTabIndex).Type.NumIn()
+	if ifaceMArgLen >= applyArgLen {
+		aErr := errobj.NewArgsNotMatchError(imp, applyArgLen, ifaceMArgLen+1)
+		return errobj.NewIllegalParamCError("imp", reflect.ValueOf(imp).String(), aErr)
+	}
+
 	gen := hack.UnpackEFace(iface).Data
 
 	// 首次调用备份iface
 	backUp2Context(ctx, gen)
 
 	// mock接口方法
-	var itabFunc = genCallableFunc(ctx, apply, proxy)
+	var itabFunc = genCallableFunc(ctx, imp, proxy)
 
 	ifaceCacheKey := typ.PkgPath() + "/" + typ.String()
 	// 上下文中查找接口代理对象的缓存
@@ -142,14 +153,14 @@ func backUp2Context(ctx *IContext, iface unsafe.Pointer) {
 
 // genCallableFunc 生成可以直接CALL的函数, 带上下文(rdx)
 func genCallableFunc(ctx *IContext, apply interface{},
-	proxy func(args []reflect.Value) (results []reflect.Value)) uintptr {
+	proxy ProxyFunc) uintptr {
 	var (
 		genStub uintptr
 		err     error
 	)
 
 	if proxy == nil {
-		// 生成桩代码,rdx寄存去还原
+		// 生成桩代码,rdx寄存器还原
 		applyValue := reflect.ValueOf(apply)
 		mockFuncPtr := (*hack.Value)(unsafe.Pointer(&applyValue)).Ptr
 
@@ -158,7 +169,7 @@ func genCallableFunc(ctx *IContext, apply interface{},
 			panic(err)
 		}
 	} else {
-		// 生成桩代码,rdx寄存器还原
+		// 生成桩代码,rdx寄存器还原, 生成的调用将跳转到proxy函数
 		methodTyp := reflect.TypeOf(apply)
 		mockfunc := reflect.MakeFunc(methodTyp, proxy)
 		callStub := reflect.ValueOf(stub.MakeFuncStub).Pointer()

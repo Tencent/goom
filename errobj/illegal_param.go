@@ -2,13 +2,19 @@ package errobj
 
 // IllegalParam 参数错误异常
 type IllegalParam struct {
+	cause      error
 	paramName  string
 	paramValue string
 	funcName   string
 }
 
 // IllegalParam 参数错误异常
-func (i *IllegalParam) Error() string {
+func (i *IllegalParam) Error() (s string) {
+	defer func() {
+		if i.cause != nil {
+			s = s + "\ncause: " + i.cause.Error()
+		}
+	}()
 	if len(i.funcName) > 0 {
 		return "Illegal param error when call" + i.funcName + ", param=" + i.paramName + ", value=" + i.paramValue
 	}
@@ -16,11 +22,23 @@ func (i *IllegalParam) Error() string {
 	return "Illegal param error, param=" + i.paramName + ", value=" + i.paramValue
 }
 
+// Traceable 获取错误的原因
+func (i *IllegalParam) Cause() error {
+	return i.cause
+}
+
 // NewIllegalParamError 创建参数异常
 // paramName 参数名
 // paramValue 参数值
 func NewIllegalParamError(paramName string, paramValue string) error {
 	return &IllegalParam{paramName: paramName, paramValue: paramValue}
+}
+
+// NewIllegalParamCError 创建参数异常
+// paramName 参数名
+// paramValue 参数值
+func NewIllegalParamCError(paramName string, paramValue string, cause error) error {
+	return &IllegalParam{paramName: paramName, paramValue: paramValue, cause: cause}
 }
 
 // NewIllegalCallError 创建参数异常

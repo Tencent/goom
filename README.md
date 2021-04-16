@@ -1,8 +1,8 @@
 # GOOM单测Mock框架
 ## 介绍
 ### 背景
-1. 基于公司目前内部没有一款自己维护的适合公司业务迭代的mock框架，众多项目采用外界开源的gomonkey框架进行函数的mock，因其存在较一些的bug，不支持异包私有函数mock，同包私有方法mock等等问题, 加上团队目前实现一款改进版-无需unpath即可在mock过程中调用原函数的特性，可以支持到延迟模拟，参数更改，mock数据录制等功能，因此建立此项目
-2. 目前有一半以上方案是基于gomock类似的实现方案, 此mock方案需要要求业务代码具备良好的接口设计，从而能顺利生成mock代码，而goom只需要指定函数名称或函数定义，就能支持到任意函数的mock，任意函数异常注入，延时模拟等扩展性功能
+1. 基于公司目前内部没有一款自己维护的适合公司业务迭代速度和稳定性要求的mock框架，众多项目采用外界开源的gomonkey框架进行函数的mock，因其存在较一些的bug，不支持异包私有函数mock，同包私有方法mock等等问题, 加上团队目前实现一款改进版-无需unpath即可在mock过程中调用原函数的特性，可以支持到延迟模拟，参数更改，mock数据录制等功能，因此建立此项目
+2. 目前有一半以上方案是基于gomock类似的实现方案, 此mock方案需要要求业务代码具备良好的接口设计，才能顺利生成mock代码，而goom只需要指定函数名称或函数定义，就能支持到任意函数的mock，任意函数异常注入，延时模拟等扩展性功能
 
 ### 功能特性
 1. 私有(未导出)函数(或方法)的mock, 普通函数的mock
@@ -85,6 +85,7 @@ mock.Struct(&fake{}).ExportMethod("call").Apply(func(_ *fake, i int) int {
 })
 
 // mock 结构体fake的私有方法call, mock前先调用ExportMethod将其导出为函数类型，后续支持设置When, Return等
+// As调用之后，请使用Return或When API的方式来指定mock返回。
 mock.Struct(&fake{}).ExportMethod("call").As(func(_ *fake, i int) int {
     return i * 2
 }).Return(1)
@@ -108,10 +109,11 @@ mock := mocker.Create()
 i := (I)(nil)
 
 // 将Mock应用到接口变量(mock仅对该变量有效)
-mock.Interface(&i).Method("Call").Apply(func(ctx *mocker.IContext, i int) int {
+// Apply调用的第一个参数必须为\*mocker.IContext, 作用是指定接口实现的接收体; 后续的参数原样照抄。
+mock.Interface(&i).Method("Call").Apply(func(ctx _\*mocker.IContext_ , i int) int {
     return 3
 })
-mock.Interface(&i).Method("Call1").As(func(ctx *mocker.IContext, i string) string {
+mock.Interface(&i).Method("Call1").As(func(ctx _\*mocker.IContext_ , i string) string {
 			return ""
 }).When("").Return("ok")
 

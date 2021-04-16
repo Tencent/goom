@@ -48,7 +48,7 @@ func (m *CachedMethodMocker) ExportMethod(name string) UnexportedMocker {
 	return exportedMocker
 }
 
-// 清除mock
+// Cancel 取消mock
 func (m *CachedMethodMocker) Cancel() {
 	for _, v := range m.mCache {
 		v.Cancel()
@@ -73,7 +73,7 @@ func NewCachedUnexportedMethodMocker(m *UnexportedMethodMocker) *CachedUnexporte
 	}
 }
 
-// CachedMethodMocker 设置结构体的方法名
+// Method 设置结构体的方法名
 func (m *CachedUnexportedMethodMocker) Method(name string) UnexportedMocker {
 	if mocker, ok := m.mCache[name]; ok {
 		return mocker
@@ -86,7 +86,7 @@ func (m *CachedUnexportedMethodMocker) Method(name string) UnexportedMocker {
 	return mocker
 }
 
-// 清除mock
+// Cancel 清除mock
 func (m *CachedUnexportedMethodMocker) Cancel() {
 	for _, v := range m.mCache {
 		v.Cancel()
@@ -109,7 +109,7 @@ func NewCachedInterfaceMocker(interfaceMocker *DefaultInterfaceMocker) *CachedIn
 	}
 }
 
-// Method Method
+// Method 指定方法名
 func (m *CachedInterfaceMocker) Method(name string) InterfaceMocker {
 	if mocker, ok := m.mCache[name]; ok {
 		return mocker
@@ -122,7 +122,7 @@ func (m *CachedInterfaceMocker) Method(name string) InterfaceMocker {
 	return mocker
 }
 
-// Cancel 清除mock
+// Cancel 取消mock
 func (m *CachedInterfaceMocker) Cancel() {
 	for _, v := range m.mCache {
 		v.Cancel()

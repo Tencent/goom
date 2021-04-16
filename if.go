@@ -6,7 +6,7 @@ package mocker
 
 import "reflect"
 
-// If 条件表达式 TODO
+// If 条件表达式 TODO 实现中
 type If struct {
 	ExportedMocker
 
@@ -93,7 +93,7 @@ func (i *If) Arg5() *If {
 	return i
 }
 
-// invoke invoke
+// invoke 执行If表达式,并返回对应的值
 func (i *If) invoke(args1 []reflect.Value) (results []reflect.Value) {
 	return nil
 }

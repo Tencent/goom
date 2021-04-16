@@ -7,45 +7,20 @@ import (
 	"fmt"
 	"reflect"
 	"runtime"
-	"strings"
 	"unsafe"
 
-	"git.code.oa.com/goom/mocker/internal/proxy"
-
 	"git.code.oa.com/goom/mocker/internal/hack"
+	"git.code.oa.com/goom/mocker/internal/proxy"
 )
 
-// CurrentPackage 获取当前调用的包路径
-func CurrentPackage() string {
-	return currentPackage(currentPackageIndex)
+// functionName 获取函数名称
+func functionName(fnc interface{}) string {
+	return runtime.FuncForPC(reflect.ValueOf(fnc).Pointer()).Name()
 }
 
-// currentPackage 获取调用者的包路径
-func currentPackage(skip int) string {
-	pc, _, _, _ := runtime.Caller(skip)
-	callerName := runtime.FuncForPC(pc).Name()
-
-	if i := strings.Index(callerName, ".("); i > -1 {
-		return callerName[:i]
-	}
-
-	if i := strings.LastIndex(callerName, "/"); i > -1 {
-		realIndex := strings.Index(callerName[i:len(callerName)-1], ".")
-
-		return callerName[:realIndex+i]
-	}
-
-	return callerName
-}
-
-// getFunctionName 获取函数名称
-func getFunctionName(i interface{}) string {
-	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
-}
-
-// getTypeName 获取类型名称
-func getTypeName(val interface{}) string {
-	t := reflect.TypeOf(val)
+// typeName 获取类型名称
+func typeName(fnc interface{}) string {
+	t := reflect.TypeOf(fnc)
 	if t.Kind() == reflect.Ptr {
 		return "*" + t.Elem().Name()
 	}

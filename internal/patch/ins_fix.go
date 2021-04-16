@@ -10,7 +10,15 @@ import (
 	"git.code.oa.com/goom/mocker/internal/x86asm"
 )
 
-const CallInsName = "CALL"
+// callInsName call指令名称
+const callInsName = "CALL"
+
+// opAddrExpand 短地址指令 -> 长地址指令
+// 原始函数内部的短地址跳转无法满足长距离跳转时候,需要修改为长地址跳转, 因此同时需要将指令修改为对应的长地址指令
+var opAddrExpand = map[uint32][]byte{
+	0x74: []byte{0x0F, 0x84}, // JE 74->0F
+	0x7F: []byte{0x0F, 0x8F},
+}
 
 // replaceRelativeAddr 替换函数字节码中的相对地址(如果有的话)
 // from 函数起始地址
@@ -51,7 +59,7 @@ func doReplaceRelativeAddr(from uintptr, copyOrigin []byte, placehlder uintptr, 
 		}
 
 		if ins != nil && ins.Opcode != 0 {
-			if !allowCopyCall && ins.Op.String() == CallInsName {
+			if !allowCopyCall && ins.Op.String() == callInsName {
 				return nil, fmt.Errorf("copy call instruction is not allowed in auto trampoline model. size: %d", leastSize)
 			}
 
@@ -130,6 +138,7 @@ func replaceIns(ins *x86asm.Inst, pos int, copyOrigin []byte, funcSize int,
 		relativeAddr = -relativeAddr
 	}
 
+	// TODO 待实现
 	//if ins.PCRel <= 1 {
 	//	// 1字节相对地址暂时忽略, 不太可能跳出当前函数地址范围
 	//	return
@@ -139,7 +148,7 @@ func replaceIns(ins *x86asm.Inst, pos int, copyOrigin []byte, funcSize int,
 
 	if (isAdd && (int)(relativeAddr)+pos+ins.Len >= funcSize) ||
 		(!isAdd && (int)(relativeAddr)+pos+ins.Len < 0) {
-		if ins.Op.String() == CallInsName {
+		if ins.Op.String() == callInsName {
 			logger.LogDebug((int64)(startAddr)-(int64)(placehlder), startAddr, placehlder, int32(relativeAddr))
 		}
 
@@ -156,7 +165,7 @@ func replaceIns(ins *x86asm.Inst, pos int, copyOrigin []byte, funcSize int,
 			return encoded
 		}
 	} else {
-		if ins.Op.String() == CallInsName {
+		if ins.Op.String() == callInsName {
 			logger.LogDebug((int)(relativeAddr)+pos+ins.Len, funcSize, (int)(relativeAddr)+pos+ins.Len)
 			logger.LogDebug("called")
 		}
@@ -174,7 +183,7 @@ func encodeAddress(op uint32, ops []byte, addr []byte, addrLen int, val int, add
 
 	if addrLen == 1 {
 		if isByteOverflow((int32)(int8(val)) + (int32)(add)) {
-			if opsNew, ok := OpAddrExpand[uint32(ops[0])]; ok {
+			if opsNew, ok := opAddrExpand[uint32(ops[0])]; ok {
 				addr = make([]byte, 4)
 				LittleEndian.PutInt32(addr, (int32)(int8(val))+int32(add)-
 					int32(len(addr)-addrLen)-int32(len(opsNew)-len(ops))) // 新增了4个字节,需要减去
@@ -188,7 +197,7 @@ func encodeAddress(op uint32, ops []byte, addr []byte, addrLen int, val int, add
 		}
 	} else if addrLen == 2 {
 		if isInt16Overflow((int32)(int8(val)) + (int32)(add)) {
-			if opsNew, ok := OpAddrExpand[uint32(ops[0]<<16+ops[1])]; ok {
+			if opsNew, ok := opAddrExpand[uint32(ops[0]<<16+ops[1])]; ok {
 				addr = make([]byte, 4)
 				LittleEndian.PutInt32(addr, (int32)(int8(val))+int32(add)-
 					int32(len(addr)-addrLen)-int32(len(opsNew)-len(ops))) // 新增了4个字节,需要减去

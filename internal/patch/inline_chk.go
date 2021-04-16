@@ -45,11 +45,11 @@ func checkInlineDisbale() {
 
 // callFakeFunc 内联测试函数
 func callFakeFunc() int {
-	return target(1)
+	return checkTarget(1)
 }
 
 // target 测试目标mock函数
-func target(i int) int {
+func checkTarget(i int) int {
 	// example short code
 	return i + 1
 }

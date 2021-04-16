@@ -21,7 +21,7 @@ const (
 	insSizePrintLong = 35
 )
 
-// fixOriginFuncToTrampoline 将原始函数拷贝到PlayceHolder函数
+// fixOriginFuncToTrampoline 将原始函数from的指令到trampoline指向的地址(在PlayceHolder区内存区段内)
 // 此方式不需要修正pcvalue, 因此相对较安全
 // 因trampoline函数需要指定签名,因此只能用于静态代理
 // from 原始函数位置
@@ -30,28 +30,38 @@ const (
 // return 跳板函数(即原函数调用入口指针)
 func fixOriginFuncToTrampoline(from uintptr, trampoline uintptr, jumpInstSize int) (uintptr, error) {
 	// get origin func size
-	funcSize, err := GetFuncSize(defaultArchMod, from, false)
+	originFuncSize, err := GetFuncSize(defaultArchMod, from, false)
 	if err != nil {
 		logger.LogError("GetFuncSize error", err)
 
-		funcSize = defaultFuncSize
+		originFuncSize = defaultFuncSize
 	}
 
-	logger.LogDebug("origin func size is", funcSize)
+	// get trampoline func size
+	trampFuncSize, err := GetFuncSize(defaultArchMod, trampoline, false)
+	if err != nil {
+		logger.LogError("GetFuncSize error", err)
 
-	if jumpInstSize >= funcSize {
-		ShowInst("origin inst > ", from, insSizePrintShort, logger.InfoLevel)
+		trampFuncSize = 20
+	}
+
+	logger.LogDebug("origin func size is", originFuncSize)
+
+	// 如果需要修复的指令长度大于trampoline函数指令长度,则任务是无法修复
+	if jumpInstSize >= trampFuncSize {
+		Debug("origin inst > ", from, insSizePrintShort, logger.InfoLevel)
 		return 0, fmt.Errorf(
-			"jumpInstSize[%d] is bigger than origin FuncSize[%d], please add your origin func code", jumpInstSize, funcSize)
+			"jumpInstSize[%d] is bigger than trampoline FuncSize[%d], "+
+				"please fill your trampoline func code", jumpInstSize, originFuncSize)
 	}
 
 	// copy origin function
-	fixOrigin := rawMemoryRead(from, funcSize)
+	fixOrigin := rawMemoryRead(from, originFuncSize)
 
-	showInst("origin inst >>>>> ", from, fixOrigin[:minSize(insSizePrintMiddle, fixOrigin)], logger.DebugLevel)
+	debug("origin inst >>>>> ", from, fixOrigin[:minSize(insSizePrintMiddle, fixOrigin)], logger.DebugLevel)
 
 	// replace replative address to placehlder
-	firstFewIns, replaceSize, err := replaceRelativeAddr(from, fixOrigin, trampoline, funcSize, jumpInstSize, true)
+	firstFewIns, replaceSize, err := replaceRelativeAddr(from, fixOrigin, trampoline, originFuncSize, jumpInstSize, true)
 	if err != nil {
 		return 0, err
 	}
@@ -77,20 +87,20 @@ func fixOriginFuncToTrampoline(from uintptr, trampoline uintptr, jumpInstSize in
 	if len(fixOrigin) > trampolineFuncSize {
 		logger.LogErrorf("fixOriginSize[%d] is bigger than trampoline FuncSize[%d], please add your "+
 			"trampoline func code", len(fixOrigin), trampolineFuncSize)
-		ShowInst("trampoline inst > ", trampoline, insSizePrintLong, logger.InfoLevel)
+		Debug("trampoline inst > ", trampoline, insSizePrintLong, logger.InfoLevel)
 
 		return 0, fmt.Errorf("fixOriginSize[%d] is bigger than trampoline FuncSize[%d], "+
 			"please add your trampoline func code", len(fixOrigin), trampolineFuncSize)
 	}
 
-	ShowInst("trampoline inst > ", trampoline, insSizePrintLong, logger.DebugLevel)
-	showInst("fixed inst >>>>> ", trampoline, fixOrigin, logger.DebugLevel)
+	Debug("trampoline inst > ", trampoline, insSizePrintLong, logger.DebugLevel)
+	debug("fixed inst >>>>> ", trampoline, fixOrigin, logger.DebugLevel)
 
 	if err := CopyToLocation(trampoline, fixOrigin); err != nil {
 		return 0, err
 	}
 
-	ShowInst(fmt.Sprintf("tramp copy to 0x%x", trampoline), trampoline, insSizePrintMiddle, logger.DebugLevel)
+	Debug(fmt.Sprintf("tramp copy to 0x%x", trampoline), trampoline, insSizePrintMiddle, logger.DebugLevel)
 	logger.LogDebugf("copy to trampoline %x ", trampoline)
 
 	return trampoline, nil

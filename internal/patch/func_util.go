@@ -16,22 +16,24 @@ import (
 )
 
 var (
-	funcSizeCache   = make(map[uintptr]int)
-	funcSizeGetLock sync.Mutex
+	// funcSizeCache 函数长度缓存
+	funcSizeCache = make(map[uintptr]int)
+	// funcSizeReadLock 并发读写funcSizeCache锁
+	funcSizeReadLock sync.Mutex
 )
 
-//pageStart pageStart
+// pageStart page start of memory
 func pageStart(ptr uintptr) uintptr {
 	return ptr & ^(uintptr(syscall.Getpagesize() - 1))
 }
 
-// get func binary size
+// GetFuncSize get func binary size
 // not absolutly safe
 func GetFuncSize(mode int, start uintptr, minimal bool) (lenth int, err error) {
-	funcSizeGetLock.Lock()
+	funcSizeReadLock.Lock()
 	defer func() {
 		funcSizeCache[start] = lenth
-		funcSizeGetLock.Unlock()
+		funcSizeReadLock.Unlock()
 	}()
 
 	if lenth, ok := funcSizeCache[start]; ok {
@@ -110,6 +112,7 @@ func getTrampolinePtr(trampoline interface{}) (uintptr, error) {
 
 		firsPtr := unsafe.Pointer(&trampoline)
 		secondPtr := ((*uintptr)(unsafe.Pointer(uintptr(firsPtr))))
+		// nolint hack用法
 		thirdPtr := ((*uintptr)(unsafe.Pointer(*secondPtr)))
 
 		logger.LogDebugf("trampoline caller: 0x%x 0x%x 0x%x", uintptr(firsPtr), *secondPtr, *thirdPtr)
@@ -130,7 +133,7 @@ func IsPtr(value interface{}) bool {
 	return t.Kind() == reflect.Ptr
 }
 
-// nolint
+// LoadUnit 内存占用单位换算
 func LoadUnit(s int64) string {
 	suffix := ""
 	b := s
@@ -149,24 +152,15 @@ func LoadUnit(s int64) string {
 	return fmt.Sprintf("%d%s", b, suffix)
 }
 
-// ShowInst ShowInst
-func ShowInst(name string, from uintptr, size int, level int) {
+// Debug Debug 调试内存指令替换,对原指令、替换之后的指令进行输出对比
+func Debug(name string, from uintptr, size int, level int) {
 	_, funcName, _ := unexports.FindFuncByPtr(from)
 	instBytes := rawMemoryRead(from, size)
-	showInst(fmt.Sprintf("show [%s = %s] inst>>: ", name, funcName), from, instBytes, level)
+	debug(fmt.Sprintf("show [%s = %s] inst>>: ", name, funcName), from, instBytes, level)
 }
 
-// minSize 缩小size
-func minSize(showSize int, fixOrigin []byte) int {
-	if showSize > len(fixOrigin) {
-		showSize = len(fixOrigin)
-	}
-
-	return showSize
-}
-
-// ShowInst ShowInst
-func showInst(title string, from uintptr, copyOrigin []byte, level int) {
+// debug 调试内存指令替换,对原指令、替换之后的指令进行输出对比
+func debug(title string, from uintptr, copyOrigin []byte, level int) {
 	if logger.LogLevel < level {
 		return
 	}
@@ -183,7 +177,6 @@ func showInst(title string, from uintptr, copyOrigin []byte, level int) {
 		}
 
 		code := copyOrigin[pos:endPos]
-
 		ins, err := x86asm.Decode(code, 64)
 
 		if err != nil {
@@ -208,36 +201,71 @@ func showInst(title string, from uintptr, copyOrigin []byte, level int) {
 			continue
 		}
 
-		if ins.PCRelOff > 0 {
-			var isAdd = true
-
-			for i := 0; i < len(ins.Args); i++ {
-				arg := ins.Args[i]
-				if arg == nil {
-					break
-				}
-
-				addrArgs := arg.String()
-				if strings.HasPrefix(addrArgs, ".-") || strings.Contains(addrArgs, "RIP-") {
-					isAdd = false
-				}
-			}
-
-			offset := pos + ins.PCRelOff
-
-			relativeAddr := decodeAddress(copyOrigin[offset:offset+ins.PCRel], ins.PCRel)
-			if !isAdd && relativeAddr > 0 {
-				relativeAddr = -relativeAddr
-			}
-
-			logger.LogImportantf("[%d] 0x%x:\t%s\t\t%-30s\t\t%s\t\tabs:0x%x", ins.Len,
-				startAddr+(uint64)(pos), ins.Op, ins.String(), hex.EncodeToString(code[:ins.Len]),
-				from+uintptr(pos)+uintptr(relativeAddr)+uintptr(ins.Len))
-		} else {
+		if ins.PCRelOff <= 0 {
 			logger.LogImportantf("[%d] 0x%x:\t%s\t\t%-30s\t\t%s", ins.Len,
 				startAddr+(uint64)(pos), ins.Op, ins.String(), hex.EncodeToString(code[:ins.Len]))
+
+			pos = pos + ins.Len
+
+			continue
 		}
+
+		isAdd := true
+
+		for i := 0; i < len(ins.Args); i++ {
+			arg := ins.Args[i]
+			if arg == nil {
+				break
+			}
+
+			addrArgs := arg.String()
+			if strings.HasPrefix(addrArgs, ".-") || strings.Contains(addrArgs, "RIP-") {
+				isAdd = false
+			}
+		}
+
+		offset := pos + ins.PCRelOff
+
+		relativeAddr := decodeAddress(copyOrigin[offset:offset+ins.PCRel], ins.PCRel)
+		if !isAdd && relativeAddr > 0 {
+			relativeAddr = -relativeAddr
+		}
+
+		logger.LogImportantf("[%d] 0x%x:\t%s\t\t%-30s\t\t%s\t\tabs:0x%x", ins.Len,
+			startAddr+(uint64)(pos), ins.Op, ins.String(), hex.EncodeToString(code[:ins.Len]),
+			from+uintptr(pos)+uintptr(relativeAddr)+uintptr(ins.Len))
 
 		pos = pos + ins.Len
 	}
+}
+
+// minSize 最小size，不超出fixOrigin长度的size大小
+func minSize(showSize int, fixOrigin []byte) int {
+	if showSize > len(fixOrigin) {
+		showSize = len(fixOrigin)
+	}
+
+	return showSize
+}
+
+// checkSignature 检测两个函数类型的参数的内存区段是否一致
+func checkSignature(targetType reflect.Type, replacementType reflect.Type) bool {
+	// 检测参数对齐
+	if targetType.NumIn() != replacementType.NumIn() {
+		panic(fmt.Sprintf("func signature mismatch, args len must:%d, actual:%d", targetType.NumIn(), replacementType.NumIn()))
+	}
+	if targetType.NumOut() != replacementType.NumOut() {
+		panic(fmt.Sprintf("func signature mismatch, returns len must:%d, actual:%d", targetType.NumOut(), replacementType.NumOut()))
+	}
+	for i := 0; i < targetType.NumIn(); i++ {
+		if targetType.In(i).Size() != replacementType.In(i).Size() {
+			panic(fmt.Sprintf("func signature mismatch, args %d's size must:%d, actual:%d", i, targetType.In(i).Size(), replacementType.In(i).Size()))
+		}
+	}
+	for i := 0; i < targetType.NumOut(); i++ {
+		if targetType.Out(i).Size() != replacementType.Out(i).Size() {
+			panic(fmt.Sprintf("func signature mismatch, returns %d's size must:%d, actual:%d", i, targetType.Out(i).Size(), replacementType.Out(i).Size()))
+		}
+	}
+	return true
 }

@@ -18,7 +18,7 @@ type IfTestSuite struct {
 	suite.Suite
 }
 
-// TestWhenAndReturn 多次返回不同的值
+// TestIfAndReturn 多次返回不同的值
 func (s *IfTestSuite) TestIfAndReturn() {
 	s.Run("success", func() {
 

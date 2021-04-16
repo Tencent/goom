@@ -17,7 +17,9 @@ type InterfaceMocker interface {
 	// Method 指定接口方法
 	Method(name string) InterfaceMocker
 	// As 将接口方法应用为函数类型
-	As(funcdef interface{}) InterfaceMocker
+	// As调用之后,请使用Return或When API的方式来指定mock返回。
+	// imp函数的第一个参数必须为*mocker.IContext, 作用是指定接口实现的接收体; 后续的参数原样照抄。
+	As(imp interface{}) InterfaceMocker
 	// Inject 将mock设置到变量
 	Inject(iface interface{}) InterfaceMocker
 	// If 条件表达式匹配
@@ -52,7 +54,7 @@ func NewDefaultInterfaceMocker(pkgName string, iface interface{}, ctx *proxy.ICo
 	}
 }
 
-// Method 名字转化为接口
+// Method 指定mock的方法名
 func (m *DefaultInterfaceMocker) Method(name string) InterfaceMocker {
 	if name == "" {
 		panic("method is empty")
@@ -74,7 +76,8 @@ func (m *DefaultInterfaceMocker) checkMethod(name string) {
 	}
 }
 
-// Apply Apply
+// Apply 应用接口方法mock为实际的接收体方法
+// imp函数的第一个参数必须为*mocker.IContext, 作用是指定接口实现的接收体; 后续的参数原样照抄。
 func (m *DefaultInterfaceMocker) Apply(imp interface{}) {
 	if m.method == "" {
 		panic("method is empty")
@@ -83,18 +86,19 @@ func (m *DefaultInterfaceMocker) Apply(imp interface{}) {
 	m.applyByIfaceMethod(m.ctx, m.iface, m.method, imp, nil)
 }
 
-// nolint
-func (m *DefaultInterfaceMocker) As(funcdef interface{}) InterfaceMocker {
+// As 将接口方法mock为实际的接收体方法
+// imp函数的第一个参数必须为*mocker.IContext, 作用是指定接口实现的接收体; 后续的参数原样照抄。
+func (m *DefaultInterfaceMocker) As(imp interface{}) InterfaceMocker {
 	if m.method == "" {
 		panic("method is empty")
 	}
 
-	m.funcDef = funcdef
+	m.funcDef = imp
 
 	return m
 }
 
-// nolint
+// When 执行参数匹配时的返回值
 func (m *DefaultInterfaceMocker) When(args ...interface{}) *When {
 	if m.method == "" {
 		panic("method is empty")
@@ -119,10 +123,10 @@ func (m *DefaultInterfaceMocker) When(args ...interface{}) *When {
 	return when
 }
 
-// nolint
+// Return 指定返回值
 func (m *DefaultInterfaceMocker) Return(returns ...interface{}) *When {
 	if m.funcDef == nil {
-		panic("must use As before Return")
+		panic("must use As() API before call Return()")
 	}
 
 	if m.method == "" {
@@ -148,17 +152,17 @@ func (m *DefaultInterfaceMocker) Return(returns ...interface{}) *When {
 	return when
 }
 
-// nolint
+// Origin 回调原函数(暂时不支持)
 func (m *DefaultInterfaceMocker) Origin(orign interface{}) ExportedMocker {
 	panic("implement me")
 }
 
-// nolint
+// Inject 回调原函数(暂时不支持)
 func (m *DefaultInterfaceMocker) Inject(iface interface{}) InterfaceMocker {
 	panic("implement me")
 }
 
-// nolint
+// If 回调原函数(暂时不支持)
 func (m *DefaultInterfaceMocker) If() *If {
 	panic("implement me")
 }

@@ -1,5 +1,4 @@
-# https://git.code.oa.com/standards/go/blob/master/.golangci.yml
-# golangci-lint run -c golangci.yml ./...
+# 完整版本在 https://golangci-lint.run/usage/configuration/
 linters-settings:
   funlen:
     lines: 80
@@ -12,17 +11,23 @@ linters-settings:
   goimports:
   #local-prefixes: git.code.oa.com
   golint:
-    min-confidence: 0
+  #min-confidence: 0
   govet:
     check-shadowing: true
   lll:
     line-length: 120
   errcheck:
     check-type-assertions: true
+  gocritic:
+    enabled-checks:
+      - nestingReduce
+    settings:
+      nestingReduce:
+        bodyWidth: 5
+
 linters:
   disable-all: true
   enable:
-    - bodyclose
     - deadcode
     - funlen
     - goconst
@@ -30,7 +35,7 @@ linters:
     - gofmt
     - ineffassign
     - staticcheck
-    - structcheck
+    - structcheck # 当非导出结构嵌入另一个结构, 前一个结构被使用就不会监测到, 这个需要每个业务自己屏蔽
     - typecheck
     - goimports
     - golint
@@ -41,9 +46,48 @@ linters:
     - errcheck
     - unused
     - varcheck
-    - wsl
+    - sqlclosecheck
+    # - bodyclose https://github.com/timakin/bodyclose/issues 问题太多了，屏蔽都屏蔽不过来，显式不使用它
+
 run:
-  skip-dirs:
-    - internal
+  timeout: 20m
+
+issues:
+  exclude-use-default: true
+
+  # The list of ids of default excludes to include or disable. By default it's empty.
+  # 下面的规则，golangci-lint认为应该屏蔽，但是我们选择不屏蔽。所以，`exclude-use-default: true`屏蔽一部分，把下面的再捞出来。
+  # golanglint-ci维护的忽略列表里有一些是我们不想屏蔽的，捞出来。这里说一下，使用白名单是好于黑名单的。名单随着golanglint-ci引入更多工具，我们跟进享受好处。我们搞黑名单，就变成自己维护，不如golanglint-ci去维护，更好。
+  include:
+    - EXC0002 # golint (comment on exported (method|function|type|const)|should have( a package)? comment|comment should be of the form)
+    - EXC0003 # golint func name will be used as test\.Test.* by other packages, and that stutters; consider calling this
+    - EXC0004 # govet (possible misuse of unsafe.Pointer|should have signature)
+    - EXC0005 # staticcheck ineffective break statement. Did you mean to break out of the outer loop
+    - EXC0011 # stylecheck (comment on exported (method|function|type|const)|should have( a package)? comment|comment should be of the form)
+
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - funlen # 规范说单测函数，单个函数可以到160行，但是工具不好做区分处理，这里就直接不检查单测的函数长度
+    - linters:
+        - staticcheck
+      text: "SA1019: package github.com/golang/protobuf" # 它会说 'SA1019: package github.com/golang/protobuf/proto is deprecated: Use the "google.golang.org/protobuf/proto" package instead.', 但是这个库更更新很稳定
+    - linters:
+        - staticcheck
+      text: "SA6002: argument should be pointer-like to avoid allocations" # sync.pool.Put(buf), slice `var buf []byte` will tiger this
+    - linters:
+        - structcheck
+      text: "Store` is unused" # 文档项目独有的, 当非导出结构嵌入另一个结构, 前一个结构被使用就不会监测到
+    - linters:
+        - lll
+      source: "^//go:generate " # Exclude lll issues for long lines with go:generate
+
+  max-same-issues: 0
+  new: false
+  max-issues-per-linter: 0
+
+output:
+  sort-results: true
+
 service:
   golangci-lint-version: 1.23.x

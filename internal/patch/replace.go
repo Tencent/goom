@@ -3,7 +3,7 @@ package patch
 import (
 	"fmt"
 	"reflect"
-	"runtime/debug"
+	deb "runtime/debug"
 	"sync"
 	"unsafe"
 
@@ -13,30 +13,28 @@ import (
 // memoryAccessLock .text区内存操作度协作
 var memoryAccessLock sync.RWMutex
 
-// ReplaceApply 函数调用指针替换执行器
-type ReplaceApply func()
-
 // rawMemoryAccess 内存数据读取(非线程安全的)
-func rawMemoryAccess(p uintptr, length int) []byte {
+func rawMemoryAccess(ptr uintptr, length int) []byte {
 	return *(*[]byte)(unsafe.Pointer(&reflect.SliceHeader{
-		Data: p,
+		Data: ptr,
 		Len:  length,
 		Cap:  length,
 	}))
 }
 
 // rawMemoryRead 内存数据读取(线程安全的)
-func rawMemoryRead(p uintptr, length int) []byte {
+func rawMemoryRead(ptr uintptr, length int) []byte {
 	memoryAccessLock.RLock()
 	defer memoryAccessLock.RUnlock()
 
-	data := rawMemoryAccess(p, length)
+	data := rawMemoryAccess(ptr, length)
 	duplucate := make([]byte, length)
 	copy(duplucate, data)
 
 	return duplucate
 }
 
+// replaceFunction 在函数from里面, 织入对to的调用指令，同时将from织入前的指令恢复至trampoline这个地址
 // from is a pointer to the actual function
 // to is a pointer to a go funcvalue
 // trampoline 跳板函数地址, 不传递用0表示
@@ -45,7 +43,7 @@ func replaceFunction(from, to, proxy, trampoline uintptr) (original []byte, orig
 	defer func() {
 		if err1 := recover(); err1 != nil {
 			logger.LogErrorf("replaceFunction from=%d to=%d trampoline=%d error:%s", from, to, trampoline, err1)
-			logger.LogError(string(debug.Stack()))
+			logger.LogError(string(deb.Stack()))
 
 			var ok bool
 
@@ -58,19 +56,35 @@ func replaceFunction(from, to, proxy, trampoline uintptr) (original []byte, orig
 
 	logger.LogInfof("starting replace func from=0x%x to=0x%x proxy=0x%x trampoline=0x%x ...", from, to, proxy, trampoline)
 
-	ShowInst("show proxy inst >>>>> ", proxy, 30, logger.DebugLevel)
+	Debug("show proxy inst >>>>> ", proxy, 30, logger.DebugLevel)
 
 	// 构造跳转到代理函数的指令
 	jumpData = jmpToFunctionValue(from, to)
+
+	// get origin func size
+	funcSize, err := GetFuncSize(defaultArchMod, from, false)
+	if err != nil {
+		logger.LogError("GetFuncSize error", err)
+
+		funcSize = defaultFuncSize
+	}
+
+	// 如果需要织入的跳转指令的长度大于原函数指令长度,则任务是无法织入指令
+	if len(jumpData) >= funcSize {
+		Debug("origin inst > ", from, insSizePrintShort, logger.InfoLevel)
+		return nil, 0, nil, fmt.Errorf(
+			"jumpInstSize[%d] is bigger than origin FuncSize[%d], cannot do pathes", len(jumpData), funcSize)
+	}
+
 	// 保存原始指令
 	original = rawMemoryRead(from, len(jumpData))
 	// 判断是否已经被patch过
-	if original[0] == NopOpcode {
+	if original[0] == nopOpcode {
 		err = fmt.Errorf("from:0x%x is already patched", from)
 		return
 	}
 
-	showInst("origin >>>>> ", from, rawMemoryRead(from, 30), logger.DebugLevel)
+	debug("origin >>>>> ", from, rawMemoryRead(from, 30), logger.DebugLevel)
 
 	// 检测是否支持自动分配跳板函数
 	if trampoline > 0 {

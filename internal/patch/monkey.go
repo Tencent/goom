@@ -11,14 +11,14 @@ import (
 // target 原始函数
 // replacement 代理函数
 func Patch(target, replacement interface{}) (*Guard, error) {
-	return PatchTrampoline(target, replacement, nil)
+	return Trampoline(target, replacement, nil)
 }
 
-// PatchTrampoline 将函数调用指定代理函数
+// Trampoline 将函数调用指定代理函数
 // target 原始函数
 // replacement 代理函数
 // trampoline 指定跳板函数(可不指定,传nil)
-func PatchTrampoline(target, replacement interface{}, trampoline interface{}) (*Guard, error) {
+func Trampoline(target, replacement interface{}, trampoline interface{}) (*Guard, error) {
 	patch := &patch{
 		target:      target,
 		replacement: replacement,
@@ -62,20 +62,20 @@ func UnsafePatchTrampoline(target, replacement interface{}, trampoline interface
 	return patch.Guard(), nil
 }
 
-// PatchPtr 直接将函数跳转的新函数
+// Ptr 直接将函数跳转的新函数
 // 此方式为经过函数签名检查,可能会导致栈帧无法对其导致堆栈调用异常，因此不安全请谨慎使用
 // targetPtr 原始函数地址
 // replacement 代理函数
-func PatchPtr(targetPtr uintptr, replacement interface{}) (*Guard, error) {
-	return PatchPtrTrampoline(targetPtr, replacement, nil)
+func Ptr(targetPtr uintptr, replacement interface{}) (*Guard, error) {
+	return PtrTrampoline(targetPtr, replacement, nil)
 }
 
-// PatchPtrTrampoline 直接将函数跳转的新函数(指定跳板函数)
+// PtrTrampoline 直接将函数跳转的新函数(指定跳板函数)
 // 此方式为经过函数签名检查,可能会导致栈帧无法对其导致堆栈调用异常，因此不安全请谨慎使用
 // targetPtr 原始函数地址
 // replacement 代理函数
 // trampoline 跳板函数地址(可不指定,传nil)
-func PatchPtrTrampoline(targetPtr uintptr, replacement, trampoline interface{}) (*Guard, error) {
+func PtrTrampoline(targetPtr uintptr, replacement, trampoline interface{}) (*Guard, error) {
 	patch := &patch{
 		replacement: replacement,
 		trampoline:  trampoline,
@@ -93,15 +93,15 @@ func PatchPtrTrampoline(targetPtr uintptr, replacement, trampoline interface{}) 
 	return patch.Guard(), nil
 }
 
-// PatchInstanceMethod replaces an instance method methodName for the type target with replacementValue
+// InstanceMethod replaces an instance method methodName for the type target with replacementValue
 // Replacement should expect the receiver (of type target) as the first argument
-func PatchInstanceMethod(target reflect.Type, methodName string, replacement interface{}) (*Guard, error) {
-	return PatchInstanceMethodTrampoline(target, methodName, replacement, nil)
+func InstanceMethod(target reflect.Type, methodName string, replacement interface{}) (*Guard, error) {
+	return InstanceMethodTrampoline(target, methodName, replacement, nil)
 }
 
-// PatchInstanceMethodTrampoline replaces an instance method methodName for the type target with replacementValue
+// InstanceMethodTrampoline replaces an instance method methodName for the type target with replacementValue
 // Replacement should expect the receiver (of type target) as the first argument
-func PatchInstanceMethodTrampoline(target reflect.Type, methodName string, replacement interface{},
+func InstanceMethodTrampoline(target reflect.Type, methodName string, replacement interface{},
 	trampoline interface{}) (*Guard, error) {
 	m, ok := target.MethodByName(methodName)
 	if !ok {

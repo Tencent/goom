@@ -227,19 +227,23 @@ func minSize(showSize int, fixOrigin []byte) int {
 func checkSignature(targetType reflect.Type, replacementType reflect.Type) bool {
 	// 检测参数对齐
 	if targetType.NumIn() != replacementType.NumIn() {
-		panic(fmt.Sprintf("func signature mismatch, args len must:%d, actual:%d", targetType.NumIn(), replacementType.NumIn()))
+		panic(fmt.Sprintf("func signature mismatch, args len must:%d, actual:%d",
+			targetType.NumIn(), replacementType.NumIn()))
 	}
 	if targetType.NumOut() != replacementType.NumOut() {
-		panic(fmt.Sprintf("func signature mismatch, returns len must:%d, actual:%d", targetType.NumOut(), replacementType.NumOut()))
+		panic(fmt.Sprintf("func signature mismatch, returns len must:%d, actual:%d",
+			targetType.NumOut(), replacementType.NumOut()))
 	}
 	for i := 0; i < targetType.NumIn(); i++ {
 		if targetType.In(i).Size() != replacementType.In(i).Size() {
-			panic(fmt.Sprintf("func signature mismatch, args %d's size must:%d, actual:%d", i, targetType.In(i).Size(), replacementType.In(i).Size()))
+			panic(fmt.Sprintf("func signature mismatch, args %d's size must:%d, actual:%d",
+				i, targetType.In(i).Size(), replacementType.In(i).Size()))
 		}
 	}
 	for i := 0; i < targetType.NumOut(); i++ {
 		if targetType.Out(i).Size() != replacementType.Out(i).Size() {
-			panic(fmt.Sprintf("func signature mismatch, returns %d's size must:%d, actual:%d", i, targetType.Out(i).Size(), replacementType.Out(i).Size()))
+			panic(fmt.Sprintf("func signature mismatch, returns %d's size must:%d, actual:%d",
+				i, targetType.Out(i).Size(), replacementType.Out(i).Size()))
 		}
 	}
 	return true

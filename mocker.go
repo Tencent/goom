@@ -246,7 +246,6 @@ func (m *MethodMocker) When(args ...interface{}) *When {
 
 	sTyp := reflect.TypeOf(m.structDef)
 	methodIns, ok := sTyp.MethodByName(m.method)
-
 	if !ok {
 		panic("method " + m.method + " not found on " + sTyp.String())
 	}
@@ -300,7 +299,6 @@ func (m *MethodMocker) Return(returns ...interface{}) *When {
 // Origin 指定调用的原函数
 func (m *MethodMocker) Origin(origin interface{}) ExportedMocker {
 	m.origin = origin
-
 	return m
 }
 
@@ -335,7 +333,6 @@ func (m *UnexportedMethodMocker) objName() string {
 // Method 设置结构体的方法名
 func (m *UnexportedMethodMocker) Method(name string) UnExportedMocker {
 	m.methodName = name
-
 	return m
 }
 
@@ -524,7 +521,6 @@ func (m *DefMocker) Return(returns ...interface{}) *When {
 // Origin 调用原函数
 func (m *DefMocker) Origin(origin interface{}) ExportedMocker {
 	m.origin = origin
-
 	return m
 }
 

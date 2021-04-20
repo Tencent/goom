@@ -9,7 +9,7 @@ import (
 
 func init() {
 	// call fake
-	callFakeFunc()
+	_ = callFakeFunc()
 	// check call asm code
 	checkInlineDisable()
 }

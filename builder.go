@@ -23,7 +23,6 @@ type Builder struct {
 // Pkg 指定包名，当前包无需指定
 func (b *Builder) Pkg(name string) *Builder {
 	b.pkgName = name
-
 	return b
 }
 
@@ -35,7 +34,10 @@ func (b *Builder) PkgName() string {
 // Create 创建Mock构建器
 // 非线程安全的,不能在多协程中并发地mock或reset同一个函数
 func Create() *Builder {
-	return &Builder{pkgName: currentPackage(), mCache: make(map[interface{}]interface{}, 30)}
+	return &Builder{
+		pkgName: currentPackage(),
+		mCache:  make(map[interface{}]interface{}, 30),
+	}
 }
 
 // Interface 指定接口类型的变量定义
@@ -71,12 +73,10 @@ func (b *Builder) Struct(obj interface{}) *CachedMethodMocker {
 	mKey := reflect.ValueOf(obj).Type().String()
 	if mocker, ok := b.mCache[mKey]; ok {
 		b.reset2CurPkg()
-
 		return mocker.(*CachedMethodMocker)
 	}
 
 	mocker := NewMethodMocker(b.pkgName, obj)
-
 	cachedMocker := NewCachedMethodMocker(mocker)
 
 	b.cache(mKey, cachedMocker)
@@ -108,18 +108,15 @@ func (b *Builder) Func(obj interface{}) *DefMocker {
 func (b *Builder) ExportStruct(name string) *CachedUnexportedMethodMocker {
 	if mocker, ok := b.mCache[b.pkgName+"_"+name]; ok {
 		b.reset2CurPkg()
-
 		return mocker.(*CachedUnexportedMethodMocker)
 	}
 
 	structName := name
-
 	if strings.Contains(name, "*") {
 		structName = fmt.Sprintf("(%s)", name)
 	}
 
 	mocker := NewUnexportedMethodMocker(b.pkgName, structName)
-
 	cachedMocker := NewCachedUnexportedMethodMocker(mocker)
 
 	b.cache(b.pkgName+"_"+name, cachedMocker)
@@ -139,7 +136,6 @@ func (b *Builder) ExportFunc(name string) *UnexportedFuncMocker {
 
 	if mocker, ok := b.mCache[b.pkgName+"_"+name]; ok {
 		b.reset2CurPkg()
-
 		return mocker.(*UnexportedFuncMocker)
 	}
 
@@ -165,10 +161,8 @@ func (b *Builder) reset2CurPkg() {
 	b.pkgName = currentPackage()
 }
 
-const (
-	// currentPackageIndex 获取当前包的堆栈层次
-	currentPackageIndex = 3
-)
+// currentPackageIndex 获取当前包的堆栈层次
+const currentPackageIndex = 4
 
 // currentPackage 获取当前调用的包路径
 func currentPackage() string {
@@ -186,7 +180,6 @@ func currentPkg(skip int) string {
 
 	if i := strings.LastIndex(callerName, "/"); i > -1 {
 		realIndex := strings.Index(callerName[i:len(callerName)-1], ".")
-
 		return callerName[:realIndex+i]
 	}
 

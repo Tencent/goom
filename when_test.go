@@ -16,7 +16,7 @@ func TestUnitWhenTestSuite(t *testing.T) {
 	suite.Run(t, new(WhenTestSuite))
 }
 
-// MockerTestSuite Builder测试套件
+// mockerTestSuite Builder测试套件
 type WhenTestSuite struct {
 	suite.Suite
 }

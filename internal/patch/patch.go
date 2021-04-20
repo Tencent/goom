@@ -105,8 +105,8 @@ func (p *patch) replaceFunc() error {
 		replaceFunction(p.targetPtr, (uintptr)(getPtr(p.replacementValue)), p.replacementPtr, p.trampolinePtr)
 	if err != nil {
 		if strings.Contains(err.Error(), "already patched") {
-			if p, ok := patches[p.targetPtr]; ok {
-				Debugf("origin bytes", p.targetPtr, p.originalBytes, logger.WarningLevel)
+			if pc, ok := patches[p.targetPtr]; ok {
+				Debugf("origin bytes", pc.targetPtr, pc.originalBytes, logger.WarningLevel)
 			}
 		}
 

@@ -36,25 +36,25 @@ func inTypes(isMethod bool, funTyp reflect.Type) []reflect.Type {
 	}
 
 	numIn := funTyp.NumIn()
-	inTypes := make([]reflect.Type, numIn-skip)
+	typeList := make([]reflect.Type, numIn-skip)
 
 	for i := 0; i < numIn-skip; i++ {
-		inTypes[i] = funTyp.In(i + skip)
+		typeList[i] = funTyp.In(i + skip)
 	}
 
-	return inTypes
+	return typeList
 }
 
 // outTypes 获取类型
 func outTypes(funTyp reflect.Type) []reflect.Type {
 	numOut := funTyp.NumOut()
-	outTypes := make([]reflect.Type, numOut)
+	typeList := make([]reflect.Type, numOut)
 
 	for i := 0; i < numOut; i++ {
-		outTypes[i] = funTyp.Out(i)
+		typeList[i] = funTyp.Out(i)
 	}
 
-	return outTypes
+	return typeList
 }
 
 // I2V []interface convert to []reflect.Value

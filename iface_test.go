@@ -13,16 +13,15 @@ import (
 
 // TestUnitIFaceTestSuite 接口Mock测试入口
 func TestUnitIFaceTestSuite(t *testing.T) {
-	suite.Run(t, new(IFaceMockerTestSuite))
+	suite.Run(t, new(ifaceMockerTestSuite))
 }
 
-// MockerTestSuite Builder测试套件
-type IFaceMockerTestSuite struct {
+type ifaceMockerTestSuite struct {
 	suite.Suite
 }
 
 // TestUnitInterfaceApply 测试接口mock apply
-func (s *IFaceMockerTestSuite) TestUnitInterfaceApply() {
+func (s *ifaceMockerTestSuite) TestUnitInterfaceApply() {
 	s.Run("success", func() {
 		mock := mocker.Create()
 
@@ -50,7 +49,7 @@ func (s *IFaceMockerTestSuite) TestUnitInterfaceApply() {
 }
 
 // TestUnitInterfaceReturn 测试接口mock return
-func (s *IFaceMockerTestSuite) TestUnitInterfaceReturn() {
+func (s *ifaceMockerTestSuite) TestUnitInterfaceReturn() {
 	s.Run("success", func() {
 		mock := mocker.Create()
 
@@ -79,14 +78,14 @@ func (s *IFaceMockerTestSuite) TestUnitInterfaceReturn() {
 }
 
 // TestUnitArgsNotMatch 测试接口mock参数不匹配情况
-func (s *IFaceMockerTestSuite) TestUnitArgsNotMatch() {
+func (s *ifaceMockerTestSuite) TestUnitArgsNotMatch() {
 	s.Run("success", func() {
 
 		var expectErr error
 		func() {
 			defer func() {
 				if err := recover(); err != nil {
-					expectErr = err.(error)
+					expectErr, _ = err.(error)
 				}
 			}()
 			mock := mocker.Create()

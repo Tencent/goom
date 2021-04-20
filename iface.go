@@ -22,7 +22,6 @@ type InterfaceMocker interface {
 	As(imp interface{}) InterfaceMocker
 	// Inject 将mock设置到变量
 	Inject(iFace interface{}) InterfaceMocker
-	// If 条件表达式匹配
 }
 
 // IContext 接口mock的接收体

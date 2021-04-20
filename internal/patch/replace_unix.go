@@ -2,9 +2,7 @@
 
 package patch
 
-import (
-	"syscall"
-)
+import "syscall"
 
 var (
 	// defaultFuncPrologue32 32位系统function Prologue

@@ -134,7 +134,7 @@ func (f *f) No() bool { return false }
 func TestOnInstanceMethod(t *testing.T) {
 	i := &f{}
 	assert.False(t, i.No())
-	g, _ := patch.PatchInstanceMethod(reflect.TypeOf(i), "No", func(_ *f) bool { return true })
+	g, _ := patch.InstanceMethod(reflect.TypeOf(i), "No", func(_ *f) bool { return true })
 	g.Apply()
 	assert.True(t, i.No())
 	assert.True(t, patch.UnpatchInstanceMethod(reflect.TypeOf(i), "No"))

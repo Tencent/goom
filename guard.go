@@ -1,5 +1,4 @@
-// Package mocker定义了mock的外层用户使用API定义,
-// 包括函数、方法、接口、未导出函数(或方法的)的Mocker的实现。
+// Package mocker 定义了mock的外层用户使用API定义, 包括函数、方法、接口、未导出函数(或方法的)的Mocker的实现。
 // 当前文件实现了mock守卫能力，
 // 不同类型的Mocker具备不一样的Apply、Cancel具体行为，本MockGuard抽象了统一各类Mocker的Guard，
 // 以供BaseMocker使用其接口类MockGuard的Apply、Cancel方法。

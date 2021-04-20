@@ -124,6 +124,7 @@ func (p *patch) unpatch() {
 }
 
 // restore re patch by target uintptr
+// TODO test
 func (p *patch) restore() {
 	p.Guard().Restore()
 }

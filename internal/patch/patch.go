@@ -4,7 +4,6 @@ package patch
 
 import (
 	"errors"
-	"fmt"
 	"reflect"
 	"strings"
 	"sync"
@@ -122,13 +121,11 @@ func (p *patch) replaceFunc() error {
 // unpatch do unpatch by uintptr
 func (p *patch) unpatch() {
 	p.Guard().Unpatch()
-	Debug(fmt.Sprintf("unpatch copy to 0x%x", p.targetPtr), p.targetPtr, 20, logger.DebugLevel)
 }
 
 // restore re patch by target uintptr
 func (p *patch) restore() {
 	p.Guard().Restore()
-	Debug(fmt.Sprintf("unpatch copy to 0x%x", p.targetPtr), p.targetPtr, 20, logger.DebugLevel)
 }
 
 // Guard 获取PatchGuard

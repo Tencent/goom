@@ -34,8 +34,9 @@ func (b *Builder) PkgName() string {
 // Create 创建Mock构建器
 // 非线程安全的,不能在多协程中并发地mock或reset同一个函数
 func Create() *Builder {
+	const currentPackageIndex = 2
 	return &Builder{
-		pkgName: currentPackage(),
+		pkgName: currentPkg(currentPackageIndex),
 		mCache:  make(map[interface{}]interface{}, 30),
 	}
 }
@@ -161,11 +162,10 @@ func (b *Builder) reset2CurPkg() {
 	b.pkgName = currentPackage()
 }
 
-// currentPackageIndex 获取当前包的堆栈层次
-const currentPackageIndex = 4
-
 // currentPackage 获取当前调用的包路径
 func currentPackage() string {
+	// currentPackageIndex 获取当前包的堆栈层次
+	const currentPackageIndex = 4
 	return currentPkg(currentPackageIndex)
 }
 
@@ -183,5 +183,6 @@ func currentPkg(skip int) string {
 		return callerName[:realIndex+i]
 	}
 
-	return callerName
+	realIndex := strings.Index(callerName, ".")
+	return callerName[:realIndex]
 }

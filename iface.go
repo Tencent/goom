@@ -1,4 +1,4 @@
-// Package mocker定义了mock的外层用户使用API定义,
+// Package mocker 定义了mock的外层用户使用API定义,
 // 包括函数、方法、接口、未导出函数(或方法的)的Mocker的实现。
 // 当前文件实现了接口mock的能力。
 package mocker
@@ -9,6 +9,15 @@ import (
 
 	"git.code.oa.com/goom/mocker/internal/proxy"
 )
+
+// IContext 接口mock的接收体
+// 和internal/proxy.IContext保持同步
+type IContext struct {
+	// Data 可以传递任意数据
+	Data interface{}
+	// 占位属性
+	_ unsafe.Pointer
+}
 
 // InterfaceMocker 接口Mock
 // 通过生成和替代接口变量实现Mock
@@ -21,36 +30,26 @@ type InterfaceMocker interface {
 	// imp函数的第一个参数必须为*mocker.IContext, 作用是指定接口实现的接收体; 后续的参数原样照抄。
 	As(imp interface{}) InterfaceMocker
 	// Inject 将mock设置到变量
-	Inject(iface interface{}) InterfaceMocker
-	// If 条件表达式匹配
-}
-
-// IContext 接口mock的接收体
-// 和internal/proxy.IContext保持同步
-type IContext struct {
-	// Data 可以传递任意数据
-	Data interface{}
-	// 占位属性
-	_ unsafe.Pointer
+	Inject(iFace interface{}) InterfaceMocker
 }
 
 // DefaultInterfaceMocker 默认接口Mocker
 type DefaultInterfaceMocker struct {
 	*baseMocker
 	ctx     *proxy.IContext
-	iface   interface{}
+	iFace   interface{}
 	method  string
 	funcDef interface{}
 }
 
 // NewDefaultInterfaceMocker 创建默认接口Mocker
 // pkgName 包路径
-// iface 接口变量定义
-func NewDefaultInterfaceMocker(pkgName string, iface interface{}, ctx *proxy.IContext) *DefaultInterfaceMocker {
+// iFace 接口变量定义
+func NewDefaultInterfaceMocker(pkgName string, iFace interface{}, ctx *proxy.IContext) *DefaultInterfaceMocker {
 	return &DefaultInterfaceMocker{
 		baseMocker: newBaseMocker(pkgName),
 		ctx:        ctx,
-		iface:      iface,
+		iFace:      iFace,
 	}
 }
 
@@ -68,7 +67,7 @@ func (m *DefaultInterfaceMocker) Method(name string) InterfaceMocker {
 
 // checkMethod 检查是否能找到函数
 func (m *DefaultInterfaceMocker) checkMethod(name string) {
-	sTyp := reflect.TypeOf(m.iface).Elem()
+	sTyp := reflect.TypeOf(m.iFace).Elem()
 
 	_, ok := sTyp.MethodByName(name)
 	if !ok {
@@ -83,7 +82,7 @@ func (m *DefaultInterfaceMocker) Apply(imp interface{}) {
 		panic("method is empty")
 	}
 
-	m.applyByIfaceMethod(m.ctx, m.iface, m.method, imp, nil)
+	m.applyByIFaceMethod(m.ctx, m.iFace, m.method, imp, nil)
 }
 
 // As 将接口方法mock为实际的接收体方法
@@ -117,7 +116,7 @@ func (m *DefaultInterfaceMocker) When(args ...interface{}) *When {
 		panic(err)
 	}
 
-	m.applyByIfaceMethod(m.ctx, m.iface, m.method, m.funcDef, m.callback)
+	m.applyByIFaceMethod(m.ctx, m.iFace, m.method, m.funcDef, m.callback)
 	m.when = when
 
 	return when
@@ -146,19 +145,19 @@ func (m *DefaultInterfaceMocker) Return(returns ...interface{}) *When {
 		panic(err)
 	}
 
-	m.applyByIfaceMethod(m.ctx, m.iface, m.method, m.funcDef, m.callback)
+	m.applyByIFaceMethod(m.ctx, m.iFace, m.method, m.funcDef, m.callback)
 	m.when = when
 
 	return when
 }
 
 // Origin 回调原函数(暂时不支持)
-func (m *DefaultInterfaceMocker) Origin(orign interface{}) ExportedMocker {
+func (m *DefaultInterfaceMocker) Origin(interface{}) ExportedMocker {
 	panic("implement me")
 }
 
 // Inject 回调原函数(暂时不支持)
-func (m *DefaultInterfaceMocker) Inject(iface interface{}) InterfaceMocker {
+func (m *DefaultInterfaceMocker) Inject(interface{}) InterfaceMocker {
 	panic("implement me")
 }
 

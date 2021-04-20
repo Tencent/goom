@@ -14,7 +14,7 @@ import (
 	"git.code.oa.com/goom/mocker/internal/logger"
 )
 
-const PtrMax = (1<<31 - 1) * 100
+const ptrMax = (1<<31 - 1) * 100
 
 // FindFuncByName searches through the moduledata table created by the linker
 // and returns the function's code pointer. If the function was not found, it
@@ -32,7 +32,7 @@ func FindFuncByName(name string) (uintptr, error) {
 				continue
 			}
 
-			if f.Entry() > (uintptr(PtrMax)) {
+			if f.Entry() > (uintptr(ptrMax)) {
 				continue
 			}
 
@@ -75,7 +75,7 @@ func FindFuncByPtr(ptr uintptr) (*runtime.Func, string, error) {
 				continue
 			}
 
-			if f.Entry() > (uintptr(PtrMax)) {
+			if f.Entry() > (uintptr(ptrMax)) {
 				continue
 			}
 
@@ -123,9 +123,9 @@ func CreateFuncForCodePtr(outFuncPtr interface{}, codePtr uintptr) (*hack.Func, 
 
 // NewFuncWithCodePtr 根据类型和函数地址进行构造reflect.Value
 func NewFuncWithCodePtr(typ reflect.Type, codePtr uintptr) reflect.Value {
-	var ptr2Ptr *uintptr = &codePtr
+	var ptr2Ptr = &codePtr
 	pointer := unsafe.Pointer(ptr2Ptr)
-	funcVal := reflect.NewAt(typ, unsafe.Pointer(pointer)).Elem()
+	funcVal := reflect.NewAt(typ, pointer).Elem()
 	(*hack.Value)(unsafe.Pointer(&funcVal)).Flag = uintptr(reflect.Func)
 
 	return funcVal

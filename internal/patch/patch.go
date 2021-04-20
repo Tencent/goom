@@ -1,10 +1,9 @@
-// Package patch生成指令跳转(到代理函数)并替换.text区内存
+// Package patch 生成指令跳转(到代理函数)并替换.text区内存
 // 对于trampoline模式的使用场景，本包实现了指令移动后的修复
 package patch
 
 import (
 	"errors"
-	"fmt"
 	"reflect"
 	"strings"
 	"sync"
@@ -37,7 +36,7 @@ type patch struct {
 	originalBytes []byte
 	jumpBytes     []byte
 
-	guard *PatchGuard
+	guard *Guard
 }
 
 // patchValue 对value进行应用代理
@@ -105,8 +104,8 @@ func (p *patch) replaceFunc() error {
 		replaceFunction(p.targetPtr, (uintptr)(getPtr(p.replacementValue)), p.replacementPtr, p.trampolinePtr)
 	if err != nil {
 		if strings.Contains(err.Error(), "already patched") {
-			if p, ok := patches[p.targetPtr]; ok {
-				debug("origin bytes", p.targetPtr, p.originalBytes, logger.WarningLevel)
+			if pc, ok := patches[p.targetPtr]; ok {
+				Debugf("origin bytes", pc.targetPtr, pc.originalBytes, logger.WarningLevel)
 			}
 		}
 
@@ -122,21 +121,20 @@ func (p *patch) replaceFunc() error {
 // unpatch do unpatch by uintptr
 func (p *patch) unpatch() {
 	p.Guard().Unpatch()
-	Debug(fmt.Sprintf("unpatch copy to 0x%x", p.targetPtr), p.targetPtr, 20, logger.DebugLevel)
 }
 
-// restore repatch by target uintptr
+// restore re patch by target uintptr
+// TODO test
 func (p *patch) restore() {
 	p.Guard().Restore()
-	Debug(fmt.Sprintf("unpatch copy to 0x%x", p.targetPtr), p.targetPtr, 20, logger.DebugLevel)
 }
 
 // Guard 获取PatchGuard
-func (p *patch) Guard() *PatchGuard {
+func (p *patch) Guard() *Guard {
 	if p.guard != nil {
 		return p.guard
 	}
-	p.guard = &PatchGuard{p.targetPtr,
+	p.guard = &Guard{p.targetPtr,
 		p.originFuncPtr,
 		p.jumpBytes,
 		p.originalBytes,

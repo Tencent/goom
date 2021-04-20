@@ -21,7 +21,7 @@ const (
 	insSizePrintLong = 35
 )
 
-// fixOriginFuncToTrampoline 将原始函数from的指令到trampoline指向的地址(在PlayceHolder区内存区段内)
+// fixOriginFuncToTrampoline 将原始函数from的指令到trampoline指向的地址(在PlaceHolder区内存区段内)
 // 此方式不需要修正pcvalue, 因此相对较安全
 // 因trampoline函数需要指定签名,因此只能用于静态代理
 // from 原始函数位置
@@ -58,9 +58,9 @@ func fixOriginFuncToTrampoline(from uintptr, trampoline uintptr, jumpInstSize in
 	// copy origin function
 	fixOrigin := rawMemoryRead(from, originFuncSize)
 
-	debug("origin inst >>>>> ", from, fixOrigin[:minSize(insSizePrintMiddle, fixOrigin)], logger.DebugLevel)
+	Debugf("origin inst >>>>> ", from, fixOrigin[:minSize(insSizePrintMiddle, fixOrigin)], logger.DebugLevel)
 
-	// replace replative address to placehlder
+	// replace relative address to placeholder
 	firstFewIns, replaceSize, err := replaceRelativeAddr(from, fixOrigin, trampoline, originFuncSize, jumpInstSize, true)
 	if err != nil {
 		return 0, err
@@ -94,7 +94,7 @@ func fixOriginFuncToTrampoline(from uintptr, trampoline uintptr, jumpInstSize in
 	}
 
 	Debug("trampoline inst > ", trampoline, insSizePrintLong, logger.DebugLevel)
-	debug("fixed inst >>>>> ", trampoline, fixOrigin, logger.DebugLevel)
+	Debugf("fixed inst >>>>> ", trampoline, fixOrigin, logger.DebugLevel)
 
 	if err := CopyToLocation(trampoline, fixOrigin); err != nil {
 		return 0, err

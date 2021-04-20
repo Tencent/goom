@@ -8,12 +8,12 @@ type ArgNotFound struct {
 	arg      int
 }
 
-//Error() 返回错误
+// Error() 返回错误
 func (e *ArgNotFound) Error() string {
 	return "arg not found:" + e.funcName + ":" + strconv.Itoa(e.arg)
 }
 
-// NewFuncNotFoundError 函数未找到
+// NewArgNotFoundError 函数未找到
 // funcName 函数名称
 // index 参数下标
 func NewArgNotFoundError(funcName string, index int) error {

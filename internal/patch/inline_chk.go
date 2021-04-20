@@ -9,13 +9,13 @@ import (
 
 func init() {
 	// call fake
-	callFakeFunc()
+	_ = callFakeFunc()
 	// check call asm code
-	checkInlineDisbale()
+	checkInlineDisable()
 }
 
-// checkInlineDisbale 检测是否关闭inline
-func checkInlineDisbale() {
+// checkInlineDisable 检测是否关闭inline
+func checkInlineDisable() {
 	addr := reflect.ValueOf(callFakeFunc).Pointer()
 	bytes := rawMemoryRead(addr, 100)
 

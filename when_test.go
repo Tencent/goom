@@ -16,45 +16,46 @@ func TestUnitWhenTestSuite(t *testing.T) {
 	suite.Run(t, new(WhenTestSuite))
 }
 
-// MockerTestSuite Builder测试套件
+// mockerTestSuite Builder测试套件
 type WhenTestSuite struct {
 	suite.Suite
 }
 
-//noLint
-func simple(a int) int {
+// simple 普通函数
+func simple(int) int {
 	return 0
 }
 
-//noLint
+// Arg 普通参数
 type Arg struct {
 	field1 string
 }
 
-//noLint
+// Result 普通返回结果
 type Result struct {
 	field1 int
 }
 
-//noLint
-func complex(a Arg) Result {
+// complex 复杂返回结果函数
+func complex(Arg) Result {
 	return Result{0}
 }
 
-//noLint
-func complex1(a Arg) *Result {
+// complex1 复杂带指针的返回结果函数
+func complex1(Arg) *Result {
 	return &Result{0}
 }
 
 // Struct for结构体方法When
 type Struct struct{}
 
+// Div 除法操作
 //go:noinline
 func (s *Struct) Div(a int, b int) int {
 	return a / b
 }
 
-//noLint
+// StructOuter 嵌套结构外层
 type StructOuter struct {
 }
 
@@ -144,23 +145,23 @@ func (s *WhenTestSuite) TestMethodWhen() {
 	s.Run("success", func() {
 		structOuter := new(StructOuter)
 		struct1 := new(Struct)
-		mocker := mocker.Create()
+		m := mocker.Create()
 
 		// 直接mock方法的返回值
-		mocker.Struct(struct1).Method("Div").Return(100)
+		m.Struct(struct1).Method("Div").Return(100)
 		s.Equal(100, structOuter.Compute(2, 1), "method when check")
 
-		mocker.Reset()
-		mocker.Struct(struct1).Method("Div").Return(50)
+		m.Reset()
+		m.Struct(struct1).Method("Div").Return(50)
 		s.Equal(50, structOuter.Compute(2, 1), "method when check")
 
-		mocker.Struct(struct1).Method("Div").When(3, 4).Return(100)
-		mocker.Struct(struct1).Method("Div").When(4, 4).Return(200)
+		m.Struct(struct1).Method("Div").When(3, 4).Return(100)
+		m.Struct(struct1).Method("Div").When(4, 4).Return(200)
 		s.Equal(100, structOuter.Compute(3, 4), "method when check")
 		s.Equal(200, structOuter.Compute(4, 4), "method when check")
 
 		// mock方法的替换方法
-		mocker.Struct(struct1).Method("Div").Apply(func(_ *Struct, a int, b int) int {
+		m.Struct(struct1).Method("Div").Apply(func(_ *Struct, a int, b int) int {
 			return a/b + 1
 		})
 		s.Equal(3, structOuter.Compute(2, 1), "method when check")

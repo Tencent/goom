@@ -3,7 +3,7 @@ package errobj
 
 // Traceable 带原因的异常类型
 type Traceable interface {
-	// Traceable 获取错误的原因
+	// Cause 获取错误的原因
 	Cause() error
 }
 

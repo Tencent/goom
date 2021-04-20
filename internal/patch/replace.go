@@ -28,15 +28,15 @@ func rawMemoryRead(ptr uintptr, length int) []byte {
 	defer memoryAccessLock.RUnlock()
 
 	data := rawMemoryAccess(ptr, length)
-	duplucate := make([]byte, length)
-	copy(duplucate, data)
+	duplicate := make([]byte, length)
+	copy(duplicate, data)
 
-	return duplucate
+	return duplicate
 }
 
 // replaceFunction 在函数from里面, 织入对to的调用指令，同时将from织入前的指令恢复至trampoline这个地址
 // from is a pointer to the actual function
-// to is a pointer to a go funcvalue
+// to is a pointer to a go function value
 // trampoline 跳板函数地址, 不传递用0表示
 func replaceFunction(from, to, proxy, trampoline uintptr) (original []byte, originFunc uintptr,
 	jumpData []byte, err error) {
@@ -84,7 +84,7 @@ func replaceFunction(from, to, proxy, trampoline uintptr) (original []byte, orig
 		return
 	}
 
-	debug("origin >>>>> ", from, rawMemoryRead(from, 30), logger.DebugLevel)
+	Debugf("origin >>>>> ", from, rawMemoryRead(from, 30), logger.DebugLevel)
 
 	// 检测是否支持自动分配跳板函数
 	if trampoline > 0 {

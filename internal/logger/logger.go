@@ -141,9 +141,7 @@ func LogWarning(v ...interface{}) {
 
 		_, _ = Logger.Write(line)
 
-		if ShowError2Console {
-			os.Stdout.Write(line)
-		}
+		write2Console(line)
 	}
 }
 
@@ -153,9 +151,7 @@ func LogWarningf(format string, a ...interface{}) {
 		line := withPrefixStr("warning", format, a...)
 		_, _ = Logger.Write(line)
 
-		if ShowError2Console {
-			os.Stdout.Write(line)
-		}
+		write2Console(line)
 	}
 }
 
@@ -164,9 +160,7 @@ func LogImportant(v ...interface{}) {
 	line := withPrefix("info", v)
 	_, _ = Logger.Write(line)
 
-	if ShowError2Console {
-		os.Stdout.Write(line)
-	}
+	write2Console(line)
 }
 
 // LogImportantf 打印重要的日志
@@ -174,9 +168,7 @@ func LogImportantf(format string, a ...interface{}) {
 	line := withPrefixStr("info", format, a...)
 	_, _ = Logger.Write(line)
 
-	if ShowError2Console {
-		os.Stdout.Write(line)
-	}
+	write2Console(line)
 }
 
 // LogError 打印error日志
@@ -185,9 +177,7 @@ func LogError(v ...interface{}) {
 		line := withPrefix("error", v)
 		_, _ = Logger.Write(line)
 
-		if ShowError2Console {
-			os.Stdout.Write(line)
-		}
+		write2Console(line)
 	}
 }
 
@@ -197,9 +187,7 @@ func LogErrorf(format string, a ...interface{}) {
 		line := withPrefixStr("error", format, a...)
 		_, _ = Logger.Write(line)
 
-		if ShowError2Console {
-			os.Stdout.Write(line)
-		}
+		write2Console(line)
 	}
 }
 
@@ -207,6 +195,13 @@ func LogErrorf(format string, a ...interface{}) {
 func Log2Consolef(format string, a ...interface{}) {
 	line := withPrefixStr("warn", format, a...)
 	os.Stdout.Write(line)
+}
+
+// write2Console 输出到控制台，如果ShowError2Console==true时
+func write2Console(line []byte) {
+	if ShowError2Console {
+		os.Stdout.Write(line)
+	}
 }
 
 // withPrefix 给日志带上[goom]前缀, 方便与业务日志区分

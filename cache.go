@@ -1,4 +1,4 @@
-// Package mocker定义了mock的外层用户使用API定义,
+// Package mocker 定义了mock的外层用户使用API定义,
 // 包括函数、方法、接口、未导出函数(或方法的)的Mocker的实现。
 // 当前文件实现了当对同一方法或函数名进行重复构造时可以沿用缓存中已建好的Mocker，
 // 以防止在一个单测内重复构造Mocker时, 对上一个相同函数或方法的Mocker的内容规则造成覆盖。
@@ -10,7 +10,7 @@ import "git.code.oa.com/goom/mocker/internal/proxy"
 type CachedMethodMocker struct {
 	*MethodMocker
 	mCache  map[string]*MethodMocker
-	umCache map[string]UnexportedMocker
+	umCache map[string]UnExportedMocker
 }
 
 // NewCachedMethodMocker 创建新的带缓存的方法Mocker
@@ -18,13 +18,13 @@ func NewCachedMethodMocker(m *MethodMocker) *CachedMethodMocker {
 	return &CachedMethodMocker{
 		MethodMocker: m,
 		mCache:       make(map[string]*MethodMocker, 16),
-		umCache:      make(map[string]UnexportedMocker, 16),
+		umCache:      make(map[string]UnExportedMocker, 16),
 	}
 }
 
-// CachedMethodMocker 设置结构体的方法名
+// Method 设置结构体的方法名
 func (m *CachedMethodMocker) Method(name string) ExportedMocker {
-	if mocker, ok := m.mCache[name]; ok {
+	if mocker, ok := m.mCache[name]; ok && !mocker.Canceled() {
 		return mocker
 	}
 
@@ -35,9 +35,9 @@ func (m *CachedMethodMocker) Method(name string) ExportedMocker {
 	return mocker
 }
 
-// CachedMethodMocker 导出私有方法
-func (m *CachedMethodMocker) ExportMethod(name string) UnexportedMocker {
-	if mocker, ok := m.umCache[name]; ok {
+// ExportMethod 导出私有方法
+func (m *CachedMethodMocker) ExportMethod(name string) UnExportedMocker {
+	if mocker, ok := m.umCache[name]; ok && !mocker.Canceled() {
 		return mocker
 	}
 
@@ -74,8 +74,8 @@ func NewCachedUnexportedMethodMocker(m *UnexportedMethodMocker) *CachedUnexporte
 }
 
 // Method 设置结构体的方法名
-func (m *CachedUnexportedMethodMocker) Method(name string) UnexportedMocker {
-	if mocker, ok := m.mCache[name]; ok {
+func (m *CachedUnexportedMethodMocker) Method(name string) UnExportedMocker {
+	if mocker, ok := m.mCache[name]; ok && !mocker.Canceled() {
 		return mocker
 	}
 
@@ -111,11 +111,11 @@ func NewCachedInterfaceMocker(interfaceMocker *DefaultInterfaceMocker) *CachedIn
 
 // Method 指定方法名
 func (m *CachedInterfaceMocker) Method(name string) InterfaceMocker {
-	if mocker, ok := m.mCache[name]; ok {
+	if mocker, ok := m.mCache[name]; ok && !mocker.Canceled() {
 		return mocker
 	}
 
-	mocker := NewDefaultInterfaceMocker(m.pkgName, m.iface, m.ctx)
+	mocker := NewDefaultInterfaceMocker(m.pkgName, m.iFace, m.ctx)
 	mocker.Method(name)
 	m.mCache[name] = mocker
 

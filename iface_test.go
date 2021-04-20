@@ -11,18 +11,17 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-// TestUnitIfaceTestSuite 接口Mock测试入口
-func TestUnitIfaceTestSuite(t *testing.T) {
-	suite.Run(t, new(IfaceMockerTestSuite))
+// TestUnitIFaceTestSuite 接口Mock测试入口
+func TestUnitIFaceTestSuite(t *testing.T) {
+	suite.Run(t, new(ifaceMockerTestSuite))
 }
 
-// MockerTestSuite Builder测试套件
-type IfaceMockerTestSuite struct {
+type ifaceMockerTestSuite struct {
 	suite.Suite
 }
 
 // TestUnitInterfaceApply 测试接口mock apply
-func (s *IfaceMockerTestSuite) TestUnitInterfaceApply() {
+func (s *ifaceMockerTestSuite) TestUnitInterfaceApply() {
 	s.Run("success", func() {
 		mock := mocker.Create()
 
@@ -50,7 +49,7 @@ func (s *IfaceMockerTestSuite) TestUnitInterfaceApply() {
 }
 
 // TestUnitInterfaceReturn 测试接口mock return
-func (s *IfaceMockerTestSuite) TestUnitInterfaceReturn() {
+func (s *ifaceMockerTestSuite) TestUnitInterfaceReturn() {
 	s.Run("success", func() {
 		mock := mocker.Create()
 
@@ -78,15 +77,40 @@ func (s *IfaceMockerTestSuite) TestUnitInterfaceReturn() {
 	})
 }
 
+// TestUnitInterfaceTwice 测试多次接口mock return
+func (s *ifaceMockerTestSuite) TestUnitInterfaceTwice() {
+	s.Run("success", func() {
+		mock := mocker.Create()
+
+		i := (I)(nil)
+
+		mock.Interface(&i).Method("Call").As(func(ctx *mocker.IContext, i int) int {
+			return 0
+		}).When(1).Return(3)
+		s.NotNil(i, "interface var nil check")
+		s.Equal(3, i.Call(1), "interface mock check")
+		mock.Reset()
+
+		mock.Interface(&i).Method("Call").As(func(ctx *mocker.IContext, i int) int {
+			return 0
+		}).When(1).Return(4)
+		s.NotNil(i, "interface var nil check")
+		s.Equal(4, i.Call(1), "interface mock check")
+		mock.Reset()
+
+		s.Nil(i, "interface mock reset check")
+	})
+}
+
 // TestUnitArgsNotMatch 测试接口mock参数不匹配情况
-func (s *IfaceMockerTestSuite) TestUnitArgsNotMatch() {
+func (s *ifaceMockerTestSuite) TestUnitArgsNotMatch() {
 	s.Run("success", func() {
 
 		var expectErr error
 		func() {
 			defer func() {
 				if err := recover(); err != nil {
-					expectErr = err.(error)
+					expectErr, _ = err.(error)
 				}
 			}()
 			mock := mocker.Create()
@@ -109,24 +133,4 @@ type I interface {
 	Call(int) int
 	Call1(string) string
 	call2(int32) int32
-}
-
-// I 接口实现1
-// nolint
-type Impl1 struct {
-}
-
-// nolint
-func (i Impl1) Call(int) int {
-	return 1
-}
-
-// nolint
-func (i Impl1) Call1(string) string {
-	return "not ok"
-}
-
-// nolint
-func (i Impl1) call2(int32) int32 {
-	return 1
 }

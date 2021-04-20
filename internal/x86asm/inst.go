@@ -50,7 +50,7 @@ const (
 	PrefixFS Prefix = 0x64 // FS segment override
 	PrefixGS Prefix = 0x65 // GS segment override
 
-	// Branch prediction.
+	// PrefixPN Branch prediction.
 	PrefixPN Prefix = 0x12E // predict not taken (conditional branch only)
 	PrefixPT Prefix = 0x13E // predict taken (conditional branch only)
 
@@ -70,7 +70,7 @@ const (
 	PrefixREP      Prefix = 0xF3 // repeat
 	PrefixXRELEASE Prefix = 0x1F3
 
-	// The REX prefixes must be in the range [PrefixREX, PrefixREX+0x10).
+	// PrefixREX The REX prefixes must be in the range [PrefixREX, PrefixREX+0x10).
 	// the other bits are set or not according to the intended use.
 	PrefixREX       Prefix = 0x40 // REX 64-bit extension prefix
 	PrefixREXW      Prefix = 0x08 // extension bit W (64-bit instruction width)
@@ -239,7 +239,7 @@ const (
 	EIP // 32-bit
 	RIP // 64-bit
 
-	// 387 floating point registers.
+	// F0 387 floating point registers.
 	F0
 	F1
 	F2
@@ -292,7 +292,7 @@ const (
 	MSW
 	TASK
 
-	// Control registers.
+	// CR0 Control registers.
 	CR0
 	CR1
 	CR2
@@ -310,7 +310,7 @@ const (
 	CR14
 	CR15
 
-	// Debug registers.
+	// DR0 Debug registers.
 	DR0
 	DR1
 	DR2
@@ -328,7 +328,7 @@ const (
 	DR14
 	DR15
 
-	// Task registers.
+	// TR0 Task registers.
 	TR0
 	TR1
 	TR2

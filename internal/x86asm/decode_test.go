@@ -1,7 +1,3 @@
-// Copyright 2014 The Go Authors.  All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
-
 package x86asm
 
 import (
@@ -70,7 +66,7 @@ func TestDecode(t *testing.T) {
 			}
 		}
 
-		if out != asm || inst.Len != size {
+		if out != asm || (inst.Len != size) {
 			t.Errorf("Decode(%s) [%s] = %s, %d, want %s, %d", f[0], syntax, out, inst.Len, asm, size)
 		}
 	}
@@ -78,9 +74,9 @@ func TestDecode(t *testing.T) {
 
 // TestDecodeDoesNotCrash TestDecodeDoesNotCrash
 func TestDecodeDoesNotCrash(t *testing.T) {
-	cases := [...][]byte{[]byte{}, []byte{0xc5}, []byte{0xc4}}
+	cases := [...][]byte{{}, {0xc5}, {0xc4}}
 	for _, test := range cases {
-		_, err := Decode([]byte(test), 64) // the only goal is that this line does not panic
+		_, err := Decode(test, 64) // the only goal is that this line does not panic
 		if err == nil {
 			t.Errorf("expected error on invalid instruction %x", test)
 		}

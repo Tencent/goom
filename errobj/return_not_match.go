@@ -22,7 +22,7 @@ func (i *ReturnsNotMatch) Error() string {
 	return "returns lenth not match : " + strconv.Itoa(i.argLen) + ", expect: " + strconv.Itoa(i.expectLen)
 }
 
-// ReturnsNotMatch 创建参数异常
+// NewReturnsNotMatchError 创建参数异常
 // funcDef 函数定义
 // argLen 参数长度
 // expectLen 期望长度

@@ -1,4 +1,4 @@
-// Package mocker定义了mock的外层用户使用API定义,
+// Package mocker 定义了mock的外层用户使用API定义,
 // 包括函数、方法、接口、未导出函数(或方法的)的Mocker的实现。
 // 当前文件实现了按照参数条件进行匹配, 返回对应的mock return值,
 // 支持了mocker.When(XXX).Return(YYY)的高效匹配。
@@ -144,12 +144,12 @@ func (w *When) AndReturn(results ...interface{}) *When {
 }
 
 // Returns 多个条件匹配
-func (w *When) Returns(resultsmap map[interface{}]interface{}) *When {
-	if len(resultsmap) == 0 {
+func (w *When) Returns(resultsMap map[interface{}]interface{}) *When {
+	if len(resultsMap) == 0 {
 		return w
 	}
 
-	for k, v := range resultsmap {
+	for k, v := range resultsMap {
 		args, ok := k.([]interface{})
 		if !ok {
 			args = []interface{}{k}

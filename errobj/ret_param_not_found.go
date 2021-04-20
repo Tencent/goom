@@ -2,7 +2,7 @@ package errobj
 
 import "strconv"
 
-// ArgNotFound 返回值未找到异常
+// ReturnParamNotFound 返回值未找到异常
 type ReturnParamNotFound struct {
 	funcName string
 	arg      int

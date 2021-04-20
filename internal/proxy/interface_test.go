@@ -4,7 +4,6 @@ package proxy_test
 import (
 	"fmt"
 	"reflect"
-	"runtime/debug"
 	"testing"
 	"unsafe"
 
@@ -110,20 +109,20 @@ func TestGenImpl(t *testing.T) {
 func genInterfaceImpl(i interface{}, proxy interface{}) {
 	gen := hack.UnpackEFace(i).Data
 	// mock接口方法
-	mockfunc := reflect.ValueOf(proxy)
-	ifc := *(*uintptr)(unsafe.Pointer(gen))
+	mockFunc := reflect.ValueOf(proxy)
+	ifc := *(*uintptr)(gen)
 	fmt.Println(ifc)
 
 	// 伪装iface
-	*(*hack.Iface)(unsafe.Pointer(gen)) = hack.Iface{
+	*(*hack.Iface)(gen) = hack.Iface{
 		Tab: &hack.Itab{
-			Fun: [hack.MaxMethod]uintptr{uintptr(mockfunc.Pointer()), uintptr(0), uintptr(0)},
+			Fun: [hack.MaxMethod]uintptr{mockFunc.Pointer(), uintptr(0), uintptr(0)},
 		},
 		Data: unsafe.Pointer(&Impl2{
 			field1: "ok",
 		}),
 	}
-	ifc = *(*uintptr)(unsafe.Pointer(gen))
+	ifc = *(*uintptr)(gen)
 	fmt.Println(ifc)
 }
 
@@ -142,7 +141,7 @@ func TestAutoGenImpl(t *testing.T) {
 	fmt.Println("ok")
 }
 
-//dynamicGenImpl 生成任意接口实现
+// dynamicGenImpl 生成任意接口实现
 func dynamicGenImpl(t *testing.T, i interface{}) {
 	typ := reflect.TypeOf(i).Elem()
 	for i := 0; i < typ.NumMethod(); i++ {
@@ -157,18 +156,18 @@ func dynamicGenImpl(t *testing.T, i interface{}) {
 		return 3
 	})
 
-	mockfunc := reflect.MakeFunc(methodTyp, func(args []reflect.Value) (results []reflect.Value) {
-		fmt.Println("called", args[1].Interface())
-		debug.PrintStack()
-		t.Log("ok")
+	mockFunc := reflect.MakeFunc(methodTyp, func(args []reflect.Value) (results []reflect.Value) {
+		//fmt.Println("called", args[1].Interface())
+		//debug.PrintStack()
+		//t.Log("ok")
 		return []reflect.Value{reflect.ValueOf(3)}
 	})
-	ifc := *(*uintptr)(unsafe.Pointer(gen))
+	ifc := *(*uintptr)(gen)
 	fmt.Println(ifc)
 
 	callStub := reflect.ValueOf(stub.MakeFuncStub).Pointer()
 
-	mockFuncPtr := (*hack.Value)(unsafe.Pointer(&mockfunc)).Ptr
+	mockFuncPtr := (*hack.Value)(unsafe.Pointer(&mockFunc)).Ptr
 	genStub, err := stub.MakeIfaceCallerWithCtx(mockFuncPtr, callStub)
 
 	if err != nil {
@@ -178,17 +177,17 @@ func dynamicGenImpl(t *testing.T, i interface{}) {
 	fmt.Printf("genstub: 0x%x callstub: 0x%x\n", genStub, callStub)
 
 	// 伪装iface
-	*(*hack.Iface)(unsafe.Pointer(gen)) = hack.Iface{
+	*(*hack.Iface)(gen) = hack.Iface{
 		Tab: &hack.Itab{
 			Fun: [hack.MaxMethod]uintptr{genStub, uintptr(0), uintptr(0)},
 		},
-		Data: (*hack.Value)(unsafe.Pointer(&mockfunc)).Ptr,
+		Data: (*hack.Value)(unsafe.Pointer(&mockFunc)).Ptr,
 	}
-	ifc = *(*uintptr)(unsafe.Pointer(gen))
+	ifc = *(*uintptr)(gen)
 
 	fmt.Println(ifc)
-	fmt.Println(uintptr(getPtr(reflect.ValueOf(mockfunc.Interface()))))
-	fmt.Println(mockfunc.Pointer())
+	fmt.Println(uintptr(getPtr(reflect.ValueOf(mockFunc.Interface()))))
+	fmt.Println(mockFunc.Pointer())
 }
 
 // getPtr 获取函数的调用地址(和函数的指令地址不一样)

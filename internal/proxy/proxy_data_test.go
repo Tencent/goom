@@ -161,7 +161,7 @@ type TestCase struct {
 	trampoline func() interface{}
 	proxy      func(interface{}) interface{}
 	// nolint
-	makefunc interface{}
+	makeFunc interface{}
 	// nolint
-	evalMakeFunc func(makefunc interface{})
+	evalMakeFunc func(makeFunc interface{})
 }

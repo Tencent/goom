@@ -1,4 +1,4 @@
-// Package proxy封装了给各种类型的代理(或较patch)中间层
+// Package proxy 封装了给各种类型的代理(或较patch)中间层
 // 负责比如外部传如私有函数名转换成uintptr，trampoline初始化，并发proxy等
 package proxy
 
@@ -30,13 +30,21 @@ type PContext struct {
 	originIface *hack.Iface
 	// originIfaceValue 原始接口值
 	originIfaceValue *hack.Iface
-	// proxyfunc 代理函数, 需要内存持续持有
+	// proxyFunc 代理函数, 需要内存持续持有
 	proxyFunc reflect.Value
+	// canceled 是否已经被取消
+	canceled bool
 }
 
 // Cancel 取消接口代理
 func (c *IContext) Cancel() {
 	*c.p.originIface = *c.p.originIfaceValue
+	c.p.canceled = true
+}
+
+// Canceled 是否已经被取消
+func (c *IContext) Canceled() bool {
+	return c.p.canceled
 }
 
 // NewContext 构造上下文
@@ -54,8 +62,8 @@ func notImplement() {
 	panic("method not implements. (please write a mocker on it)")
 }
 
-// ProxyFunc 代理函数类型的签名
-type ProxyFunc func(args []reflect.Value) (results []reflect.Value)
+// PFunc 代理函数类型的签名
+type PFunc func(args []reflect.Value) (results []reflect.Value)
 
 // MakeInterfaceImpl 构造接口代理，自动生成接口实现的桩指令织入到内存中
 // iface 接口类型变量,指针类型
@@ -64,8 +72,7 @@ type ProxyFunc func(args []reflect.Value) (results []reflect.Value)
 // apply 代理函数, 代理函数的第一个参数类型必须是*IContext
 // proxy 动态代理函数, 用于反射的方式回调, proxy参数会覆盖apply参数值
 // return error 异常
-func MakeInterfaceImpl(iface interface{}, ctx *IContext, method string,
-	imp interface{}, proxy ProxyFunc) error {
+func MakeInterfaceImpl(iface interface{}, ctx *IContext, method string, imp interface{}, proxy PFunc) error {
 	ifaceType := reflect.TypeOf(iface)
 	if ifaceType.Kind() != reflect.Ptr {
 		return errobj.NewIllegalParamTypeError("iface", ifaceType.String(), "ptr")
@@ -87,10 +94,10 @@ func MakeInterfaceImpl(iface interface{}, ctx *IContext, method string,
 	}
 
 	// check args len match
-	applyArgLen := reflect.TypeOf(imp).NumIn()
-	ifaceMArgLen := typ.Method(funcTabIndex).Type.NumIn()
-	if ifaceMArgLen >= applyArgLen {
-		aErr := errobj.NewArgsNotMatchError(imp, applyArgLen, ifaceMArgLen+1)
+	argLen := reflect.TypeOf(imp).NumIn()
+	maxLen := typ.Method(funcTabIndex).Type.NumIn()
+	if maxLen >= argLen {
+		aErr := errobj.NewArgsNotMatchError(imp, argLen, maxLen+1)
 		return errobj.NewIllegalParamCError("imp", reflect.ValueOf(imp).String(), aErr)
 	}
 
@@ -102,18 +109,27 @@ func MakeInterfaceImpl(iface interface{}, ctx *IContext, method string,
 	// mock接口方法
 	var itabFunc = genCallableFunc(ctx, imp, proxy)
 
-	ifaceCacheKey := typ.PkgPath() + "/" + typ.String()
 	// 上下文中查找接口代理对象的缓存
-	if iface, ok := ctx.p.ifaceCache[ifaceCacheKey]; ok {
-		iface.Tab.Fun[funcTabIndex] = itabFunc
-		if ctx != nil {
-			iface.Data = unsafe.Pointer(ctx)
-		}
+	ifaceCacheKey := typ.PkgPath() + "/" + typ.String()
+	if fakeIface, ok := ctx.p.ifaceCache[ifaceCacheKey]; ok && !ctx.Canceled() {
+		// 添加代理函数到funcTab
+		fakeIface.Tab.Fun[funcTabIndex] = itabFunc
+		fakeIface.Data = unsafe.Pointer(ctx)
+		apply(gen, *fakeIface)
 
 		return nil
 	}
 
-	// 构造funcTab数据
+	// 构造iface对象
+	fakeIface := createIface(ctx, funcTabIndex, itabFunc, typ)
+	ctx.p.ifaceCache[ifaceCacheKey] = &fakeIface
+	apply(gen, fakeIface)
+
+	return nil
+}
+
+// createIface 构造iface对象包含funcTab数据
+func createIface(ctx *IContext, funcTabIndex int, itabFunc uintptr, typ reflect.Type) hack.Iface {
 	funcTabData := [hack.MaxMethod]uintptr{}
 	notImplements := reflect.ValueOf(notImplement).Pointer()
 	for i := 0; i < hack.MaxMethod; i++ {
@@ -131,13 +147,7 @@ func MakeInterfaceImpl(iface interface{}, ctx *IContext, method string,
 		},
 		Data: unsafe.Pointer(ctx),
 	}
-
-	// 伪造的iface赋值到指针变量
-	*(*hack.Iface)(unsafe.Pointer(gen)) = fakeIface
-
-	ctx.p.ifaceCache[ifaceCacheKey] = &fakeIface
-
-	return nil
+	return fakeIface
 }
 
 // backUp2Context 备份缓存iface指针到IContext中
@@ -153,7 +163,7 @@ func backUp2Context(ctx *IContext, iface unsafe.Pointer) {
 
 // genCallableFunc 生成可以直接CALL的函数, 带上下文(rdx)
 func genCallableFunc(ctx *IContext, apply interface{},
-	proxy ProxyFunc) uintptr {
+	proxy PFunc) uintptr {
 	var (
 		genStub uintptr
 		err     error
@@ -171,18 +181,24 @@ func genCallableFunc(ctx *IContext, apply interface{},
 	} else {
 		// 生成桩代码,rdx寄存器还原, 生成的调用将跳转到proxy函数
 		methodTyp := reflect.TypeOf(apply)
-		mockfunc := reflect.MakeFunc(methodTyp, proxy)
+		mockFunc := reflect.MakeFunc(methodTyp, proxy)
 		callStub := reflect.ValueOf(stub.MakeFuncStub).Pointer()
 
-		mockFuncPtr := (*hack.Value)(unsafe.Pointer(&mockfunc)).Ptr
+		mockFuncPtr := (*hack.Value)(unsafe.Pointer(&mockFunc)).Ptr
 
 		genStub, err = stub.MakeIfaceCallerWithCtx(mockFuncPtr, callStub)
 		if err != nil {
 			panic(err)
 		}
 
-		ctx.p.proxyFunc = mockfunc
+		ctx.p.proxyFunc = mockFunc
 	}
 
 	return genStub
+}
+
+// apply 应用到变量
+func apply(gen unsafe.Pointer, iface hack.Iface) {
+	// 伪造的iface赋值到指针变量
+	*(*hack.Iface)(unsafe.Pointer(gen)) = iface
 }

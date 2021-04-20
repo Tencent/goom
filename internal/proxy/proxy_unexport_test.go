@@ -28,10 +28,10 @@ func TestPrintMock(t *testing.T) {
 		t.Error("mock print err:", err)
 	}
 
-	fmt.Print("ok", "1")
+	fmt.Println("ok", "1")
 	patch.Unpatch()
 	fmt.Println("unpatched")
-	fmt.Print("ok", "2")
+	fmt.Println("ok", "2")
 }
 
 // TestNetConnMock
@@ -78,10 +78,10 @@ type conn struct {
 }
 
 // nolint
-func (c *conn) Read(b []byte) (n int, err error) { return 0, nil }
+func (c *conn) Read([]byte) (n int, err error) { return 0, nil }
 
 // nolint
-func (c *conn) Write(b []byte) (n int, err error) { return 0, nil }
+func (c *conn) Write([]byte) (n int, err error) { return 0, nil }
 
 // nolint
 func (c *conn) Close() error { return nil }
@@ -93,13 +93,13 @@ func (c *conn) LocalAddr() net.Addr { return nil }
 func (c *conn) RemoteAddr() net.Addr { return nil }
 
 // nolint
-func (c *conn) SetDeadline(t time.Time) error { return nil }
+func (c *conn) SetDeadline(time.Time) error { return nil }
 
 // nolint
-func (c *conn) SetReadDeadline(t time.Time) error { return nil }
+func (c *conn) SetReadDeadline(time.Time) error { return nil }
 
 // nolint
-func (c *conn) SetWriteDeadline(t time.Time) error { return nil }
+func (c *conn) SetWriteDeadline(time.Time) error { return nil }
 
 // nolint
 // Network file descriptor.

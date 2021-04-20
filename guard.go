@@ -1,5 +1,4 @@
-// Package mocker定义了mock的外层用户使用API定义,
-// 包括函数、方法、接口、未导出函数(或方法的)的Mocker的实现。
+// Package mocker 定义了mock的外层用户使用API定义, 包括函数、方法、接口、未导出函数(或方法的)的Mocker的实现。
 // 当前文件实现了mock守卫能力，
 // 不同类型的Mocker具备不一样的Apply、Cancel具体行为，本MockGuard抽象了统一各类Mocker的Guard，
 // 以供BaseMocker使用其接口类MockGuard的Apply、Cancel方法。
@@ -19,33 +18,33 @@ type MockGuard interface {
 	Cancel()
 }
 
-// IfaceMockGuard 接口Mock守卫
-type IfaceMockGuard struct {
+// IFaceMockGuard 接口Mock守卫
+type IFaceMockGuard struct {
 	ctx *proxy.IContext
 }
 
-// NewIfaceMockGuard 创建IfaceMockGuard
-func NewIfaceMockGuard(ctx *proxy.IContext) *IfaceMockGuard {
-	return &IfaceMockGuard{ctx: ctx}
+// NewIFaceMockGuard 创建IFaceMockGuard
+func NewIFaceMockGuard(ctx *proxy.IContext) *IFaceMockGuard {
+	return &IFaceMockGuard{ctx: ctx}
 }
 
 // Apply 应用mock
-func (i *IfaceMockGuard) Apply() {
+func (i *IFaceMockGuard) Apply() {
 	// 无需操作
 }
 
 // Cancel 取消mock
-func (i *IfaceMockGuard) Cancel() {
+func (i *IFaceMockGuard) Cancel() {
 	i.ctx.Cancel()
 }
 
 // PatchMockGuard Patch类型的Mock守卫
 type PatchMockGuard struct {
-	patchGuard *patch.PatchGuard
+	patchGuard *patch.Guard
 }
 
 // NewPatchMockGuard 创建PatchMockGuard
-func NewPatchMockGuard(patchGuard *patch.PatchGuard) *PatchMockGuard {
+func NewPatchMockGuard(patchGuard *patch.Guard) *PatchMockGuard {
 	return &PatchMockGuard{patchGuard: patchGuard}
 }
 

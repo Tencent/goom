@@ -1,4 +1,4 @@
-// Package mocker定义了mock的外层用户使用API定义,
+// Package mocker 定义了mock的外层用户使用API定义,
 // 包括函数、方法、接口、未导出函数(或方法的)的Mocker的实现。
 // 当前文件汇聚了公共的工具类，比如类型转换。
 package mocker
@@ -36,36 +36,36 @@ func inTypes(isMethod bool, funTyp reflect.Type) []reflect.Type {
 	}
 
 	numIn := funTyp.NumIn()
-	inTypes := make([]reflect.Type, numIn-skip)
+	typeList := make([]reflect.Type, numIn-skip)
 
 	for i := 0; i < numIn-skip; i++ {
-		inTypes[i] = funTyp.In(i + skip)
+		typeList[i] = funTyp.In(i + skip)
 	}
 
-	return inTypes
+	return typeList
 }
 
 // outTypes 获取类型
 func outTypes(funTyp reflect.Type) []reflect.Type {
 	numOut := funTyp.NumOut()
-	outTypes := make([]reflect.Type, numOut)
+	typeList := make([]reflect.Type, numOut)
 
 	for i := 0; i < numOut; i++ {
-		outTypes[i] = funTyp.Out(i)
+		typeList[i] = funTyp.Out(i)
 	}
 
-	return outTypes
+	return typeList
 }
 
 // I2V []interface convert to []reflect.Value
-func I2V(args []interface{}, typs []reflect.Type) []reflect.Value {
-	if len(args) != len(typs) {
-		panic(fmt.Sprintf("args lenth mismatch,must:%d, actual:%d", len(typs), len(args)))
+func I2V(args []interface{}, types []reflect.Type) []reflect.Value {
+	if len(args) != len(types) {
+		panic(fmt.Sprintf("args lenth mismatch,must:%d, actual:%d", len(types), len(args)))
 	}
 
 	values := make([]reflect.Value, len(args))
 	for i, a := range args {
-		values[i] = toValue(a, typs[i])
+		values[i] = toValue(a, types[i])
 	}
 
 	return values
@@ -113,11 +113,11 @@ func cast(v reflect.Value, typ reflect.Type) reflect.Value {
 }
 
 // V2I []reflect.Value convert to []interface
-func V2I(args []reflect.Value, typs []reflect.Type) []interface{} {
+func V2I(args []reflect.Value, types []reflect.Type) []interface{} {
 	values := make([]interface{}, len(args))
 
 	for i, a := range args {
-		if (typs[i].Kind() == reflect.Interface || typs[i].Kind() == reflect.Ptr) && a.IsZero() {
+		if (types[i].Kind() == reflect.Interface || types[i].Kind() == reflect.Ptr) && a.IsZero() {
 			values[i] = nil
 		} else {
 			values[i] = a.Interface()

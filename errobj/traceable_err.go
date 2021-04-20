@@ -22,7 +22,7 @@ func (w *TraceableError) Error() string {
 	return s
 }
 
-// Traceable 获取错误的原因
+// Cause 获取错误的原因
 func (w *TraceableError) Cause() error {
 	return w.cause
 }

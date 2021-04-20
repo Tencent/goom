@@ -46,7 +46,6 @@ linters:
     - errcheck
     - unused
     - varcheck
-    - sqlclosecheck
     # - bodyclose https://github.com/timakin/bodyclose/issues 问题太多了，屏蔽都屏蔽不过来，显式不使用它
 
 run:

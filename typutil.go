@@ -1,29 +1,7 @@
-// Package mocker定义了mock的外层用户使用API定义,
+// Package mocker 定义了mock的外层用户使用API定义,
 // 包括函数、方法、接口、未导出函数(或方法的)的Mocker的实现。
 // 当前文件实现了对reflect.Value的equals比较。
 package mocker
-
-//The MIT License (MIT)
-//
-//Copyright (c) 2014-2018 Yasuhiro Matsumoto, http://mattn.kaoriya.net <mattn.jp@gmail.com>
-//
-//Permission is hereby granted, free of charge, to any person obtaining a copy
-//of this software and associated documentation files (the "Software"), to deal
-//in the Software without restriction, including without limitation the rights
-//to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-//copies of the Software, and to permit persons to whom the Software is
-//furnished to do so, subject to the following conditions:
-//
-//The above copyright notice and this permission notice shall be included in all
-//copies or substantial portions of the Software.
-//
-//THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-//SOFTWARE.
 
 import (
 	"errors"
@@ -195,7 +173,7 @@ func equal(lhsV, rhsV reflect.Value) bool {
 	// Compare a string and a number.
 	// This will attempt to convert the string to a number,
 	// while leaving the other side alone. Code further
-	// down takes care of converting ints and floats as needed.
+	// down takes care of converting int values and floats as needed.
 	if isNum(lhsV) && rhsV.Kind() == reflect.String {
 		rhsF, err := tryToFloat64(rhsV)
 		if err != nil {
@@ -223,7 +201,7 @@ func equal(lhsV, rhsV reflect.Value) bool {
 		return fmt.Sprintf("%v", lhsV) == fmt.Sprintf("%v", rhsV)
 	}
 
-	// Try to compare bools to strings and numbers
+	// Try to compare bool values to strings and numbers
 	if lhsV.Kind() == reflect.Bool || rhsV.Kind() == reflect.Bool {
 		lhsB, err := tryToBool(lhsV)
 		if err != nil {

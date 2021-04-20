@@ -1,12 +1,11 @@
-// Package hack 对go系统包的hack, 包含一些系统结构体的copy，需要和不同的go版本保持同步
 // +build go1.16
 
+// Package hack 对go系统包的hack, 包含一些系统结构体的copy，需要和不同的go版本保持同步
 package hack
 
 import (
-	// nolint
 	"unsafe"
-	_ "unsafe"
+	_ "unsafe" // 匿名引入
 )
 
 // Firstmoduledata TODO 兼容不同go版本
@@ -81,7 +80,7 @@ type Bitvector struct {
 // nolint
 type typeOff int32 // offset to an *rtype
 
-// Convenience struct for modifying the underlying code pointer of a function
+// Func convenience struct for modifying the underlying code pointer of a function
 // value. The actual struct has other values, but always starts with a code
 // pointer.
 // TODO 不同go版本兼容
@@ -89,8 +88,8 @@ type Func struct {
 	CodePtr uintptr
 }
 
-// TODO 不同go版本兼容
 // Value reflect.Value
+// TODO 不同go版本兼容
 type Value struct {
 	Typ  *uintptr
 	Ptr  unsafe.Pointer

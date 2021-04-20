@@ -1,4 +1,4 @@
-// Package stub负责生成和应用桩函数
+// Package stub 负责生成和应用桩函数
 package stub
 
 import (
@@ -55,8 +55,8 @@ func addOff(from uintptr, used uintptr) error {
 	// add up to off
 	newOffset := atomic.AddUintptr(&placeHolderIns.off, used+16)
 	if newOffset+used > placeHolderIns.max {
-		logger.LogError("placehlder space usage oveflow", placeHolderIns.count, "hook funcs")
-		return errors.New("placehlder space usage oveflow")
+		logger.LogError("placeholder space usage overflow", placeHolderIns.count, "hook functions")
+		return errors.New("placeholder space usage overflow")
 	}
 
 	logger.LogDebug("add offset map, size:", used)
@@ -64,19 +64,19 @@ func addOff(from uintptr, used uintptr) error {
 	return nil
 }
 
-// acqureSpace check if has enough holder space
-func acqureSpace(funcSize int) (uintptr, []byte, error) {
-	placehlder := atomic.LoadUintptr(&placeHolderIns.off)
-	if placehlder+uintptr(funcSize) > placeHolderIns.max {
-		logger.LogError("placehlder space usage oveflow")
-		return 0, nil, errors.New("placehlder space usage oveflow")
+// acquireSpace check if has enough holder space
+func acquireSpace(funcSize int) (uintptr, []byte, error) {
+	placeholder := atomic.LoadUintptr(&placeHolderIns.off)
+	if placeholder+uintptr(funcSize) > placeHolderIns.max {
+		logger.LogError("placeholder space usage overflow")
+		return 0, nil, errors.New("placeholder space usage overflow")
 	}
 
 	bytes := (*[]byte)(unsafe.Pointer(&reflect.SliceHeader{
-		Data: placehlder,
+		Data: placeholder,
 		Len:  funcSize,
 		Cap:  funcSize,
 	}))
 
-	return placehlder, *bytes, nil
+	return placeholder, *bytes, nil
 }

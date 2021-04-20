@@ -64,8 +64,7 @@ type PFunc func(args []reflect.Value) (results []reflect.Value)
 // apply 代理函数, 代理函数的第一个参数类型必须是*IContext
 // proxy 动态代理函数, 用于反射的方式回调, proxy参数会覆盖apply参数值
 // return error 异常
-func MakeInterfaceImpl(iface interface{}, ctx *IContext, method string,
-	imp interface{}, proxy PFunc) error {
+func MakeInterfaceImpl(iface interface{}, ctx *IContext, method string, imp interface{}, proxy PFunc) error {
 	ifaceType := reflect.TypeOf(iface)
 	if ifaceType.Kind() != reflect.Ptr {
 		return errobj.NewIllegalParamTypeError("iface", ifaceType.String(), "ptr")
@@ -87,10 +86,10 @@ func MakeInterfaceImpl(iface interface{}, ctx *IContext, method string,
 	}
 
 	// check args len match
-	applyArgLen := reflect.TypeOf(imp).NumIn()
-	ifaceMArgLen := typ.Method(funcTabIndex).Type.NumIn()
-	if ifaceMArgLen >= applyArgLen {
-		aErr := errobj.NewArgsNotMatchError(imp, applyArgLen, ifaceMArgLen+1)
+	argLen := reflect.TypeOf(imp).NumIn()
+	maxLen := typ.Method(funcTabIndex).Type.NumIn()
+	if maxLen >= argLen {
+		aErr := errobj.NewArgsNotMatchError(imp, argLen, maxLen+1)
 		return errobj.NewIllegalParamCError("imp", reflect.ValueOf(imp).String(), aErr)
 	}
 

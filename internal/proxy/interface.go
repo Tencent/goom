@@ -32,11 +32,19 @@ type PContext struct {
 	originIfaceValue *hack.Iface
 	// proxyFunc 代理函数, 需要内存持续持有
 	proxyFunc reflect.Value
+	// canceled 是否已经被取消
+	canceled bool
 }
 
 // Cancel 取消接口代理
 func (c *IContext) Cancel() {
 	*c.p.originIface = *c.p.originIfaceValue
+	c.p.canceled = true
+}
+
+// Canceled 是否已经被取消
+func (c *IContext) Canceled() bool {
+	return c.p.canceled
 }
 
 // NewContext 构造上下文
@@ -103,7 +111,7 @@ func MakeInterfaceImpl(iface interface{}, ctx *IContext, method string, imp inte
 
 	// 上下文中查找接口代理对象的缓存
 	ifaceCacheKey := typ.PkgPath() + "/" + typ.String()
-	if fakeIface, ok := ctx.p.ifaceCache[ifaceCacheKey]; ok {
+	if fakeIface, ok := ctx.p.ifaceCache[ifaceCacheKey]; ok && !ctx.Canceled() {
 		// 添加代理函数到funcTab
 		fakeIface.Tab.Fun[funcTabIndex] = itabFunc
 		fakeIface.Data = unsafe.Pointer(ctx)

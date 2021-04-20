@@ -21,6 +21,8 @@ type Mocker interface {
 	Apply(imp interface{})
 	// Cancel 取消代理
 	Cancel()
+	// Canceled 是否已经被取消
+	Canceled() bool
 }
 
 // ExportedMocker 导出函数mock接口
@@ -55,6 +57,8 @@ type baseMocker struct {
 
 	when *When
 	_if  *If
+	// canceled 是否被取消
+	canceled bool
 }
 
 // newBaseMocker 新增基础类型mocker
@@ -164,6 +168,12 @@ func (m *baseMocker) Cancel() {
 	m.when = nil
 	m._if = nil
 	m.origin = nil
+	m.canceled = true
+}
+
+// Canceled 是否被取消
+func (m *baseMocker) Canceled() bool {
+	return m.canceled
 }
 
 // MethodMocker 对结构体函数或方法进行mock

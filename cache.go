@@ -24,7 +24,7 @@ func NewCachedMethodMocker(m *MethodMocker) *CachedMethodMocker {
 
 // Method 设置结构体的方法名
 func (m *CachedMethodMocker) Method(name string) ExportedMocker {
-	if mocker, ok := m.mCache[name]; ok {
+	if mocker, ok := m.mCache[name]; ok && !mocker.Canceled() {
 		return mocker
 	}
 
@@ -37,7 +37,7 @@ func (m *CachedMethodMocker) Method(name string) ExportedMocker {
 
 // ExportMethod 导出私有方法
 func (m *CachedMethodMocker) ExportMethod(name string) UnExportedMocker {
-	if mocker, ok := m.umCache[name]; ok {
+	if mocker, ok := m.umCache[name]; ok && !mocker.Canceled() {
 		return mocker
 	}
 
@@ -75,7 +75,7 @@ func NewCachedUnexportedMethodMocker(m *UnexportedMethodMocker) *CachedUnexporte
 
 // Method 设置结构体的方法名
 func (m *CachedUnexportedMethodMocker) Method(name string) UnExportedMocker {
-	if mocker, ok := m.mCache[name]; ok {
+	if mocker, ok := m.mCache[name]; ok && !mocker.Canceled() {
 		return mocker
 	}
 
@@ -111,7 +111,7 @@ func NewCachedInterfaceMocker(interfaceMocker *DefaultInterfaceMocker) *CachedIn
 
 // Method 指定方法名
 func (m *CachedInterfaceMocker) Method(name string) InterfaceMocker {
-	if mocker, ok := m.mCache[name]; ok {
+	if mocker, ok := m.mCache[name]; ok && !mocker.Canceled() {
 		return mocker
 	}
 

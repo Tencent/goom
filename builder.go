@@ -17,7 +17,7 @@ type Builder struct {
 	pkgName string
 	mockers []Mocker
 
-	mCache map[interface{}]interface{}
+	mCache map[interface{}]Mocker
 }
 
 // Pkg 指定包名，当前包无需指定
@@ -37,7 +37,7 @@ func Create() *Builder {
 	const currentPackageIndex = 2
 	return &Builder{
 		pkgName: currentPkg(currentPackageIndex),
-		mCache:  make(map[interface{}]interface{}, 30),
+		mCache:  make(map[interface{}]Mocker, 30),
 	}
 }
 
@@ -45,7 +45,7 @@ func Create() *Builder {
 // iFace 必须是指针类型, 比如 i为interface类型变量, iFace传递&i
 func (b *Builder) Interface(iFace interface{}) *CachedInterfaceMocker {
 	mKey := reflect.TypeOf(iFace).String()
-	if mocker, ok := b.mCache[mKey]; ok {
+	if mocker, ok := b.mCache[mKey]; ok && !mocker.Canceled() {
 		b.reset2CurPkg()
 
 		return mocker.(*CachedInterfaceMocker)
@@ -72,7 +72,7 @@ func (b *Builder) cache(mKey interface{}, cachedMocker Mocker) {
 // 比如需要mock结构体函数 (*conn).Write(b []byte)，则name="conn"
 func (b *Builder) Struct(obj interface{}) *CachedMethodMocker {
 	mKey := reflect.ValueOf(obj).Type().String()
-	if mocker, ok := b.mCache[mKey]; ok {
+	if mocker, ok := b.mCache[mKey]; ok && !mocker.Canceled() {
 		b.reset2CurPkg()
 		return mocker.(*CachedMethodMocker)
 	}
@@ -90,7 +90,7 @@ func (b *Builder) Struct(obj interface{}) *CachedMethodMocker {
 // funcDef 函数，比如 foo
 // 方法的mock, 比如 &Struct{}.method
 func (b *Builder) Func(obj interface{}) *DefMocker {
-	if mocker, ok := b.mCache[reflect.ValueOf(obj)]; ok {
+	if mocker, ok := b.mCache[reflect.ValueOf(obj)]; ok && !mocker.Canceled() {
 		b.reset2CurPkg()
 
 		return mocker.(*DefMocker)
@@ -107,7 +107,7 @@ func (b *Builder) Func(obj interface{}) *DefMocker {
 // ExportStruct 导出私有结构体
 // 比如需要mock结构体函数 (*conn).Write(b []byte)，则name="conn"
 func (b *Builder) ExportStruct(name string) *CachedUnexportedMethodMocker {
-	if mocker, ok := b.mCache[b.pkgName+"_"+name]; ok {
+	if mocker, ok := b.mCache[b.pkgName+"_"+name]; ok && !mocker.Canceled() {
 		b.reset2CurPkg()
 		return mocker.(*CachedUnexportedMethodMocker)
 	}
@@ -135,7 +135,7 @@ func (b *Builder) ExportFunc(name string) *UnexportedFuncMocker {
 		panic("func name is empty")
 	}
 
-	if mocker, ok := b.mCache[b.pkgName+"_"+name]; ok {
+	if mocker, ok := b.mCache[b.pkgName+"_"+name]; ok && !mocker.Canceled() {
 		b.reset2CurPkg()
 		return mocker.(*UnexportedFuncMocker)
 	}

@@ -77,6 +77,31 @@ func (s *ifaceMockerTestSuite) TestUnitInterfaceReturn() {
 	})
 }
 
+// TestUnitInterfaceTwice 测试多次接口mock return
+func (s *ifaceMockerTestSuite) TestUnitInterfaceTwice() {
+	s.Run("success", func() {
+		mock := mocker.Create()
+
+		i := (I)(nil)
+
+		mock.Interface(&i).Method("Call").As(func(ctx *mocker.IContext, i int) int {
+			return 0
+		}).When(1).Return(3)
+		s.NotNil(i, "interface var nil check")
+		s.Equal(3, i.Call(1), "interface mock check")
+		mock.Reset()
+
+		mock.Interface(&i).Method("Call").As(func(ctx *mocker.IContext, i int) int {
+			return 0
+		}).When(1).Return(4)
+		s.NotNil(i, "interface var nil check")
+		s.Equal(4, i.Call(1), "interface mock check")
+		mock.Reset()
+
+		s.Nil(i, "interface mock reset check")
+	})
+}
+
 // TestUnitArgsNotMatch 测试接口mock参数不匹配情况
 func (s *ifaceMockerTestSuite) TestUnitArgsNotMatch() {
 	s.Run("success", func() {

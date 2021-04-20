@@ -10,6 +10,15 @@ import (
 	"git.code.oa.com/goom/mocker/internal/proxy"
 )
 
+// IContext 接口mock的接收体
+// 和internal/proxy.IContext保持同步
+type IContext struct {
+	// Data 可以传递任意数据
+	Data interface{}
+	// 占位属性
+	_ unsafe.Pointer
+}
+
 // InterfaceMocker 接口Mock
 // 通过生成和替代接口变量实现Mock
 type InterfaceMocker interface {
@@ -22,15 +31,6 @@ type InterfaceMocker interface {
 	As(imp interface{}) InterfaceMocker
 	// Inject 将mock设置到变量
 	Inject(iFace interface{}) InterfaceMocker
-}
-
-// IContext 接口mock的接收体
-// 和internal/proxy.IContext保持同步
-type IContext struct {
-	// Data 可以传递任意数据
-	Data interface{}
-	// 占位属性
-	_ unsafe.Pointer
 }
 
 // DefaultInterfaceMocker 默认接口Mocker

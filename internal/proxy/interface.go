@@ -102,18 +102,27 @@ func MakeInterfaceImpl(iface interface{}, ctx *IContext, method string,
 	// mock接口方法
 	var itabFunc = genCallableFunc(ctx, imp, proxy)
 
-	ifaceCacheKey := typ.PkgPath() + "/" + typ.String()
 	// 上下文中查找接口代理对象的缓存
-	if iface, ok := ctx.p.ifaceCache[ifaceCacheKey]; ok {
-		iface.Tab.Fun[funcTabIndex] = itabFunc
-		if ctx != nil {
-			iface.Data = unsafe.Pointer(ctx)
-		}
+	ifaceCacheKey := typ.PkgPath() + "/" + typ.String()
+	if fakeIface, ok := ctx.p.ifaceCache[ifaceCacheKey]; ok {
+		// 添加代理函数到funcTab
+		fakeIface.Tab.Fun[funcTabIndex] = itabFunc
+		fakeIface.Data = unsafe.Pointer(ctx)
+		apply(gen, *fakeIface)
 
 		return nil
 	}
 
-	// 构造funcTab数据
+	// 构造iface对象
+	fakeIface := createIface(ctx, funcTabIndex, itabFunc, typ)
+	ctx.p.ifaceCache[ifaceCacheKey] = &fakeIface
+	apply(gen, fakeIface)
+
+	return nil
+}
+
+// createIface 构造iface对象包含funcTab数据
+func createIface(ctx *IContext, funcTabIndex int, itabFunc uintptr, typ reflect.Type) hack.Iface {
 	funcTabData := [hack.MaxMethod]uintptr{}
 	notImplements := reflect.ValueOf(notImplement).Pointer()
 	for i := 0; i < hack.MaxMethod; i++ {
@@ -131,13 +140,7 @@ func MakeInterfaceImpl(iface interface{}, ctx *IContext, method string,
 		},
 		Data: unsafe.Pointer(ctx),
 	}
-
-	// 伪造的iface赋值到指针变量
-	*(*hack.Iface)(unsafe.Pointer(gen)) = fakeIface
-
-	ctx.p.ifaceCache[ifaceCacheKey] = &fakeIface
-
-	return nil
+	return fakeIface
 }
 
 // backUp2Context 备份缓存iface指针到IContext中
@@ -185,4 +188,10 @@ func genCallableFunc(ctx *IContext, apply interface{},
 	}
 
 	return genStub
+}
+
+// apply 应用到变量
+func apply(gen unsafe.Pointer, iface hack.Iface) {
+	// 伪造的iface赋值到指针变量
+	*(*hack.Iface)(unsafe.Pointer(gen)) = iface
 }

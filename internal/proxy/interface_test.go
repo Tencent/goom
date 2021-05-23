@@ -32,6 +32,7 @@ func TestInterfaceCall(t *testing.T) {
 func TestAutoGen(t *testing.T) {
 	logger.LogLevel = logger.DebugLevel
 	logger.SetLog2Console(true)
+	const strResult = "not ok"
 
 	gen := (I)(nil)
 
@@ -39,12 +40,12 @@ func TestAutoGen(t *testing.T) {
 
 	_ = proxy.MakeInterfaceImpl(&gen, ctx, "Call", func(ctx *proxy.IContext, a int) int {
 		t.Log("called Call")
-		return 0
+		return 1
 	}, nil)
 
 	_ = proxy.MakeInterfaceImpl(&gen, ctx, "Call1", func(ctx *proxy.IContext, a string) string {
 		t.Log("called Call1")
-		return "not ok"
+		return strResult
 	}, nil)
 
 	_ = proxy.MakeInterfaceImpl(&gen, ctx, "call2", func(ctx *proxy.IContext, a int32) int32 {
@@ -53,9 +54,15 @@ func TestAutoGen(t *testing.T) {
 	}, nil)
 
 	// 调用接口方法
-	gen.Call(2)
-	gen.Call1("ok")
-	gen.call2(33)
+	if r := gen.Call(2); r != 1 {
+		t.Fatalf("want result: %d, real: %d", 1, r)
+	}
+	if r := gen.Call1("ok"); r != strResult {
+		t.Fatalf("want result: %s, real: %s", "not ok", r)
+	}
+	if r := gen.call2(33); r != 99 {
+		t.Fatalf("want result: %d, real: %d", 99, r)
+	}
 }
 
 // TestGenCancel 测试取消接口代理
@@ -68,11 +75,15 @@ func TestGenCancel(t *testing.T) {
 		return 0
 	}, nil)
 
-	gen.Call(2)
+	if r := gen.Call(2); r != 0 {
+		t.Fatalf("want result: %d, real: %d", 0, r)
+	}
 
 	ctx.Cancel()
 
-	gen.Call(0)
+	if r := gen.Call(0); r != 1 {
+		t.Fatalf("want result: %d, real: %d", 1, r)
+	}
 }
 
 // TestNilImpl 测试空实现结构体方法列表
@@ -101,6 +112,9 @@ func TestGenImpl(t *testing.T) {
 
 	// 调用接口方法
 	r := (gen).Call(1)
+	if r != 3 {
+		t.Fatalf("want result: %d, real: %d", 3, r)
+	}
 
 	fmt.Println("ok", r)
 }
@@ -136,7 +150,9 @@ func TestAutoGenImpl(t *testing.T) {
 	dynamicGenImpl(t, &gen)
 
 	// 调用接口方法
-	gen.Call(1)
+	if r := gen.Call(1); r != 3 {
+		t.Fatalf("want result: %d, real: %d", 3, r)
+	}
 
 	fmt.Println("ok")
 }
@@ -248,7 +264,7 @@ func TestTraceBack(t *testing.T) {
 
 	// 调用接口方法
 	for i := 0; i < 1000; i++ {
-		(gen).Call(1)
+		gen.Call(1)
 	}
 
 	fmt.Println("ok")

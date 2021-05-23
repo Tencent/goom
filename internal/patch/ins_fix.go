@@ -31,12 +31,13 @@ var opExpand = map[uint32][]byte{
 func replaceRelativeAddr(from uintptr, copyOrigin []byte, placeholder uintptr, funcSize int, leastSize int,
 	allowCopyCall bool) ([]byte, int, error) {
 
-	replaceOrigin, applyToPos, err := doReplaceRelativeAddr(from, copyOrigin, placeholder, funcSize, leastSize, allowCopyCall)
+	replaceOrigin, applyToPos, err :=
+		doReplaceRelativeAddr(from, copyOrigin, placeholder, funcSize, leastSize, allowCopyCall)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	if err := checkExistsJmpToStartLeastSize(from, applyToPos, copyOrigin, funcSize); err != nil {
+	if err = checkExistsJmpToStartLeastSize(from, applyToPos, copyOrigin, funcSize); err != nil {
 		return nil, 0, err
 	}
 

@@ -27,7 +27,7 @@ func (g *Guard) Apply() {
 		logger.LogWarningf("Apply to 0x%x error: %s", g.target, err)
 	}
 
-	Debug(fmt.Sprintf("apply copy to 0x%x", g.target), g.target, 20, logger.DebugLevel)
+	Debug(fmt.Sprintf("apply copy to 0x%x", g.target), g.target, 30, logger.DebugLevel)
 }
 
 // Unpatch 取消代理,还原指令码

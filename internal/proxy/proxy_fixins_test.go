@@ -68,6 +68,19 @@ func Caller6(a int) func() int {
 func Caller7(i int) {
 }
 
+//go:noinline
+func Caller8(i int) int {
+tag:
+	return i
+tag1:
+	return -i
+	if i < 0 {
+		goto tag
+	} else {
+		goto tag1
+	}
+}
+
 var testCases1 = []struct {
 	funcName   string
 	funcDef    interface{}
@@ -274,6 +287,30 @@ var testCases1 = []struct {
 			}
 		},
 	},
+	{
+		funcName: "Caller8",
+		funcDef:  Caller8,
+		eval: func(t *testing.T) {
+			if r := Caller8(-1); r != -1 {
+				t.Fatalf("want result: %d, real: %d", -1, r)
+			}
+		},
+		trampoline: func() interface{} {
+			var result = func(i int) int {
+				fmt.Println("trampoline")
+				return 99
+			}
+			return &result
+		},
+		proxy: func(origin interface{}) interface{} {
+			var origin1 = origin
+			return func(i int) func(int) int {
+				logger.LogTrace("proxy Caller8 called, args", i)
+				originFunc, _ := origin1.(*func(i int) func(int) int)
+				return (*originFunc)(i)
+			}
+		},
+	},
 }
 
 // main 测试静态代理
@@ -290,6 +327,8 @@ func TestProxy_fixIns(t *testing.T) {
 		if err != nil {
 			t.Fatal("mock print err:", err)
 		}
+
+		patch.Apply()
 
 		tc.eval(t)
 		patch.Unpatch()

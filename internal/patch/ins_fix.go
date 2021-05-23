@@ -30,15 +30,22 @@ var opExpand = map[uint32][]byte{
 // allowCopyCall 是否允许拷贝Call指令
 func replaceRelativeAddr(from uintptr, copyOrigin []byte, placeholder uintptr, funcSize int, leastSize int,
 	allowCopyCall bool) ([]byte, int, error) {
-	replaceOrigin, err := doReplaceRelativeAddr(from, copyOrigin, placeholder, funcSize, leastSize, allowCopyCall)
+
+	replaceOrigin, applyToPos, err := doReplaceRelativeAddr(from, copyOrigin, placeholder, funcSize, leastSize, allowCopyCall)
 	if err != nil {
 		return nil, 0, err
 	}
 
+	if err := checkExistsJmpToStartLeastSize(from, applyToPos, copyOrigin, funcSize); err != nil {
+		return nil, 0, err
+	}
+
+	logger.LogDebugf("fix size: %d", len(replaceOrigin))
+
 	var replaceNew = replaceOrigin
 
 	if leastSize > 0 {
-		replaceNew, err = doReplaceRelativeAddr(from, replaceOrigin, placeholder, len(replaceOrigin), leastSize,
+		replaceNew, _, err = doReplaceRelativeAddr(from, replaceOrigin, placeholder, len(replaceOrigin), leastSize,
 			allowCopyCall)
 	}
 
@@ -47,21 +54,21 @@ func replaceRelativeAddr(from uintptr, copyOrigin []byte, placeholder uintptr, f
 
 //doReplaceRelativeAddr 替换函数字节码中的相对地址(如果有的话)
 func doReplaceRelativeAddr(from uintptr, copyOrigin []byte, placeholder uintptr, funcSize int, leastSize int,
-	allowCopyCall bool) ([]byte, error) {
+	allowCopyCall bool) ([]byte, int, error) {
 	startAddr := (uint64)(from)
 	result := make([]byte, 0)
 
 	logger.LogDebug("target fix ins >>>>>")
 
 	for pos := 0; pos < len(copyOrigin); {
-		ins, err := nextIns(pos, copyOrigin)
+		ins, _, err := nextIns(pos, copyOrigin)
 		if err != nil {
 			panic("replaceRelativeAddr err:" + err.Error())
 		}
 
 		if ins != nil && ins.Opcode != 0 {
 			if !allowCopyCall && ins.Op.String() == callInsName {
-				return nil, fmt.Errorf("copy call instruction is not allowed in auto trampoline model. size: %d", leastSize)
+				return nil, 0, fmt.Errorf("copy call instruction is not allowed in auto trampoline model. size: %d", leastSize)
 			}
 
 			replaced := replaceIns(ins, pos, copyOrigin, funcSize, startAddr, placeholder)
@@ -75,24 +82,54 @@ func doReplaceRelativeAddr(from uintptr, copyOrigin []byte, placeholder uintptr,
 
 		// for fix only first few inst, not copy all func inst
 		if leastSize > 0 && pos >= leastSize {
-			ins, err := nextIns(pos, copyOrigin)
+			ins, _, err := nextIns(pos, copyOrigin)
 			if err != nil {
 				panic("replaceRelativeAddr err:" + err.Error())
 			}
 			// fix jump to RET err: signal SIGSEGV: segmentation violation
 			if ins != nil && ins.String() != "RET" {
-				return result, nil
+				return result, pos, nil
 			}
 		}
 	}
 
-	return result, nil
+	return result, 0, nil
+}
+
+// checkExistsJmpToStartLeastSize check if exists jmp to address bettwen from and applyToPos
+// if exists, return error
+func checkExistsJmpToStartLeastSize(from uintptr, applyToPos int, copyOrigin []byte, funcSize int) error {
+	for pos := 0; pos <= funcSize; {
+		ins, code, err := nextIns(pos, copyOrigin)
+		if err != nil {
+			panic("checkExistsJmpToStartLeastSize err:" + err.Error())
+		}
+		if ins == nil {
+			break
+		}
+		if ins.PCRelOff <= 0 {
+			pos = pos + ins.Len
+			continue
+		}
+		offset := pos + ins.PCRelOff
+		relativeAddr := decodeRelativeAddr(ins, copyOrigin, offset)
+		if ((relativeAddr)+pos+ins.Len < applyToPos) &&
+			((relativeAddr)+pos+ins.Len > 0) {
+			logger.LogErrorf("[%d] 0x%x:\t%s\t\t%-30s\t\t%s\t\tabs:0x%x", ins.Len,
+				from+uintptr(pos), ins.Op, ins.String(), hex.EncodeToString(code),
+				from+uintptr(pos)+uintptr(relativeAddr)+uintptr(ins.Len))
+			return fmt.Errorf("not support of jump to inside of the first 13 bytes\n"+
+				"jump address is: 0x%x", (uintptr)((relativeAddr)+pos+ins.Len)+from)
+		}
+		pos = pos + ins.Len
+	}
+	return nil
 }
 
 // nextIns nextIns
-func nextIns(pos int, copyOrigin []byte) (*x86asm.Inst, error) {
+func nextIns(pos int, copyOrigin []byte) (*x86asm.Inst, []byte, error) {
 	if pos >= len(copyOrigin) {
-		return nil, nil
+		return nil, nil, nil
 	}
 	// read 16 bytes at most each time
 	endPos := pos + 16
@@ -107,7 +144,7 @@ func nextIns(pos int, copyOrigin []byte) (*x86asm.Inst, error) {
 		logger.LogError("decode assembly code err:", err)
 	}
 
-	return &ins, err
+	return &ins, code, err
 }
 
 // replaceIns 替换单条指令
@@ -119,24 +156,7 @@ func replaceIns(ins *x86asm.Inst, pos int, copyOrigin []byte, funcSize int,
 	}
 	offset := pos + ins.PCRelOff
 
-	var isAdd = true
-
-	for i := 0; i < len(ins.Args); i++ {
-		arg := ins.Args[i]
-		if arg == nil {
-			break
-		}
-
-		addrArgs := arg.String()
-		if strings.HasPrefix(addrArgs, ".-") || strings.Contains(addrArgs, "RIP-") {
-			isAdd = false
-		}
-	}
-
-	relativeAddr := decodeAddress(copyOrigin[offset:offset+ins.PCRel], ins.PCRel)
-	if !isAdd && relativeAddr > 0 {
-		relativeAddr = -relativeAddr
-	}
+	relativeAddr := decodeRelativeAddr(ins, copyOrigin, offset)
 
 	// TODO 待实现
 	//if ins.PCRel <= 1 {
@@ -146,8 +166,8 @@ func replaceIns(ins *x86asm.Inst, pos int, copyOrigin []byte, funcSize int,
 
 	logger.LogDebugf("ins relative [%d] need fix : ", (relativeAddr)+pos+ins.Len)
 
-	if (isAdd && (relativeAddr)+pos+ins.Len >= funcSize) ||
-		(!isAdd && (relativeAddr)+pos+ins.Len < 0) {
+	if (relativeAddr > 0 && (relativeAddr)+pos+ins.Len >= funcSize) ||
+		(relativeAddr < 0 && (relativeAddr)+pos+ins.Len < 0) {
 		if ins.Op.String() == callInsName {
 			logger.LogDebug((int64)(startAddr)-(int64)(placeholder), startAddr, placeholder, int32(relativeAddr))
 		}
@@ -171,6 +191,29 @@ func replaceIns(ins *x86asm.Inst, pos int, copyOrigin []byte, funcSize int,
 	}
 
 	return copyOrigin[pos : pos+ins.Len]
+}
+
+// decodeRelativeAddr decode relative address, if jump to the front of current pos, return negative values
+func decodeRelativeAddr(ins *x86asm.Inst, copyOrigin []byte, offset int) int {
+	var isAdd = true
+
+	for i := 0; i < len(ins.Args); i++ {
+		arg := ins.Args[i]
+		if arg == nil {
+			break
+		}
+
+		addrArgs := arg.String()
+		if strings.HasPrefix(addrArgs, ".-") || strings.Contains(addrArgs, "RIP-") {
+			isAdd = false
+		}
+	}
+
+	relativeAddr := decodeAddress(copyOrigin[offset:offset+ins.PCRel], ins.PCRel)
+	if !isAdd && relativeAddr > 0 {
+		relativeAddr = -relativeAddr
+	}
+	return relativeAddr
 }
 
 // encodeAddress 写入地址参数到函数字节码

@@ -21,7 +21,7 @@ func checkInlineDisable() {
 
 	hasCallIns := false
 	for pos := 0; pos < len(bytes); {
-		ins, err := nextIns(pos, bytes)
+		ins, _, err := nextIns(pos, bytes)
 		if err != nil {
 			logger.LogWarningf("goom resolve inline err: %v", err)
 			break

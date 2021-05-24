@@ -9,6 +9,7 @@ import (
 	"git.code.oa.com/goom/mocker/internal/logger"
 )
 
+// Caller 测试函数
 //go:noinline
 func Caller(i int) int {
 	if i <= 0 {
@@ -17,6 +18,7 @@ func Caller(i int) int {
 	return i * Caller(i-1)
 }
 
+// Caller1 测试函数
 //go:noinline
 func Caller1(i int) int {
 	if i <= 0 {
@@ -25,6 +27,7 @@ func Caller1(i int) int {
 	return i
 }
 
+// Caller2 测试函数
 //go:noinline
 func Caller2(i int) int {
 	for j := 0; j < 10; j++ {
@@ -33,11 +36,13 @@ func Caller2(i int) int {
 	return i
 }
 
+// Arg 测试参数
 type Arg struct {
 	field1 string
 	field2 map[string]int
 }
 
+// Caller3 测试函数
 //go:noinline
 func Caller3(arg Arg) int {
 	//if len(arg.field2) > 0 {
@@ -46,17 +51,20 @@ func Caller3(arg Arg) int {
 	return 2 + len(arg.field1) + len(arg.field2)
 }
 
+// Caller4 测试函数
 //go:noinline
 func Caller4(arg *Arg) int {
 	return 0
 }
 
+// Caller5 测试函数
 //go:noinline
 func Caller5() int {
 	logger.LogTrace(string(debug.Stack()))
 	return 0
 }
 
+// Caller6 测试函数
 //go:noinline
 func Caller6(a int) func() int {
 	return func() int {
@@ -64,10 +72,12 @@ func Caller6(a int) func() int {
 	}
 }
 
+// Caller7 测试函数
 //go:noinline
 func Caller7(i int) {
 }
 
+// Caller8 测试函数
 //go:noinline
 func Caller8(i int) int {
 tag:

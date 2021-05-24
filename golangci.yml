@@ -65,9 +65,6 @@ issues:
     - EXC0011 # stylecheck (comment on exported (method|function|type|const)|should have( a package)? comment|comment should be of the form)
 
   exclude-rules:
-    - path: _test\.go
-      linters:
-        - funlen # 规范说单测函数，单个函数可以到160行，但是工具不好做区分处理，这里就直接不检查单测的函数长度
     - linters:
         - staticcheck
       text: "SA1019: package github.com/golang/protobuf" # 它会说 'SA1019: package github.com/golang/protobuf/proto is deprecated: Use the "google.golang.org/protobuf/proto" package instead.', 但是这个库更更新很稳定

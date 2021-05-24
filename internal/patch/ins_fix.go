@@ -24,45 +24,41 @@ var opExpand = map[uint32][]byte{
 // replaceRelativeAddr 替换函数字节码中的相对地址(如果有的话)
 // from 函数起始地址
 // copyOrigin 函数字节码
-// placeholder 需要移动到的目标地址
+// trampoline 需要移动到的目标地址
 // funcSize 函数字节码整体长度
 // leastSize 要替换的字节长度的最小限制
 // allowCopyCall 是否允许拷贝Call指令
-func replaceRelativeAddr(from uintptr, copyOrigin []byte, placeholder uintptr, funcSize int, leastSize int,
+func replaceRelativeAddr(from uintptr, copyOrigin []byte, trampoline uintptr, funcSize int, leastSize int,
 	allowCopyCall bool) ([]byte, int, error) {
 
-	replaceOrigin, applyToPos, err :=
-		doReplaceRelativeAddr(from, copyOrigin, placeholder, funcSize, leastSize, allowCopyCall)
+	targetBlock, applyEndPos, err := replaceBlock(from, copyOrigin, trampoline, leastSize, funcSize, allowCopyCall)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	if err = checkExistsJmpToStartLeastSize(from, applyToPos, copyOrigin, funcSize); err != nil {
+	if err = checkJumpBetween(from, applyEndPos, copyOrigin, funcSize); err != nil {
 		return nil, 0, err
 	}
 
-	logger.LogDebugf("fix size: %d", len(replaceOrigin))
-
-	var replaceNew = replaceOrigin
+	logger.LogDebugf("fix size: %d", len(targetBlock))
 
 	if leastSize > 0 {
-		replaceNew, _, err = doReplaceRelativeAddr(from, replaceOrigin, placeholder, len(replaceOrigin), leastSize,
-			allowCopyCall)
+		targetBlock, _, err = replaceBlock(from, targetBlock, trampoline, leastSize, len(targetBlock), allowCopyCall)
 	}
 
-	return replaceNew, len(replaceOrigin), err
+	return targetBlock, applyEndPos, err
 }
 
-//doReplaceRelativeAddr 替换函数字节码中的相对地址(如果有的话)
-func doReplaceRelativeAddr(from uintptr, copyOrigin []byte, placeholder uintptr, funcSize int, leastSize int,
-	allowCopyCall bool) ([]byte, int, error) {
+// replaceBlock 替换函数字节码中的相对地址(如果有的话)
+func replaceBlock(from uintptr, block []byte, trampoline uintptr,
+	leastSize int, blockSize int, allowCopyCall bool) ([]byte, int, error) {
 	startAddr := (uint64)(from)
 	result := make([]byte, 0)
 
 	logger.LogDebug("target fix ins >>>>>")
 
-	for pos := 0; pos < len(copyOrigin); {
-		ins, _, err := nextIns(pos, copyOrigin)
+	for pos := 0; pos < len(block); {
+		ins, _, err := nextIns(pos, block)
 		if err != nil {
 			panic("replaceRelativeAddr err:" + err.Error())
 		}
@@ -72,7 +68,7 @@ func doReplaceRelativeAddr(from uintptr, copyOrigin []byte, placeholder uintptr,
 				return nil, 0, fmt.Errorf("copy call instruction is not allowed in auto trampoline model. size: %d", leastSize)
 			}
 
-			replaced := replaceIns(ins, pos, copyOrigin, funcSize, startAddr, placeholder)
+			replaced := replaceIns(ins, pos, block, blockSize, startAddr, trampoline)
 			result = append(result, replaced...)
 
 			logger.LogDebugf("[%d]>[%d] 0x%x:\t%s\t\t%s\t\t%s", ins.Len, len(replaced),
@@ -83,7 +79,7 @@ func doReplaceRelativeAddr(from uintptr, copyOrigin []byte, placeholder uintptr,
 
 		// for fix only first few inst, not copy all func inst
 		if leastSize > 0 && pos >= leastSize {
-			ins, _, err := nextIns(pos, copyOrigin)
+			ins, _, err := nextIns(pos, block)
 			if err != nil {
 				panic("replaceRelativeAddr err:" + err.Error())
 			}
@@ -97,13 +93,13 @@ func doReplaceRelativeAddr(from uintptr, copyOrigin []byte, placeholder uintptr,
 	return result, 0, nil
 }
 
-// checkExistsJmpToStartLeastSize check if exists jmp to address bettwen from and applyToPos
+// checkJumpBetween check if exists the instruct of function that jump into address bettwen :from and :to
 // if exists, return error
-func checkExistsJmpToStartLeastSize(from uintptr, applyToPos int, copyOrigin []byte, funcSize int) error {
+func checkJumpBetween(from uintptr, to int, copyOrigin []byte, funcSize int) error {
 	for pos := 0; pos <= funcSize; {
 		ins, code, err := nextIns(pos, copyOrigin)
 		if err != nil {
-			panic("checkExistsJmpToStartLeastSize err:" + err.Error())
+			panic("checkJumpBetween err:" + err.Error())
 		}
 		if ins == nil {
 			break
@@ -114,7 +110,7 @@ func checkExistsJmpToStartLeastSize(from uintptr, applyToPos int, copyOrigin []b
 		}
 		offset := pos + ins.PCRelOff
 		relativeAddr := decodeRelativeAddr(ins, copyOrigin, offset)
-		if ((relativeAddr)+pos+ins.Len < applyToPos) &&
+		if ((relativeAddr)+pos+ins.Len < to) &&
 			((relativeAddr)+pos+ins.Len > 0) {
 			logger.LogErrorf("[%d] 0x%x:\t%s\t\t%-30s\t\t%s\t\tabs:0x%x", ins.Len,
 				from+uintptr(pos), ins.Op, ins.String(), hex.EncodeToString(code),
@@ -149,8 +145,8 @@ func nextIns(pos int, copyOrigin []byte) (*x86asm.Inst, []byte, error) {
 }
 
 // replaceIns 替换单条指令
-func replaceIns(ins *x86asm.Inst, pos int, copyOrigin []byte, funcSize int,
-	startAddr uint64, placeholder uintptr) []byte {
+func replaceIns(ins *x86asm.Inst, pos int, copyOrigin []byte, blockSize int,
+	startAddr uint64, trampoline uintptr) []byte {
 	// 需要替换偏移地址
 	if ins.PCRelOff <= 0 {
 		return copyOrigin[pos : pos+ins.Len]
@@ -167,14 +163,14 @@ func replaceIns(ins *x86asm.Inst, pos int, copyOrigin []byte, funcSize int,
 
 	logger.LogDebugf("ins relative [%d] need fix : ", (relativeAddr)+pos+ins.Len)
 
-	if (relativeAddr > 0 && (relativeAddr)+pos+ins.Len >= funcSize) ||
+	if (relativeAddr > 0 && (relativeAddr)+pos+ins.Len >= blockSize) ||
 		(relativeAddr < 0 && (relativeAddr)+pos+ins.Len < 0) {
 		if ins.Op.String() == callInsName {
-			logger.LogDebug((int64)(startAddr)-(int64)(placeholder), startAddr, placeholder, int32(relativeAddr))
+			logger.LogDebug((int64)(startAddr)-(int64)(trampoline), startAddr, trampoline, int32(relativeAddr))
 		}
 
 		var encoded = encodeAddress(copyOrigin[pos:offset],
-			copyOrigin[offset:offset+ins.PCRel], ins.PCRel, relativeAddr, (int)(startAddr)-(int)(placeholder))
+			copyOrigin[offset:offset+ins.PCRel], ins.PCRel, relativeAddr, (int)(startAddr)-(int)(trampoline))
 
 		ins, err := x86asm.Decode(copyOrigin[pos:pos+ins.Len], 64)
 		if err == nil {
@@ -186,7 +182,7 @@ func replaceIns(ins *x86asm.Inst, pos int, copyOrigin []byte, funcSize int,
 		}
 	} else {
 		if ins.Op.String() == callInsName {
-			logger.LogDebug((relativeAddr)+pos+ins.Len, funcSize, (relativeAddr)+pos+ins.Len)
+			logger.LogDebug((relativeAddr)+pos+ins.Len, blockSize, (relativeAddr)+pos+ins.Len)
 			logger.LogDebug("called")
 		}
 	}
@@ -261,6 +257,22 @@ func encodeAddress(ops []byte, addr []byte, addrLen int, val int, add int) []byt
 	return append(result, addr...)
 }
 
+// decodeAddress 从函数字节码中解析地址数值
+// len 地址值的位数
+func decodeAddress(bytes []byte, len int) int {
+	if len == 1 {
+		return int(int8(bytes[0]))
+	} else if len == 2 {
+		return int(LittleEndian.Int16(bytes))
+	} else if len == 4 {
+		return int(LittleEndian.Int32(bytes))
+	} else if len == 8 {
+		return int(LittleEndian.Int64(bytes))
+	}
+
+	return 0
+}
+
 // isByteOverflow 字节是否溢出
 func isByteOverflow(v int32) bool {
 	if v > 0 {
@@ -303,20 +315,4 @@ func isInt32Overflow(v int64) bool {
 		}
 	}
 	return false
-}
-
-// decodeAddress 从函数字节码中解析地址数值
-// len 地址值的位数
-func decodeAddress(bytes []byte, len int) int {
-	if len == 1 {
-		return int(int8(bytes[0]))
-	} else if len == 2 {
-		return int(LittleEndian.Int16(bytes))
-	} else if len == 4 {
-		return int(LittleEndian.Int32(bytes))
-	} else if len == 8 {
-		return int(LittleEndian.Int64(bytes))
-	}
-
-	return 0
 }

@@ -172,9 +172,12 @@ func replaceIns(ins *x86asm.Inst, pos int, copyOrigin []byte, blockSize int,
 		var encoded = encodeAddress(copyOrigin[pos:offset],
 			copyOrigin[offset:offset+ins.PCRel], ins.PCRel, relativeAddr, (int)(startAddr)-(int)(trampoline))
 
-		ins, err := x86asm.Decode(copyOrigin[pos:pos+ins.Len], 64)
-		if err == nil {
-			logger.LogInfof("replaced: \t%s\t\t%s", ins.Op, ins.String())
+		if logger.LogLevel <= logger.DebugLevel {
+			// 打印替换之后的指令
+			ins, err := x86asm.Decode(copyOrigin[pos:pos+ins.Len], 64)
+			if err == nil {
+				logger.LogInfof("replaced: \t%s\t\t%s", ins.Op, ins.String())
+			}
 		}
 
 		if len(encoded) > ins.PCRel {

@@ -13,6 +13,7 @@ import (
 // memoryAccessLock .text区内存操作度协作
 var memoryAccessLock sync.RWMutex
 
+// nolint
 // rawMemoryAccess 内存数据读取(非线程安全的)
 func rawMemoryAccess(ptr uintptr, length int) []byte {
 	return *(*[]byte)(unsafe.Pointer(&reflect.SliceHeader{

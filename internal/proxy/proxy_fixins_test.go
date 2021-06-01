@@ -78,6 +78,7 @@ func Caller7(i int) {
 }
 
 // Caller8 测试函数
+// nolint
 //go:noinline
 func Caller8(i int) int {
 tag:
@@ -97,6 +98,7 @@ var testCases1 = []struct {
 	eval       func(t *testing.T)
 	trampoline func() interface{}
 	proxy      func(interface{}) interface{}
+	wantError  bool
 }{
 	{
 		funcName: "Caller",
@@ -146,8 +148,9 @@ var testCases1 = []struct {
 		},
 	},
 	{
-		funcName: "Caller2",
-		funcDef:  Caller2,
+		funcName:  "Caller2",
+		funcDef:   Caller2,
+		wantError: true,
 		eval: func(t *testing.T) {
 			if r := Caller2(5); r != 50 {
 				t.Fatalf("want result: %d, real: %d", 50, r)
@@ -314,9 +317,9 @@ var testCases1 = []struct {
 		},
 		proxy: func(origin interface{}) interface{} {
 			var origin1 = origin
-			return func(i int) func(int) int {
+			return func(i int) int {
 				logger.LogTrace("proxy Caller8 called, args", i)
-				originFunc, _ := origin1.(*func(i int) func(int) int)
+				originFunc, _ := origin1.(*func(int) int)
 				return (*originFunc)(i)
 			}
 		},
@@ -334,6 +337,10 @@ func TestProxy_fixIns(t *testing.T) {
 		// 静态代理函数
 		patch, err := StaticProxyByName("git.code.oa.com/goom/mocker/internal/proxy."+
 			tc.funcName, tc.proxy(trampoline), trampoline)
+		if tc.wantError && err != nil {
+			continue
+		}
+
 		if err != nil {
 			t.Fatal("mock print err:", err)
 		}

@@ -1,10 +1,12 @@
 package patch
 
 import (
-	"git.code.oa.com/goom/mocker/internal/logger"
 	"testing"
+
+	"git.code.oa.com/goom/mocker/internal/logger"
 )
 
+// nolint
 //go:noinline
 func Say() string {
 	return "say"
@@ -12,7 +14,7 @@ func Say() string {
 
 // 测试地址修复功能
 func Test_fixIns(t *testing.T) {
-	logger.LogLevel = logger.DebugLevel
+	logger.LogLevel = logger.InfoLevel
 
 	originfSay := func() string {
 		println("just redundancy")

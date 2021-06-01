@@ -32,7 +32,7 @@ var opExpand = map[uint32][]byte{
 func replaceRelativeAddr(from uintptr, copyOrigin []byte, trampoline uintptr, funcSize int, leastSize int,
 	allowCopyCall bool) ([]byte, int, error) {
 
-	// try replace and ensure the len(applyEndPos) to replace
+	// try replace and get the len(applyEndPos) to replace
 	_, applyEndPos, err := replaceBlock(from, copyOrigin, trampoline, leastSize, funcSize, allowCopyCall)
 	if err != nil {
 		return nil, 0, err
@@ -250,7 +250,7 @@ func encodeAddress(ops []byte, addr []byte, addrLen int, val int, add int) []byt
 		}
 	} else if addrLen == 2 {
 		if isInt16Overflow((int32)(int8(val)) + (int32)(add)) {
-			if opsNew, ok := opExpand[uint32(ops[0]<<16+ops[1])]; ok {
+			if opsNew, ok := opExpand[uint32(ops[0])<<16+uint32(ops[1])]; ok {
 				addr = make([]byte, 4)
 				LittleEndian.PutInt32(addr, (int32)(int8(val))+int32(add)-
 					int32(len(addr)-addrLen)-int32(len(opsNew)-len(ops))) // 新增了4个字节,需要减去

@@ -37,11 +37,13 @@ type Prefixes [14]Prefix
 type Prefix uint16
 
 const (
+	// nolint
 	// Metadata about the role of a prefix in an instruction.
 	PrefixImplicit Prefix = 0x8000 // prefix is implied by instruction text
 	PrefixIgnored  Prefix = 0x4000 // prefix is ignored: either irrelevant or overridden by a later prefix
 	PrefixInvalid  Prefix = 0x2000 // prefix makes entire instruction invalid (bad LOCK)
 
+	// nolint
 	// Memory segment overrides.
 	PrefixES Prefix = 0x26 // ES segment override
 	PrefixCS Prefix = 0x2E // CS segment override
@@ -54,6 +56,7 @@ const (
 	PrefixPN Prefix = 0x12E // predict not taken (conditional branch only)
 	PrefixPT Prefix = 0x13E // predict taken (conditional branch only)
 
+	// nolint
 	// Size attributes.
 	PrefixDataSize Prefix = 0x66 // operand size override
 	PrefixData16   Prefix = 0x166
@@ -158,6 +161,7 @@ type Reg uint8
 const (
 	_ Reg = iota
 
+	// nolint
 	// 8-bit
 	AL
 	CL
@@ -234,6 +238,7 @@ const (
 	R14
 	R15
 
+	// nolint
 	// Instruction pointer.
 	IP  // 16-bit
 	EIP // 32-bit
@@ -249,6 +254,7 @@ const (
 	F6
 	F7
 
+	// nolint
 	// MMX registers.
 	M0
 	M1
@@ -259,6 +265,7 @@ const (
 	M6
 	M7
 
+	// nolint
 	// XMM registers.
 	X0
 	X1
@@ -277,6 +284,7 @@ const (
 	X14
 	X15
 
+	// nolint
 	// Segment registers.
 	ES
 	CS
@@ -285,6 +293,7 @@ const (
 	FS
 	GS
 
+	// nolint
 	// System registers.
 	GDTR
 	IDTR

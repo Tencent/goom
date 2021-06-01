@@ -2,6 +2,7 @@ package patch
 
 import (
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"math"
 	"strings"
@@ -31,29 +32,34 @@ var opExpand = map[uint32][]byte{
 func replaceRelativeAddr(from uintptr, copyOrigin []byte, trampoline uintptr, funcSize int, leastSize int,
 	allowCopyCall bool) ([]byte, int, error) {
 
-	targetBlock, applyEndPos, err := replaceBlock(from, copyOrigin, trampoline, leastSize, funcSize, allowCopyCall)
+	// try replace and ensure the len(applyEndPos) to replace
+	_, applyEndPos, err := replaceBlock(from, copyOrigin, trampoline, leastSize, funcSize, allowCopyCall)
 	if err != nil {
 		return nil, 0, err
 	}
 
+	// check if exists iump back to [0:applyEndPos], return not support
 	if err = checkJumpBetween(from, applyEndPos, copyOrigin, funcSize); err != nil {
 		return nil, 0, err
 	}
 
-	logger.LogDebugf("fix size: %d", len(targetBlock))
+	logger.LogDebugf("fix size: %d", applyEndPos)
 
-	if leastSize > 0 {
-		targetBlock, _, err = replaceBlock(from, targetBlock, trampoline, leastSize, len(targetBlock), allowCopyCall)
-	}
-
-	return targetBlock, applyEndPos, err
+	// real replace
+	replacedBlock, _, err := replaceBlock(from, copyOrigin, trampoline, applyEndPos, applyEndPos, allowCopyCall)
+	return replacedBlock, applyEndPos, err
 }
 
 // replaceBlock 替换函数字节码中的相对地址(如果有的话)
+// from 起始位置(实际地址)
+// block 被替换的目标字节区块
+// trampoline 跳板函数起始地址
+// leastSize 最少替换范围
+// blockSize 目标区块范围, 用于判断地址是否超出block范围, 超出才需要替换
 func replaceBlock(from uintptr, block []byte, trampoline uintptr,
 	leastSize int, blockSize int, allowCopyCall bool) ([]byte, int, error) {
 	startAddr := (uint64)(from)
-	result := make([]byte, 0)
+	replacedBlock := make([]byte, 0)
 
 	logger.LogDebug("target fix ins >>>>>")
 
@@ -68,8 +74,13 @@ func replaceBlock(from uintptr, block []byte, trampoline uintptr,
 				return nil, 0, fmt.Errorf("copy call instruction is not allowed in auto trampoline model. size: %d", leastSize)
 			}
 
-			replaced := replaceIns(ins, pos, block, blockSize, startAddr, trampoline)
-			result = append(result, replaced...)
+			// 拷贝一份block,防止被修改; replace之后的block是回参replacedBlock
+			copyBlock := make([]byte, len(block))
+			if l := copy(copyBlock, block); l != len(block) {
+				return nil, 0, errors.New("copy block array error")
+			}
+			replaced := replaceIns(ins, pos, copyBlock, blockSize, startAddr, trampoline)
+			replacedBlock = append(replacedBlock, replaced...)
 
 			logger.LogDebugf("[%d]>[%d] 0x%x:\t%s\t\t%s\t\t%s", ins.Len, len(replaced),
 				startAddr+(uint64)(pos), ins.Op, ins.String(), hex.EncodeToString(replaced))
@@ -85,12 +96,12 @@ func replaceBlock(from uintptr, block []byte, trampoline uintptr,
 			}
 			// fix jump to RET err: signal SIGSEGV: segmentation violation
 			if ins != nil && ins.String() != "RET" {
-				return result, pos, nil
+				return replacedBlock, pos, nil
 			}
 		}
 	}
 
-	return result, 0, nil
+	return replacedBlock, 0, nil
 }
 
 // checkJumpBetween check if exists the instruct of function that jump into address bettwen :from and :to
@@ -145,15 +156,15 @@ func nextIns(pos int, copyOrigin []byte) (*x86asm.Inst, []byte, error) {
 }
 
 // replaceIns 替换单条指令
-func replaceIns(ins *x86asm.Inst, pos int, copyOrigin []byte, blockSize int,
+func replaceIns(ins *x86asm.Inst, pos int, block []byte, blockSize int,
 	startAddr uint64, trampoline uintptr) []byte {
 	// 需要替换偏移地址
 	if ins.PCRelOff <= 0 {
-		return copyOrigin[pos : pos+ins.Len]
+		return block[pos : pos+ins.Len]
 	}
 	offset := pos + ins.PCRelOff
 
-	relativeAddr := decodeRelativeAddr(ins, copyOrigin, offset)
+	relativeAddr := decodeRelativeAddr(ins, block, offset)
 
 	// TODO 待实现
 	//if ins.PCRel <= 1 {
@@ -169,12 +180,12 @@ func replaceIns(ins *x86asm.Inst, pos int, copyOrigin []byte, blockSize int,
 			logger.LogDebug((int64)(startAddr)-(int64)(trampoline), startAddr, trampoline, int32(relativeAddr))
 		}
 
-		var encoded = encodeAddress(copyOrigin[pos:offset],
-			copyOrigin[offset:offset+ins.PCRel], ins.PCRel, relativeAddr, (int)(startAddr)-(int)(trampoline))
+		var encoded = encodeAddress(block[pos:offset],
+			block[offset:offset+ins.PCRel], ins.PCRel, relativeAddr, (int)(startAddr)-(int)(trampoline))
 
 		if logger.LogLevel <= logger.DebugLevel {
 			// 打印替换之后的指令
-			ins, err := x86asm.Decode(copyOrigin[pos:pos+ins.Len], 64)
+			ins, err := x86asm.Decode(block[pos:pos+ins.Len], 64)
 			if err == nil {
 				logger.LogInfof("replaced: \t%s\t\t%s", ins.Op, ins.String())
 			}
@@ -190,11 +201,11 @@ func replaceIns(ins *x86asm.Inst, pos int, copyOrigin []byte, blockSize int,
 		}
 	}
 
-	return copyOrigin[pos : pos+ins.Len]
+	return block[pos : pos+ins.Len]
 }
 
 // decodeRelativeAddr decode relative address, if jump to the front of current pos, return negative values
-func decodeRelativeAddr(ins *x86asm.Inst, copyOrigin []byte, offset int) int {
+func decodeRelativeAddr(ins *x86asm.Inst, block []byte, offset int) int {
 	var isAdd = true
 
 	for i := 0; i < len(ins.Args); i++ {
@@ -209,7 +220,7 @@ func decodeRelativeAddr(ins *x86asm.Inst, copyOrigin []byte, offset int) int {
 		}
 	}
 
-	relativeAddr := decodeAddress(copyOrigin[offset:offset+ins.PCRel], ins.PCRel)
+	relativeAddr := decodeAddress(block[offset:offset+ins.PCRel], ins.PCRel)
 	if !isAdd && relativeAddr > 0 {
 		relativeAddr = -relativeAddr
 	}

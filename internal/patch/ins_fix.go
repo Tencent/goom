@@ -38,7 +38,7 @@ func replaceRelativeAddr(from uintptr, copyOrigin []byte, trampoline uintptr, fu
 		return nil, 0, err
 	}
 
-	// check if exists iump back to [0:applyEndPos], return not support
+	// check if exists jump back to [0:applyEndPos], return not support
 	if err = checkJumpBetween(from, applyEndPos, copyOrigin, funcSize); err != nil {
 		return nil, 0, err
 	}
@@ -56,6 +56,7 @@ func replaceRelativeAddr(from uintptr, copyOrigin []byte, trampoline uintptr, fu
 // trampoline 跳板函数起始地址
 // leastSize 最少替换范围
 // blockSize 目标区块范围, 用于判断地址是否超出block范围, 超出才需要替换
+// return []byte 修复后的指令
 func replaceBlock(from uintptr, block []byte, trampoline uintptr,
 	leastSize int, blockSize int, allowCopyCall bool) ([]byte, int, error) {
 	startAddr := (uint64)(from)
@@ -104,7 +105,7 @@ func replaceBlock(from uintptr, block []byte, trampoline uintptr,
 	return replacedBlock, 0, nil
 }
 
-// checkJumpBetween check if exists the instruct of function that jump into address bettwen :from and :to
+// checkJumpBetween check if exists the instruct of function that jump into address between :from and :to
 // if exists, return error
 func checkJumpBetween(from uintptr, to int, copyOrigin []byte, funcSize int) error {
 	for pos := 0; pos <= funcSize; {

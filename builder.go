@@ -9,6 +9,8 @@ import (
 	"runtime"
 	"strings"
 
+	"git.code.oa.com/goom/mocker/internal/logger"
+
 	"git.code.oa.com/goom/mocker/internal/proxy"
 )
 
@@ -185,4 +187,13 @@ func currentPkg(skip int) string {
 
 	realIndex := strings.Index(callerName, ".")
 	return callerName[:realIndex]
+}
+
+// DebugEnable 开启debug模式
+func DebugEnable(enable bool) {
+	if enable {
+		logger.LogLevel = logger.DebugLevel
+	} else {
+		logger.LogLevel = logger.InfoLevel
+	}
 }

@@ -105,57 +105,6 @@ func replaceBlock(from uintptr, block []byte, trampoline uintptr,
 	return replacedBlock, 0, nil
 }
 
-// checkJumpBetween check if exists the instruct of function that jump into address between :from and :to
-// if exists, return error
-func checkJumpBetween(from uintptr, to int, copyOrigin []byte, funcSize int) error {
-	for pos := 0; pos <= funcSize; {
-		ins, code, err := nextIns(pos, copyOrigin)
-		if err != nil {
-			panic("checkJumpBetween err:" + err.Error())
-		}
-		if ins == nil {
-			break
-		}
-		if ins.PCRelOff <= 0 {
-			pos = pos + ins.Len
-			continue
-		}
-		offset := pos + ins.PCRelOff
-		relativeAddr := decodeRelativeAddr(ins, copyOrigin, offset)
-		if ((relativeAddr)+pos+ins.Len < to) &&
-			((relativeAddr)+pos+ins.Len > 0) {
-			logger.LogErrorf("[%d] 0x%x:\t%s\t\t%-30s\t\t%s\t\tabs:0x%x", ins.Len,
-				from+uintptr(pos), ins.Op, ins.String(), hex.EncodeToString(code),
-				from+uintptr(pos)+uintptr(relativeAddr)+uintptr(ins.Len))
-			return fmt.Errorf("not support of jump to inside of the first 13 bytes\n"+
-				"jump address is: 0x%x", (uintptr)((relativeAddr)+pos+ins.Len)+from)
-		}
-		pos = pos + ins.Len
-	}
-	return nil
-}
-
-// nextIns nextIns
-func nextIns(pos int, copyOrigin []byte) (*x86asm.Inst, []byte, error) {
-	if pos >= len(copyOrigin) {
-		return nil, nil, nil
-	}
-	// read 16 bytes at most each time
-	endPos := pos + 16
-	if endPos > len(copyOrigin) {
-		endPos = len(copyOrigin)
-	}
-
-	code := copyOrigin[pos:endPos]
-
-	ins, err := x86asm.Decode(code, 64)
-	if err != nil {
-		logger.LogError("decode assembly code err:", err)
-	}
-
-	return &ins, code, err
-}
-
 // replaceIns 替换单条指令
 func replaceIns(ins *x86asm.Inst, pos int, block []byte, blockSize int,
 	startAddr uint64, trampoline uintptr) []byte {
@@ -169,7 +118,7 @@ func replaceIns(ins *x86asm.Inst, pos int, block []byte, blockSize int,
 
 	// TODO 待实现
 	//if ins.PCRel <= 1 {
-	//	// 1字节相对地址暂时忽略, 不太可能跳出当前函数地址范围
+	//	// 1字节相对地址暂时忽略
 	//	return
 	//}
 
@@ -203,6 +152,57 @@ func replaceIns(ins *x86asm.Inst, pos int, block []byte, blockSize int,
 	}
 
 	return block[pos : pos+ins.Len]
+}
+
+// nextIns nextIns
+func nextIns(pos int, copyOrigin []byte) (*x86asm.Inst, []byte, error) {
+	if pos >= len(copyOrigin) {
+		return nil, nil, nil
+	}
+	// read 16 bytes at most each time
+	endPos := pos + 16
+	if endPos > len(copyOrigin) {
+		endPos = len(copyOrigin)
+	}
+
+	code := copyOrigin[pos:endPos]
+
+	ins, err := x86asm.Decode(code, 64)
+	if err != nil {
+		logger.LogError("decode assembly code err:", err)
+	}
+
+	return &ins, code, err
+}
+
+// checkJumpBetween check if exists the instruct of function that jump into address between :from and :to
+// if exists, return error
+func checkJumpBetween(from uintptr, to int, copyOrigin []byte, funcSize int) error {
+	for pos := 0; pos <= funcSize; {
+		ins, code, err := nextIns(pos, copyOrigin)
+		if err != nil {
+			panic("checkJumpBetween err:" + err.Error())
+		}
+		if ins == nil {
+			break
+		}
+		if ins.PCRelOff <= 0 {
+			pos = pos + ins.Len
+			continue
+		}
+		offset := pos + ins.PCRelOff
+		relativeAddr := decodeRelativeAddr(ins, copyOrigin, offset)
+		if ((relativeAddr)+pos+ins.Len < to) &&
+			((relativeAddr)+pos+ins.Len > 0) {
+			logger.LogErrorf("[%d] 0x%x:\t%s\t\t%-30s\t\t%s\t\tabs:0x%x", ins.Len,
+				from+uintptr(pos), ins.Op, ins.String(), hex.EncodeToString(code),
+				from+uintptr(pos)+uintptr(relativeAddr)+uintptr(ins.Len))
+			return fmt.Errorf("not support of jump to inside of the first 13 bytes\n"+
+				"jump address is: 0x%x", (uintptr)((relativeAddr)+pos+ins.Len)+from)
+		}
+		pos = pos + ins.Len
+	}
+	return nil
 }
 
 // decodeRelativeAddr decode relative address, if jump to the front of current pos, return negative values

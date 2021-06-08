@@ -202,6 +202,9 @@ type BaseMatcher struct {
 	results [][]reflect.Value
 	curNum  int32
 	funTyp  reflect.Type
+
+	// 持有参数指针, 防止被回收
+	resultsPtr []interface{}
 }
 
 // newBaseMatcher 创建新参数匹配基类
@@ -213,9 +216,10 @@ func newBaseMatcher(results []interface{}, funTyp reflect.Type) *BaseMatcher {
 	}
 
 	return &BaseMatcher{
-		results: resultVs,
-		curNum:  0,
-		funTyp:  funTyp,
+		results:    resultVs,
+		curNum:     0,
+		funTyp:     funTyp,
+		resultsPtr: results,
 	}
 }
 

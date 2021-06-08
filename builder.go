@@ -192,8 +192,10 @@ func currentPkg(skip int) string {
 // DebugEnable 开启debug模式
 func DebugEnable(enable bool) {
 	if enable {
+		logger.SetLog2Console(true)
 		logger.LogLevel = logger.DebugLevel
 	} else {
 		logger.LogLevel = logger.InfoLevel
+		logger.SetLog2Console(false)
 	}
 }

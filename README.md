@@ -5,15 +5,18 @@
 2. 目前有一半以上方案是基于gomock类似的实现方案, 此mock方案需要要求业务代码具备良好的接口设计，才能顺利生成mock代码，而goom只需要指定函数名称或函数定义，就能支持到任意函数的mock，任意函数异常注入，延时模拟等扩展性功能
 
 ### 功能特性
-1. 私有(未导出)函数(或方法)的mock, 普通函数的mock
-2. mock过程中调用原函数(线程安全, 支持并发单测)
-3. 异常注入，对函数调用支持异常注入，延迟模拟等稳定性测试
-4. 所有操作都是并发安全的
+1. mock过程中调用原函数(线程安全, 支持并发单测)
+2. 异常注入，对函数调用支持异常注入，延迟模拟等稳定性测试
+3. 所有操作都是并发安全的
+4. 私有(未导出)函数(或方法)的mock(不建议使用, 对于私有函数的Mock 通常都是因为代码设计可能有问题, 此功能会在未来版本中废弃)
 
 ### 将来
 1. 支持数据驱动测试
 2. 支持Mock锚点定义
 3. 支持代码重构
+
+## 注意！！！不要过度依赖mock
+[千万不要过度依赖于mock](https://mp.weixin.qq.com/s?__biz=MzA5MTAzNjU1OQ==&mid=2454780683&idx=1&sn=aabc85f3bd2cfa21b8b806bad581f0c5&chksm=87a6d5ebb0d15cfdd3941c7e874589a288e62f993c429974f79e44bc414eb6aadac5ff6b2339&mpshare=1&scene=1&srcid=0419qv4sJnWOtUvnldVPXmPJ&sharer_sharetime=1618798885862&sharer_shareid=cffe0b0e1eeb43c00529f7192a0695f6#rd)
 
 ## Install
 ```bash

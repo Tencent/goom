@@ -199,12 +199,15 @@ func (s *mockerTestSuite) TestCallOrigin() {
 
 		// 定义原函数,用于占位,实际不会执行该函数体
 		var origin = func(i int) int {
-			fmt.Println("origin func placeholder")
-			return 0 + i
+			// 用于占位,实际不会执行该函数体, 但是必须编写
+			fmt.Println("only for placeholder, will not call")
+			// return 任意值
+			return 0
 		}
 
 		mock.Func(foo).Origin(&origin).Apply(func(i int) int {
 			originResult := origin(i)
+			fmt.Printf("arguments are %v\n", i)
 			return originResult + 100
 		})
 

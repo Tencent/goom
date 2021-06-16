@@ -181,10 +181,13 @@ mock.Func(foo).When(1).Return(3).AndReturn(2)
 mock := mocker.Create()
 
 // 定义原函数,用于占位,实际不会执行该函数体
+// 需要和原函数的参数列表保持一致
+// 定义原函数,用于占位,实际不会执行该函数体
 var origin = func(i int) int {
-    // 函数体长度必须大于一定值, 所以随意加一些代码进行填充
-    fmt.Println("origin func placeholder")
-    return 0 + i
+    // 用于占位,实际不会执行该函数体, 但是必须编写
+    fmt.Println("only for placeholder, will not call")
+	// return 任意值
+    return 0
 }
 
 mock.Func(foo1).Origin(&origin).Apply(func(i int) int {

@@ -78,8 +78,5 @@ func relative(from uintptr, to uintptr) bool {
 
 // checkAlreadyPatch 检测是否已经patch
 func checkAlreadyPatch(origin []byte) bool {
-	if origin[0] == nopOpcode {
-		return true
-	}
-	return false
+	return origin[0] == nopOpcode
 }

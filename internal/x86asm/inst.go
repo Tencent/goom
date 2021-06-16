@@ -65,7 +65,7 @@ const (
 	PrefixAddr16   Prefix = 0x167
 	PrefixAddr32   Prefix = 0x267
 
-	// One of a kind.
+	// PrefixLOCK One of a kind.
 	PrefixLOCK     Prefix = 0xF0 // lock
 	PrefixREPN     Prefix = 0xF2 // repeat not zero
 	PrefixXACQUIRE Prefix = 0x1F2
@@ -162,7 +162,7 @@ const (
 	_ Reg = iota
 
 	// nolint
-	// 8-bit
+	// AL 8-bit
 	AL
 	CL
 	DL
@@ -184,7 +184,7 @@ const (
 	R14B
 	R15B
 
-	// 16-bit
+	// AX 16-bit
 	AX
 	CX
 	DX
@@ -202,7 +202,7 @@ const (
 	R14W
 	R15W
 
-	// 32-bit
+	// EAX 32-bit
 	EAX
 	ECX
 	EDX
@@ -220,7 +220,7 @@ const (
 	R14L
 	R15L
 
-	// 64-bit
+	// RAX 64-bit
 	RAX
 	RCX
 	RDX

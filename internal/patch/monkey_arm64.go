@@ -3,7 +3,7 @@ package patch
 import "unsafe"
 
 // nopOpcode 空指令插入到原函数开头第一个字节, 用于判断原函数是否已经被Patch过
-const nopOpcode []byte = []byte{0xD5, 0x03, 0x20, 0x1F}
+var nopOpcode []byte = []byte{0xD5, 0x03, 0x20, 0x1F}
 
 // funcPrologue 函数的开头指纹,用于不同OS获取不同的默认值
 var funcPrologue = armFuncPrologue64

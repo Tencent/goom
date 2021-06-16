@@ -15,8 +15,10 @@
 2. 支持Mock锚点定义
 3. 支持代码重构
 
-## 注意！！！不要过度依赖mock
-[千万不要过度依赖于mock](https://mp.weixin.qq.com/s?__biz=MzA5MTAzNjU1OQ==&mid=2454780683&idx=1&sn=aabc85f3bd2cfa21b8b806bad581f0c5&chksm=87a6d5ebb0d15cfdd3941c7e874589a288e62f993c429974f79e44bc414eb6aadac5ff6b2339&mpshare=1&scene=1&srcid=0419qv4sJnWOtUvnldVPXmPJ&sharer_sharetime=1618798885862&sharer_shareid=cffe0b0e1eeb43c00529f7192a0695f6#rd)
+## 注意！！！不要过度依赖mock    
+
+> [1.千万不要过度依赖于mock](https://mp.weixin.qq.com/s?__biz=MzA5MTAzNjU1OQ==&mid=2454780683&idx=1&sn=aabc85f3bd2cfa21b8b806bad581f0c5)    
+> 2.对于正规的第三方库，比如mysql、gorm的库本身会提供mock能力, 可参考[sql_test.go](https://git.woa.com/goom/best_practices/blob/master/example/sql_test.go)
 
 ## Install
 ```bash

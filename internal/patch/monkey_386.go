@@ -7,7 +7,7 @@ const nopOpcode = 0x90
 var funcPrologue = defaultFuncPrologue32
 
 // jmpToFunctionValue Assembles a jump to a function value
-func jmpToFunctionValue(to uintptr) []byte {
+func jmpToFunctionValue(_, to uintptr) []byte {
 	return []byte{
 		0xBA,
 		byte(to),
@@ -16,4 +16,12 @@ func jmpToFunctionValue(to uintptr) []byte {
 		byte(to >> 24), // mov edx,to
 		0xFF, 0x22,     // jmp DWORD PTR [edx]
 	}
+}
+
+// checkAlreadyPatch 检测是否已经patch
+func checkAlreadyPatch(origin []byte) bool {
+	if origin[0] == nopOpcode {
+		return true
+	}
+	return false
 }

@@ -23,14 +23,16 @@ type Builder struct {
 }
 
 // Pkg 指定包名，当前包无需指定
-//Deprecated 对于跨包目录的私有函数的Mock通常都是因为代码设计可能有问题, 此功能会在未来版本中移除
+// 对于跨包目录的私有函数的mock通常都是因为代码设计可能有问题, 此功能会在未来版本中移除
+// 后续仅支持同包下的未导出方法的mock
+//Deprecated
 func (b *Builder) Pkg(name string) *Builder {
 	b.pkgName = name
 	return b
 }
 
 // PkgName 返回包名
-//Deprecated 对于跨包目录的私有函数的Mock通常都是因为代码设计可能有问题, 此功能会在未来版本中移除
+//Deprecated
 func (b *Builder) PkgName() string {
 	return b.pkgName
 }

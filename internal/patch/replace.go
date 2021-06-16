@@ -80,7 +80,7 @@ func replaceFunction(from, to, proxy, trampoline uintptr) (original []byte, orig
 	// 保存原始指令
 	original = rawMemoryRead(from, len(jumpData))
 	// 判断是否已经被patch过
-	if original[0] == nopOpcode {
+	if checkAlreadyPatch(original) {
 		err = fmt.Errorf("from:0x%x is already patched", from)
 		return
 	}

@@ -325,6 +325,8 @@ func (s *mockerTestSuite) TestUnitNilReturn() {
 
 //go:noinline
 func foo(i int) int {
+	// check对defer的支持
+	defer func() { fmt.Printf("defer\n") }()
 	return i * 1
 }
 

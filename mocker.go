@@ -529,6 +529,7 @@ func (m *DefMocker) Return(returns ...interface{}) *When {
 }
 
 // Origin 调用原函数
+// origin需要和原函数的参数列表保持一致
 func (m *DefMocker) Origin(origin interface{}) ExportedMocker {
 	m.origin = origin
 	return m

@@ -14,7 +14,7 @@ import (
 	"git.code.oa.com/goom/mocker/internal/logger"
 )
 
-const ptrMax = (1<<31 - 1) * 100
+const ptrMax uintptr = (1<<31 - 1) * 100
 
 // FindFuncByName searches through the moduledata table created by the linker
 // and returns the function's code pointer. If the function was not found, it
@@ -32,7 +32,7 @@ func FindFuncByName(name string) (uintptr, error) {
 				continue
 			}
 
-			if f.Entry() > (uintptr(ptrMax)) {
+			if f.Entry() > ptrMax {
 				continue
 			}
 
@@ -75,7 +75,7 @@ func FindFuncByPtr(ptr uintptr) (*runtime.Func, string, error) {
 				continue
 			}
 
-			if f.Entry() > (uintptr(ptrMax)) {
+			if f.Entry() > ptrMax {
 				continue
 			}
 

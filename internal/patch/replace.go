@@ -13,6 +13,7 @@ import (
 // memoryAccessLock .text区内存操作度协作
 var memoryAccessLock sync.RWMutex
 
+// nolint
 // rawMemoryAccess 内存数据读取(非线程安全的)
 func rawMemoryAccess(ptr uintptr, length int) []byte {
 	return *(*[]byte)(unsafe.Pointer(&reflect.SliceHeader{
@@ -79,7 +80,7 @@ func replaceFunction(from, to, proxy, trampoline uintptr) (original []byte, orig
 	// 保存原始指令
 	original = rawMemoryRead(from, len(jumpData))
 	// 判断是否已经被patch过
-	if original[0] == nopOpcode {
+	if checkAlreadyPatch(original) {
 		err = fmt.Errorf("from:0x%x is already patched", from)
 		return
 	}

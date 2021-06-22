@@ -15,8 +15,11 @@
 2. 支持Mock锚点定义
 3. 支持代码重构
 
-## 注意！！！不要过度依赖mock
-[千万不要过度依赖于mock](https://mp.weixin.qq.com/s?__biz=MzA5MTAzNjU1OQ==&mid=2454780683&idx=1&sn=aabc85f3bd2cfa21b8b806bad581f0c5&chksm=87a6d5ebb0d15cfdd3941c7e874589a288e62f993c429974f79e44bc414eb6aadac5ff6b2339&mpshare=1&scene=1&srcid=0419qv4sJnWOtUvnldVPXmPJ&sharer_sharetime=1618798885862&sharer_shareid=cffe0b0e1eeb43c00529f7192a0695f6#rd)
+## 注意！！！不要过度依赖mock    
+
+> [1.千万不要过度依赖于mock](https://mp.weixin.qq.com/s?__biz=MzA5MTAzNjU1OQ==&mid=2454780683&idx=1&sn=aabc85f3bd2cfa21b8b806bad581f0c5)    
+> 2.对于正规的第三方库，比如mysql、gorm的库本身会提供mock能力, 可参考[sql_test.go](https://git.woa.com/goom/best_practices/blob/master/example/sql_test.go)    
+> 3.对于自建的内部依赖库, 建议由库的提供方编写mock(1.使用方无需关心提供方的实现细节、2.由库提供方负责版本升级时mock实现逻辑的更新)
 
 ## Install
 ```bash
@@ -179,10 +182,13 @@ mock.Func(foo).When(1).Return(3).AndReturn(2)
 mock := mocker.Create()
 
 // 定义原函数,用于占位,实际不会执行该函数体
+// 需要和原函数的参数列表保持一致
+// 定义原函数,用于占位,实际不会执行该函数体
 var origin = func(i int) int {
-    // 函数体长度必须大于一定值, 所以随意加一些代码进行填充
-    fmt.Println("origin func placeholder")
-    return 0 + i
+    // 用于占位,实际不会执行该函数体, 但是必须编写
+    fmt.Println("only for placeholder, will not call")
+	// return 任意值
+    return 0
 }
 
 mock.Func(foo1).Origin(&origin).Apply(func(i int) int {

@@ -12,6 +12,7 @@ import (
 //go:linkname Firstmoduledata runtime.firstmoduledata
 var Firstmoduledata Moduledata
 
+// nolint
 // Moduledata Moduledata
 type Moduledata struct {
 	pcHeader     uintptr

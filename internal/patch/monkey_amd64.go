@@ -3,7 +3,7 @@ package patch
 import "unsafe"
 
 // nopOpcode 空指令插入到原函数开头第一个字节, 用于判断原函数是否已经被Patch过
-const nopOpcode = 0x90
+const nopOpcode byte = 0x90
 
 // funcPrologue 函数的开头指纹,用于不同OS获取不同的默认值
 var funcPrologue = defaultFuncPrologue64
@@ -74,4 +74,9 @@ func relative(from uintptr, to uintptr) bool {
 	}
 
 	return relative
+}
+
+// checkAlreadyPatch 检测是否已经patch
+func checkAlreadyPatch(origin []byte) bool {
+	return origin[0] == nopOpcode
 }

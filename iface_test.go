@@ -78,10 +78,9 @@ func (s *ifaceMockerTestSuite) TestUnitInterfaceReturn() {
 }
 
 // TestUnitInterfaceTwice 测试多次接口mock return
-func (s *ifaceMockerTestSuite) TestUnitInterfaceTwice() {
+func (s *ifaceMockerTestSuite) TestUnitInterfaceAsTwice() {
 	s.Run("success", func() {
 		mock := mocker.Create()
-
 		i := (I)(nil)
 
 		mock.Interface(&i).Method("Call").As(func(ctx *mocker.IContext, i int) int {
@@ -96,6 +95,37 @@ func (s *ifaceMockerTestSuite) TestUnitInterfaceTwice() {
 		}).When(1).Return(4)
 		s.NotNil(i, "interface var nil check")
 		s.Equal(4, i.Call(1), "interface mock check")
+		mock.Reset()
+
+		s.Nil(i, "interface mock reset check")
+	})
+}
+
+func (s *ifaceMockerTestSuite) TestUnitInterfaceApplyTwice() {
+	s.Run("success", func() {
+		mock := mocker.Create()
+		i := (I)(nil)
+
+		mock.Interface(&i).Method("Call").Apply(func(ctx *mocker.IContext, i int) int {
+			return 1
+		})
+		mock.Interface(&i).Method("Call1").Apply(func(ctx *mocker.IContext, i string) string {
+			return "1"
+		})
+		s.NotNil(i, "interface var nil check")
+		s.Equal(1, i.Call(0), "interface mock check")
+		s.Equal("1", i.Call1("0"), "interface mock check")
+		mock.Reset()
+
+		mock.Interface(&i).Method("Call").Apply(func(ctx *mocker.IContext, i int) int {
+			return 2
+		})
+		mock.Interface(&i).Method("Call1").Apply(func(ctx *mocker.IContext, i string) string {
+			return "2"
+		})
+		s.NotNil(i, "interface var nil check")
+		s.Equal(2, i.Call(0), "interface mock check")
+		s.Equal("2", i.Call1("0"), "interface mock check")
 		mock.Reset()
 
 		s.Nil(i, "interface mock reset check")

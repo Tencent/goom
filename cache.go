@@ -128,3 +128,8 @@ func (m *CachedInterfaceMocker) Cancel() {
 		v.Cancel()
 	}
 }
+
+// Canceled 是否取消了 mock
+func (m *CachedInterfaceMocker) Canceled() bool {
+	return m.ctx.Canceled()
+}

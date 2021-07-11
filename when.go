@@ -6,7 +6,8 @@ package mocker
 
 import (
 	"reflect"
-	"sync/atomic"
+
+	"git.code.oa.com/goom/mocker/expr"
 
 	"git.code.oa.com/goom/mocker/errobj"
 )
@@ -182,10 +183,10 @@ func (w *When) invoke(args1 []reflect.Value) (results []reflect.Value) {
 
 // Eval 执行when子句
 func (w *When) Eval(args ...interface{}) []interface{} {
-	argVs := I2V(args, inTypes(w.isMethod, w.funcTyp))
+	argVs := expr.I2V(args, inTypes(w.isMethod, w.funcTyp))
 	resultVs := w.invoke(argVs)
 
-	return V2I(resultVs, outTypes(w.funcTyp))
+	return expr.V2I(resultVs, outTypes(w.funcTyp))
 }
 
 // returnDefaults 返回默认值
@@ -195,192 +196,4 @@ func (w *When) returnDefaults() []reflect.Value {
 	}
 
 	return w.defaultReturns.Result()
-}
-
-// BaseMatcher 参数匹配基类
-type BaseMatcher struct {
-	results [][]reflect.Value
-	curNum  int32
-	funTyp  reflect.Type
-
-	// 持有参数指针, 防止被回收
-	resultsPtr []interface{}
-}
-
-// newBaseMatcher 创建新参数匹配基类
-func newBaseMatcher(results []interface{}, funTyp reflect.Type) *BaseMatcher {
-	resultVs := make([][]reflect.Value, 0)
-	if results != nil {
-		// TODO results check
-		resultVs = append(resultVs, I2V(results, outTypes(funTyp)))
-	}
-
-	return &BaseMatcher{
-		results:    resultVs,
-		curNum:     0,
-		funTyp:     funTyp,
-		resultsPtr: results,
-	}
-}
-
-// Result 回参
-func (c *BaseMatcher) Result() []reflect.Value {
-	if len(c.results) <= 1 {
-		return c.results[c.curNum]
-	}
-
-	curNum := atomic.LoadInt32(&c.curNum)
-	if length := len(c.results); curNum >= int32(length) {
-		return c.results[length-1]
-	}
-
-	atomic.AddInt32(&c.curNum, 1)
-
-	return c.results[curNum]
-}
-
-// AddResult 添加结果
-func (c *BaseMatcher) AddResult(results []interface{}) {
-	// TODO results check
-	c.results = append(c.results, I2V(results, outTypes(c.funTyp)))
-}
-
-// DefaultMatcher 参数匹配
-type DefaultMatcher struct {
-	*BaseMatcher
-
-	isMethod bool
-	args     []reflect.Value
-}
-
-// newDefaultMatch 创建新参数匹配
-func newDefaultMatch(args []interface{}, results []interface{}, isMethod bool, funTyp reflect.Type) *DefaultMatcher {
-	argVs := I2V(args, inTypes(isMethod, funTyp))
-
-	return &DefaultMatcher{
-		args:        argVs,
-		BaseMatcher: newBaseMatcher(results, funTyp),
-		isMethod:    isMethod,
-	}
-}
-
-// Match 判断是否匹配
-func (c *DefaultMatcher) Match(args []reflect.Value) bool {
-	if c.isMethod {
-		if len(args) != len(c.args)+1 {
-			return false
-		}
-	} else {
-		if len(args) != len(c.args) {
-			return false
-		}
-	}
-
-	skip := 0
-	if c.isMethod {
-		skip = 1
-	}
-
-	for i, arg := range c.args {
-		if !equal(arg, args[i+skip]) {
-			return false
-		}
-	}
-
-	return true
-}
-
-// ContainsMatcher 包含类型的参数匹配
-type ContainsMatcher struct {
-	*BaseMatcher
-
-	args     [][]reflect.Value
-	isMethod bool
-}
-
-// newContainsMatch 创建新的包含类型的参数匹配
-func newContainsMatch(args []interface{}, results []interface{}, isMethod bool, funTyp reflect.Type) *ContainsMatcher {
-	argVs := make([][]reflect.Value, 0)
-
-	for _, v := range args {
-		arg, ok := v.([]interface{})
-		if !ok {
-			arg = []interface{}{v}
-		}
-		// TODO results check
-		values := I2V(arg, inTypes(isMethod, funTyp))
-		argVs = append(argVs, values)
-	}
-
-	return &ContainsMatcher{
-		args:        argVs,
-		BaseMatcher: newBaseMatcher(results, funTyp),
-		isMethod:    isMethod,
-	}
-}
-
-// Match 判断是否匹配
-func (c *ContainsMatcher) Match(args []reflect.Value) bool {
-outer:
-	for _, one := range c.args {
-		if c.isMethod {
-			if len(args) != len(one)+1 {
-				continue
-			}
-		} else {
-			if len(args) != len(one) {
-				continue
-			}
-		}
-
-		skip := 0
-		if c.isMethod {
-			skip = 1
-		}
-		for i, arg := range one {
-			if !equal(arg, args[i+skip]) {
-				continue outer
-			}
-		}
-
-		return true
-	}
-
-	return false
-}
-
-// AlwaysMatcher 默认匹配
-type AlwaysMatcher struct {
-	*BaseMatcher
-}
-
-// newAlwaysMatch 创建新的默认匹配
-func newAlwaysMatch(results []interface{}, funTyp reflect.Type) *AlwaysMatcher {
-	if results == nil {
-		return nil
-	}
-
-	return &AlwaysMatcher{
-		BaseMatcher: newBaseMatcher(results, funTyp),
-	}
-}
-
-// Match 总是匹配
-func (c *AlwaysMatcher) Match(_ []reflect.Value) bool {
-	return true
-}
-
-// EmptyMatch 没有返回参数的匹配器
-type EmptyMatch struct {
-	*AlwaysMatcher
-}
-
-// newEmptyMatch 创建无参数匹配器
-func newEmptyMatch() *EmptyMatch {
-	return &EmptyMatch{}
-}
-
-// Result 返回参数
-func (c *EmptyMatch) Result() []reflect.Value {
-	return []reflect.Value{}
 }

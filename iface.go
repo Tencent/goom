@@ -160,8 +160,3 @@ func (m *DefaultInterfaceMocker) Origin(interface{}) ExportedMocker {
 func (m *DefaultInterfaceMocker) Inject(interface{}) InterfaceMocker {
 	panic("implement me")
 }
-
-// If 回调原函数(暂时不支持)
-func (m *DefaultInterfaceMocker) If() *If {
-	panic("implement me")
-}

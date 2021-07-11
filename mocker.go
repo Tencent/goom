@@ -34,8 +34,6 @@ type ExportedMocker interface {
 	Return(args ...interface{}) *When
 	// Origin 指定Mock之后的原函数, origin签名和mock的函数一致
 	Origin(origin interface{}) ExportedMocker
-	// If 条件表达式匹配
-	If() *If
 }
 
 // UnExportedMocker 未导出函数mock接口
@@ -56,7 +54,6 @@ type baseMocker struct {
 	imp     interface{}
 
 	when *When
-	_if  *If
 	// canceled 是否被取消
 	canceled bool
 }
@@ -149,13 +146,6 @@ func (m *baseMocker) callback(args []reflect.Value) (results []reflect.Value) {
 		}
 	}
 
-	if m._if != nil {
-		results = m._if.invoke(args)
-		if results != nil {
-			return results
-		}
-	}
-
 	panic("not match any args, please spec default return use: mocker.Return()")
 }
 
@@ -166,7 +156,6 @@ func (m *baseMocker) Cancel() {
 	}
 
 	m.when = nil
-	m._if = nil
 	m.origin = nil
 	m.canceled = true
 }
@@ -310,11 +299,6 @@ func (m *MethodMocker) Return(returns ...interface{}) *When {
 func (m *MethodMocker) Origin(origin interface{}) ExportedMocker {
 	m.origin = origin
 	return m
-}
-
-// If 条件子句
-func (m *MethodMocker) If() *If {
-	return nil
 }
 
 // UnexportedMethodMocker 对结构体函数或方法进行mock
@@ -533,9 +517,4 @@ func (m *DefMocker) Return(returns ...interface{}) *When {
 func (m *DefMocker) Origin(origin interface{}) ExportedMocker {
 	m.origin = origin
 	return m
-}
-
-// If 条件子句
-func (m *DefMocker) If() *If {
-	return nil
 }

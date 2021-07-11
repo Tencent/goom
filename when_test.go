@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"git.code.oa.com/goom/mocker"
+	. "git.code.oa.com/goom/mocker/expr"
 )
 
 // TestUnitWhenTestSuite 测试入口
@@ -98,6 +99,10 @@ func (s *WhenTestSuite) TestWhenContains() {
 		s.Equal(5, when.Eval(1)[0], "when result check")
 		s.Equal(5, when.Eval(1)[0], "when result check")
 		s.Equal(-1, when.Eval(0)[0], "when result check")
+
+		//when.Return(-1).When(expr.In([]interface{}{3, 4})).Return(6)
+		//s.Equal(6, when.Eval(3)[0], "when result check")
+		//s.Equal(6, when.Eval(4)[0], "when result check")
 	})
 }
 
@@ -165,5 +170,19 @@ func (s *WhenTestSuite) TestMethodWhen() {
 			return a/b + 1
 		})
 		s.Equal(3, structOuter.Compute(2, 1), "method when check")
+	})
+}
+
+// TestMethodAny 方法参数Any条件匹配
+func (s *WhenTestSuite) TestMethodAny() {
+	s.Run("success", func() {
+		structOuter := new(StructOuter)
+		struct1 := new(Struct)
+		m := mocker.Create()
+
+		m.Struct(struct1).Method("Div").When(3, Any()).Return(100)
+		s.Equal(100, structOuter.Compute(3, 1), "method when check")
+		s.Equal(100, structOuter.Compute(3, 2), "method when check")
+		s.Equal(100, structOuter.Compute(3, -1), "method when check")
 	})
 }

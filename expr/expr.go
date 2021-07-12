@@ -18,9 +18,9 @@ type Expr interface {
 
 // AnyExpr 和任意参数值比较
 type AnyExpr struct {
-	arg reflect.Value
 }
 
+// Resole AnyExpr 表达式解析
 func (a *AnyExpr) Resole(types []reflect.Type) error {
 	return nil
 }
@@ -36,6 +36,7 @@ type EqualsExpr struct {
 	argV reflect.Value
 }
 
+// Resole EqualsExpr 表达式解析
 func (e *EqualsExpr) Resole(types []reflect.Type) error {
 	e.argV = toValue(e.arg, types[0])
 	return nil
@@ -55,6 +56,7 @@ type InExpr struct {
 	exprs [][]Expr
 }
 
+// Resole InExpr 表达式解析
 func (i *InExpr) Resole(types []reflect.Type) error {
 	exprs := make([][]Expr, 0)
 	for _, v := range i.args {
@@ -62,15 +64,18 @@ func (i *InExpr) Resole(types []reflect.Type) error {
 		if !ok {
 			arg = []interface{}{v}
 		}
-		// TODO results check
-		expr := ToExpr(arg, types)
+
+		expr, err := ToExpr(arg, types)
+		if err != nil {
+			return err
+		}
 		exprs = append(exprs, expr)
 	}
 	i.exprs = exprs
 	return nil
 }
 
-// InExpr InExpr 表达式执行
+// Eval InExpr 表达式执行
 func (i *InExpr) Eval(input []reflect.Value) (bool, error) {
 outer:
 	for _, one := range i.exprs {

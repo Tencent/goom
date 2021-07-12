@@ -80,11 +80,12 @@ func V2I(args []reflect.Value, types []reflect.Type) []interface{} {
 }
 
 // ToExpr 将参数转换成[]Expr
-func ToExpr(args []interface{}, types []reflect.Type) []Expr {
+func ToExpr(args []interface{}, types []reflect.Type) ([]Expr, error) {
 	if len(args) != len(types) {
-		panic(fmt.Sprintf("args lenth mismatch,must:%d, actual:%d", len(types), len(args)))
+		return nil, fmt.Errorf("args lenth mismatch,must:%d, actual:%d", len(types), len(args))
 	}
 
+	// TODO results check
 	exprs := make([]Expr, len(args))
 	for i, a := range args {
 		if expr, ok := a.(Expr); ok {
@@ -92,8 +93,11 @@ func ToExpr(args []interface{}, types []reflect.Type) []Expr {
 		} else {
 			// 默认使用equals表达式
 			exprs[i] = Equals(a)
-			exprs[i].Resole([]reflect.Type{types[i]})
+		}
+		err := exprs[i].Resole([]reflect.Type{types[i]})
+		if err != nil {
+			return nil, err
 		}
 	}
-	return exprs
+	return exprs, nil
 }

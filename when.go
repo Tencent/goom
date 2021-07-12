@@ -108,13 +108,19 @@ func NewWhen(funTyp reflect.Type) *When {
 	}
 }
 
-// When 当参数符合一定的条件
+// When 当参数符合一定的条件, 使用DefaultMatcher
+// 入参个数必须和函数或方法参数个数一致,
+// 比如: When(
+//		In(3, 4), // 第一个参数是In
+//		Any()) // 第二个参数是Any
 func (w *When) When(args ...interface{}) *When {
 	w.curMatch = newDefaultMatch(args, nil, w.isMethod, w.funcTyp)
 	return w
 }
 
-// In 当参数包含其中之一
+// In 当参数包含其中之一, 使用ContainsMatcher
+// 当参数为多个时, In的每个条件各使用一个数组表示:
+// .In([]interface{}{3, Any()}, []interface{}{4, Any()})
 func (w *When) In(slices ...interface{}) *When {
 	w.curMatch = newContainsMatch(slices, nil, w.isMethod, w.funcTyp)
 	return w

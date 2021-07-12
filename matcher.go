@@ -72,6 +72,10 @@ func (c *EmptyMatch) Result() []reflect.Value {
 }
 
 // DefaultMatcher 参数匹配
+// 入参个数必须和函数或方法参数个数一致,
+// 比如: When(
+//		In(3, 4), // 第一个参数是In
+//		Any()) // 第二个参数是Any
 type DefaultMatcher struct {
 	*BaseMatcher
 
@@ -81,8 +85,12 @@ type DefaultMatcher struct {
 
 // newDefaultMatch 创建新参数匹配
 func newDefaultMatch(args []interface{}, results []interface{}, isMethod bool, funTyp reflect.Type) *DefaultMatcher {
+	e, err := expr.ToExpr(args, inTypes(isMethod, funTyp))
+	if err != nil {
+		panic(fmt.Sprintf("create matcher fail: %v", err))
+	}
 	return &DefaultMatcher{
-		exprs:       expr.ToExpr(args, inTypes(isMethod, funTyp)),
+		exprs:       e,
 		BaseMatcher: newBaseMatcher(results, funTyp),
 		isMethod:    isMethod,
 	}
@@ -112,6 +120,8 @@ func (c *DefaultMatcher) Match(args []reflect.Value) bool {
 }
 
 // ContainsMatcher 包含类型的参数匹配
+// 当参数为多个时, In的每个条件各使用一个数组表示:
+// .In([]interface{}{3, Any()}, []interface{}{4, Any()})
 type ContainsMatcher struct {
 	*BaseMatcher
 
@@ -121,8 +131,12 @@ type ContainsMatcher struct {
 
 // newContainsMatch 创建新的包含类型的参数匹配
 func newContainsMatch(args []interface{}, results []interface{}, isMethod bool, funTyp reflect.Type) *ContainsMatcher {
-	in := expr.In(args)
-	in.Resole(inTypes(isMethod, funTyp))
+	in := expr.In(args...)
+	err := in.Resole(inTypes(isMethod, funTyp))
+	if err != nil {
+		// TODO add mocker and method name to message
+		panic(fmt.Sprintf("create args match fail: %v", err))
+	}
 	return &ContainsMatcher{
 		expr:        in,
 		BaseMatcher: newBaseMatcher(results, funTyp),

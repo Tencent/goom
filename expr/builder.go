@@ -37,6 +37,5 @@ func (b *Builder) Field(name string) *Builder {
 
 // In 添加In字句
 func (b *Builder) In(values ...interface{}) *Builder {
-
 	return b
 }

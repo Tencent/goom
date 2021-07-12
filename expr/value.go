@@ -94,7 +94,7 @@ func ToExpr(args []interface{}, types []reflect.Type) ([]Expr, error) {
 			// 默认使用equals表达式
 			exprs[i] = Equals(a)
 		}
-		err := exprs[i].Resole([]reflect.Type{types[i]})
+		err := exprs[i].Resolve([]reflect.Type{types[i]})
 		if err != nil {
 			return nil, err
 		}

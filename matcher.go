@@ -132,7 +132,7 @@ type ContainsMatcher struct {
 // newContainsMatch 创建新的包含类型的参数匹配
 func newContainsMatch(args []interface{}, results []interface{}, isMethod bool, funTyp reflect.Type) *ContainsMatcher {
 	in := expr.In(args...)
-	err := in.Resole(inTypes(isMethod, funTyp))
+	err := in.Resolve(inTypes(isMethod, funTyp))
 	if err != nil {
 		// TODO add mocker and method name to message
 		panic(fmt.Sprintf("create args match fail: %v", err))

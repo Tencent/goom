@@ -2,6 +2,7 @@
 package expr
 
 import (
+	"fmt"
 	"reflect"
 )
 
@@ -13,15 +14,15 @@ type Expr interface {
 	// input 表达式执行时的入参
 	Eval(input []reflect.Value) (bool, error)
 	// Resole 解析参数类型
-	Resole(types []reflect.Type) error
+	Resolve(types []reflect.Type) error
 }
 
 // AnyExpr 和任意参数值比较
 type AnyExpr struct {
 }
 
-// Resole AnyExpr 表达式解析
-func (a *AnyExpr) Resole(types []reflect.Type) error {
+// Resolve AnyExpr 表达式解析
+func (a *AnyExpr) Resolve(types []reflect.Type) error {
 	return nil
 }
 
@@ -36,14 +37,22 @@ type EqualsExpr struct {
 	argV reflect.Value
 }
 
-// Resole EqualsExpr 表达式解析
-func (e *EqualsExpr) Resole(types []reflect.Type) error {
+// Resolve EqualsExpr 表达式解析
+func (e *EqualsExpr) Resolve(types []reflect.Type) error {
+	// types 只会有一个元素
+	if len(types) != 1 {
+		return fmt.Errorf("EqualsExpr.Resolve status error")
+	}
 	e.argV = toValue(e.arg, types[0])
 	return nil
 }
 
 // Eval 执行EqualsExpr表达式
 func (e *EqualsExpr) Eval(input []reflect.Value) (bool, error) {
+	// input 只会有一个元素
+	if len(input) != 1 {
+		return false, fmt.Errorf("EqualsExpr.Resolve status error")
+	}
 	if equal(e.argV, input[0]) {
 		return true, nil
 	}
@@ -56,8 +65,8 @@ type InExpr struct {
 	exprs [][]Expr
 }
 
-// Resole InExpr 表达式解析
-func (i *InExpr) Resole(types []reflect.Type) error {
+// Resolve InExpr 表达式解析
+func (i *InExpr) Resolve(types []reflect.Type) error {
 	exprs := make([][]Expr, 0)
 	for _, v := range i.args {
 		arg, ok := v.([]interface{})

@@ -200,10 +200,9 @@ func (s *WhenTestSuite) TestMethodMultiIn() {
 		s.Equal(100, structOuter.Compute(4, 3), "method when check")
 		s.Equal(100, structOuter.Compute(3, -1), "method when check")
 
-		when.In([]interface{}{3, Any()}).Return(100)
-		s.Equal(100, structOuter.Compute(3, 1), "method when check")
-		s.Equal(100, structOuter.Compute(3, 2), "method when check")
-		s.Equal(100, structOuter.Compute(3, -1), "method when check")
-
+		when.In([]interface{}{5, Any()}).Return(101)
+		s.Equal(101, structOuter.Compute(5, 1), "method when check")
+		s.Equal(101, structOuter.Compute(5, 2), "method when check")
+		s.Equal(101, structOuter.Compute(5, -1), "method when check")
 	})
 }

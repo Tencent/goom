@@ -1,4 +1,4 @@
-package errobj
+package erro
 
 // FieldNotFound 类型没有找到
 type FieldNotFound struct {

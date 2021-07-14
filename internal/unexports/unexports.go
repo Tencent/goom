@@ -9,7 +9,7 @@ import (
 	"runtime"
 	"unsafe"
 
-	"git.code.oa.com/goom/mocker/errobj"
+	"git.code.oa.com/goom/mocker/erro"
 	"git.code.oa.com/goom/mocker/internal/hack"
 	"git.code.oa.com/goom/mocker/internal/logger"
 )
@@ -44,7 +44,7 @@ func FindFuncByName(name string) (uintptr, error) {
 	}
 	logger.LogDebugf("FindFuncByName not found %s", name)
 
-	return 0, errobj.NewFuncNotFoundError(name)
+	return 0, erro.NewFuncNotFoundError(name)
 }
 
 // funcName 获取函数名字

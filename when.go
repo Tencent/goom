@@ -7,8 +7,8 @@ package mocker
 import (
 	"reflect"
 
-	"git.code.oa.com/goom/mocker/errobj"
-	"git.code.oa.com/goom/mocker/expr"
+	"git.code.oa.com/goom/mocker/arg"
+	"git.code.oa.com/goom/mocker/erro"
 )
 
 // Matcher 参数匹配接口
@@ -80,16 +80,16 @@ func CreateWhen(m ExportedMocker, funcDef interface{}, args []interface{},
 func checkParams(funcDef interface{}, impTyp reflect.Type,
 	args []interface{}, returns []interface{}, isMethod bool) error {
 	if returns != nil && len(returns) < impTyp.NumOut() {
-		return errobj.NewReturnsNotMatchError(funcDef, len(returns), impTyp.NumOut())
+		return erro.NewReturnsNotMatchError(funcDef, len(returns), impTyp.NumOut())
 	}
 
 	if isMethod {
 		if args != nil && len(args)+1 < impTyp.NumIn() {
-			return errobj.NewArgsNotMatchError(funcDef, len(args), impTyp.NumIn()-1)
+			return erro.NewArgsNotMatchError(funcDef, len(args), impTyp.NumIn()-1)
 		}
 	} else {
 		if args != nil && len(args) < impTyp.NumIn() {
-			return errobj.NewArgsNotMatchError(funcDef, len(args), impTyp.NumIn())
+			return erro.NewArgsNotMatchError(funcDef, len(args), impTyp.NumIn())
 		}
 	}
 
@@ -188,10 +188,10 @@ func (w *When) invoke(args1 []reflect.Value) (results []reflect.Value) {
 
 // Eval 执行when子句
 func (w *When) Eval(args ...interface{}) []interface{} {
-	argVs := expr.I2V(args, inTypes(w.isMethod, w.funcTyp))
+	argVs := arg.I2V(args, inTypes(w.isMethod, w.funcTyp))
 	resultVs := w.invoke(argVs)
 
-	return expr.V2I(resultVs, outTypes(w.funcTyp))
+	return arg.V2I(resultVs, outTypes(w.funcTyp))
 }
 
 // returnDefaults 返回默认值

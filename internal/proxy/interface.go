@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"unsafe"
 
-	"git.code.oa.com/goom/mocker/errobj"
+	"git.code.oa.com/goom/mocker/erro"
 
 	"git.code.oa.com/goom/mocker/internal/hack"
 	"git.code.oa.com/goom/mocker/internal/stub"
@@ -75,12 +75,12 @@ type PFunc func(args []reflect.Value) (results []reflect.Value)
 func MakeInterfaceImpl(iface interface{}, ctx *IContext, method string, imp interface{}, proxy PFunc) error {
 	ifaceType := reflect.TypeOf(iface)
 	if ifaceType.Kind() != reflect.Ptr {
-		return errobj.NewIllegalParamTypeError("iface", ifaceType.String(), "ptr")
+		return erro.NewIllegalParamTypeError("iface", ifaceType.String(), "ptr")
 	}
 
 	typ := ifaceType.Elem()
 	if typ.Kind() != reflect.Interface {
-		return errobj.NewIllegalParamTypeError("iface var", typ.String(), "interface")
+		return erro.NewIllegalParamTypeError("iface var", typ.String(), "interface")
 	}
 
 	funcTabIndex := 0
@@ -97,8 +97,8 @@ func MakeInterfaceImpl(iface interface{}, ctx *IContext, method string, imp inte
 	argLen := reflect.TypeOf(imp).NumIn()
 	maxLen := typ.Method(funcTabIndex).Type.NumIn()
 	if maxLen >= argLen {
-		aErr := errobj.NewArgsNotMatchError(imp, argLen, maxLen+1)
-		return errobj.NewIllegalParamCError("imp", reflect.ValueOf(imp).String(), aErr)
+		aErr := erro.NewArgsNotMatchError(imp, argLen, maxLen+1)
+		return erro.NewIllegalParamCError("imp", reflect.ValueOf(imp).String(), aErr)
 	}
 
 	gen := hack.UnpackEFace(iface).Data

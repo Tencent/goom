@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"sync/atomic"
 
-	"git.code.oa.com/goom/mocker/expr"
+	"git.code.oa.com/goom/mocker/arg"
 )
 
 // BaseMatcher 参数匹配基类
@@ -23,7 +23,7 @@ func newBaseMatcher(results []interface{}, funTyp reflect.Type) *BaseMatcher {
 	resultVs := make([][]reflect.Value, 0)
 	if results != nil {
 		// TODO results check
-		resultVs = append(resultVs, expr.I2V(results, outTypes(funTyp)))
+		resultVs = append(resultVs, arg.I2V(results, outTypes(funTyp)))
 	}
 
 	return &BaseMatcher{
@@ -53,7 +53,7 @@ func (c *BaseMatcher) Result() []reflect.Value {
 // AddResult 添加结果
 func (c *BaseMatcher) AddResult(results []interface{}) {
 	// TODO results check
-	c.results = append(c.results, expr.I2V(results, outTypes(c.funTyp)))
+	c.results = append(c.results, arg.I2V(results, outTypes(c.funTyp)))
 }
 
 // EmptyMatch 没有返回参数的匹配器
@@ -80,12 +80,12 @@ type DefaultMatcher struct {
 	*BaseMatcher
 
 	isMethod bool
-	exprs    []expr.Expr
+	exprs    []arg.Expr
 }
 
 // newDefaultMatch 创建新参数匹配
 func newDefaultMatch(args []interface{}, results []interface{}, isMethod bool, funTyp reflect.Type) *DefaultMatcher {
-	e, err := expr.ToExpr(args, inTypes(isMethod, funTyp))
+	e, err := arg.ToExpr(args, inTypes(isMethod, funTyp))
 	if err != nil {
 		panic(fmt.Sprintf("create matcher fail: %v", err))
 	}
@@ -125,13 +125,13 @@ func (c *DefaultMatcher) Match(args []reflect.Value) bool {
 type ContainsMatcher struct {
 	*BaseMatcher
 
-	expr     *expr.InExpr
+	expr     *arg.InExpr
 	isMethod bool
 }
 
 // newContainsMatch 创建新的包含类型的参数匹配
 func newContainsMatch(args []interface{}, results []interface{}, isMethod bool, funTyp reflect.Type) *ContainsMatcher {
-	in := expr.In(args...)
+	in := arg.In(args...)
 	err := in.Resolve(inTypes(isMethod, funTyp))
 	if err != nil {
 		// TODO add mocker and method name to message

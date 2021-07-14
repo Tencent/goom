@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"git.code.oa.com/goom/mocker"
-	. "git.code.oa.com/goom/mocker/expr"
+	"git.code.oa.com/goom/mocker/arg"
 )
 
 // TestUnitWhenTestSuite 测试入口
@@ -100,7 +100,7 @@ func (s *WhenTestSuite) TestWhenContains() {
 		s.Equal(5, when.Eval(1)[0], "when result check")
 		s.Equal(-1, when.Eval(0)[0], "when result check")
 
-		when.Return(-1).When(In(3, 4)).Return(6)
+		when.Return(-1).When(arg.In(3, 4)).Return(6)
 		s.Equal(6, when.Eval(3)[0], "when result check")
 		s.Equal(6, when.Eval(4)[0], "when result check")
 	})
@@ -180,7 +180,7 @@ func (s *WhenTestSuite) TestMethodAny() {
 		struct1 := new(Struct)
 		m := mocker.Create()
 
-		m.Struct(struct1).Method("Div").When(3, Any()).Return(100)
+		m.Struct(struct1).Method("Div").When(3, arg.Any()).Return(100)
 		s.Equal(100, structOuter.Compute(3, 1), "method when check")
 		s.Equal(100, structOuter.Compute(3, 2), "method when check")
 		s.Equal(100, structOuter.Compute(3, -1), "method when check")
@@ -194,13 +194,13 @@ func (s *WhenTestSuite) TestMethodMultiIn() {
 		struct1 := new(Struct)
 		m := mocker.Create()
 
-		when := m.Struct(struct1).Method("Div").Return(-1).When(In(3, 4), Any()).Return(100)
+		when := m.Struct(struct1).Method("Div").Return(-1).When(arg.In(3, 4), arg.Any()).Return(100)
 		s.Equal(100, structOuter.Compute(3, 1), "method when check")
 		s.Equal(100, structOuter.Compute(3, 2), "method when check")
 		s.Equal(100, structOuter.Compute(4, 3), "method when check")
 		s.Equal(100, structOuter.Compute(3, -1), "method when check")
 
-		when.In([]interface{}{5, Any()}).Return(101)
+		when.In([]interface{}{5, arg.Any()}).Return(101)
 		s.Equal(101, structOuter.Compute(5, 1), "method when check")
 		s.Equal(101, structOuter.Compute(5, 2), "method when check")
 		s.Equal(101, structOuter.Compute(5, -1), "method when check")

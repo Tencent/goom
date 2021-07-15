@@ -115,11 +115,11 @@ mock := mocker.Create()
 i := (I)(nil)
 
 // 将Mock应用到接口变量(mock仅对该变量有效)
-// Apply调用的第一个参数必须为\*mocker.IContext, 作用是指定接口实现的接收体; 后续的参数原样照抄。
-mock.Interface(&i).Method("Call").Apply(func(ctx _\*mocker.IContext_ , i int) int {
+// Apply调用的第一个参数必须为*mocker.IContext, 作用是指定接口实现的接收体; 后续的参数原样照抄。
+mock.Interface(&i).Method("Call").Apply(func(ctx *mocker.IContext, i int) int {
     return 3
 })
-mock.Interface(&i).Method("Call1").As(func(ctx _\*mocker.IContext_ , i string) string {
+mock.Interface(&i).Method("Call1").As(func(ctx *mocker.IContext, i string) string {
 			return ""
 }).When("").Return("ok")
 

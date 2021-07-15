@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"strings"
 
-	"git.code.oa.com/goom/mocker/errobj"
+	"git.code.oa.com/goom/mocker/erro"
 	"git.code.oa.com/goom/mocker/internal/proxy"
 	"git.code.oa.com/goom/mocker/internal/unexports"
 )
@@ -107,12 +107,12 @@ func (m *baseMocker) applyByIFaceMethod(ctx *proxy.IContext, iFace interface{}, 
 
 	impV := reflect.TypeOf(imp)
 	if impV.In(0) != reflect.TypeOf(&IContext{}) {
-		panic(errobj.NewIllegalParamTypeError("<first arg>", impV.In(0).Name(), "*IContext"))
+		panic(erro.NewIllegalParamTypeError("<first arg>", impV.In(0).Name(), "*IContext"))
 	}
 
 	err := proxy.MakeInterfaceImpl(iFace, ctx, method, imp, implV)
 	if err != nil {
-		panic(errobj.NewTraceableErrorf("interface mock apply error", err))
+		panic(erro.NewTraceableErrorf("interface mock apply error", err))
 	}
 
 	m.guard = NewIFaceMockGuard(ctx)

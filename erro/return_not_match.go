@@ -1,4 +1,4 @@
-package errobj
+package erro
 
 import (
 	"reflect"

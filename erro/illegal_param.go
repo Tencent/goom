@@ -1,4 +1,4 @@
-package errobj
+package erro
 
 // IllegalParam 参数错误异常
 type IllegalParam struct {

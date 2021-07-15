@@ -1,4 +1,5 @@
-package expr
+// Package arg 负责参数表达式构造和执行, 执行结果用于When参数匹配(Matcher)
+package arg
 
 // AnyValues 匹配任意参数值
 var AnyValues = Any()

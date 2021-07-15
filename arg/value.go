@@ -12,7 +12,7 @@ import (
 // I2V []interface convert to []reflect.Value
 func I2V(args []interface{}, types []reflect.Type) []reflect.Value {
 	if len(args) != len(types) {
-		panic(fmt.Sprintf("args lenth mismatch,must:%d, actual:%d", len(types), len(args)))
+		panic(fmt.Sprintf("args lenth mismatch,must: %d, actual: %d", len(types), len(args)))
 	}
 
 	values := make([]reflect.Value, len(args))
@@ -28,7 +28,7 @@ func toValue(r interface{}, out reflect.Type) reflect.Value {
 	v := reflect.ValueOf(r)
 	if r != nil && v.Type() != out && (out.Kind() == reflect.Struct || out.Kind() == reflect.Ptr) {
 		if v.Type().Size() != out.Size() {
-			panic(fmt.Sprintf("type mismatch,must:%s, actual:%v", v.Type(), out))
+			panic(fmt.Sprintf("type mismatch,must: %s, actual: %v", v.Type(), out))
 		}
 		// 类型强制转换,适用于结构体fake场景
 		v = cast(v, out)
@@ -54,9 +54,9 @@ func toValue(r interface{}, out reflect.Type) reflect.Value {
 func cast(v reflect.Value, typ reflect.Type) reflect.Value {
 	originV := (*hack.Value)(unsafe.Pointer(&v))
 	newV := reflect.NewAt(typ, originV.Ptr).Elem()
-	newV1 := (*hack.Value)(unsafe.Pointer(&newV))
+	newVHack := (*hack.Value)(unsafe.Pointer(&newV))
 	v = *(*reflect.Value)(unsafe.Pointer(&hack.Value{
-		Typ:  newV1.Typ,
+		Typ:  newVHack.Typ,
 		Ptr:  originV.Ptr,
 		Flag: originV.Flag,
 	}))
@@ -82,7 +82,7 @@ func V2I(args []reflect.Value, types []reflect.Type) []interface{} {
 // ToExpr 将参数转换成[]Expr
 func ToExpr(args []interface{}, types []reflect.Type) ([]Expr, error) {
 	if len(args) != len(types) {
-		return nil, fmt.Errorf("args lenth mismatch,must:%d, actual:%d", len(types), len(args))
+		return nil, fmt.Errorf("args lenth mismatch,must: %d, actual: %d", len(types), len(args))
 	}
 
 	// TODO results check

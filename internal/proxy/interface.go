@@ -7,7 +7,6 @@ import (
 	"unsafe"
 
 	"git.code.oa.com/goom/mocker/erro"
-
 	"git.code.oa.com/goom/mocker/internal/hack"
 	"git.code.oa.com/goom/mocker/internal/stub"
 )

@@ -169,7 +169,6 @@ mock.ExportFunc("foo1").As(func(i int) int {
 #### 未导出结构体方法mock
 ```golang
 // 针对其它包的mock示例
-
 -------
 
 package git.code.oa.com/goom/a
@@ -192,8 +191,6 @@ type fake struct {
 	field1 <type>
     // ...
 }
-
-----------
 
 // 创建指定包的mocker，设置引用路径
 mock := mocker.Create()

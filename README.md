@@ -43,7 +43,8 @@ import "git.code.oa.com/goom/mocker"
 ```golang
 // 函数定义如下
 func foo(i int) int {
-    return i
+	// ...
+    return 0
 }
 
 // mock示例
@@ -53,10 +54,23 @@ mock := mocker.Create()
 // mock函数foo并设定返回值为1
 mock.Func(foo).Return(1)
 
+// 使用arg表达式,当参数为1、2时返回值为100
+mock.Func(foo).When(arg.In(1, 2)).Return(100)
+
 // mock函数foo，使用Apply方法设置回调函数
 mock.Func(foo).Apply(func(int) int {
     return 1
 })
+
+// 多参数函数
+func bar(i interface{}, j int) int {
+	// ...
+    return 0
+}
+
+// 忽略第一个参数, 当第二个参数为1、2时返回值为100
+mock.Func(bar).When(arg.Any(), arg.In(1, 2)).Return(100)
+
 ```
 
 #### 结构体方法mock

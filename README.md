@@ -1,14 +1,14 @@
 # GOOM单测Mock框架
 ## 介绍
 ### 背景
-1. 基于公司目前内部没有一款自己维护的适合公司业务迭代速度和稳定性要求的mock框架，众多项目采用外界开源的gomonkey框架进行函数的mock，因其存在较一些的bug，不支持异包私有函数mock，同包私有方法mock等等问题, 加上团队目前实现一款改进版-无需unpath即可在mock过程中调用原函数的特性，可以支持到延迟模拟，参数更改，mock数据录制等功能，因此建立此项目
+1. 基于公司目前内部没有一款自己维护的适合公司业务迭代速度和稳定性要求的mock框架，众多项目采用外界开源的gomonkey框架进行函数的mock，因其存在较一些的bug，不支持异包未导出函数mock，同包未导出方法mock等等问题, 加上团队目前实现一款改进版-无需unpath即可在mock过程中调用原函数的特性，可以支持到延迟模拟，参数更改，mock数据录制等功能，因此建立此项目
 2. 目前有一半以上方案是基于gomock类似的实现方案, 此mock方案需要要求业务代码具备良好的接口设计，才能顺利生成mock代码，而goom只需要指定函数名称或函数定义，就能支持到任意函数的mock，任意函数异常注入，延时模拟等扩展性功能
 
 ### 功能特性
 1. mock过程中调用原函数(线程安全, 支持并发单测)
 2. 异常注入，对函数调用支持异常注入，延迟模拟等稳定性测试
 3. 所有操作都是并发安全的
-4. 私有(未导出)函数(或方法)的mock(不建议使用, 对于私有函数的Mock 通常都是因为代码设计可能有问题, 此功能会在未来版本中废弃)
+4. 未导出(未导出)函数(或方法)的mock(不建议使用, 对于未导出函数的Mock 通常都是因为代码设计可能有问题, 此功能会在未来版本中废弃)
 
 ### 将来
 1. 支持数据驱动测试
@@ -41,9 +41,9 @@ import "git.code.oa.com/goom/mocker"
 ### 基本使用
 #### 函数mock
 ```golang
-// 函数定义如下
+// foo 函数定义如下
 func foo(i int) int {
-	// ...
+    //...
     return 0
 }
 
@@ -62,9 +62,9 @@ mock.Func(foo).Apply(func(int) int {
     return 1
 })
 
-// 多参数函数
+// bar 多参数函数
 func bar(i interface{}, j int) int {
-	// ...
+    //...
     return 0
 }
 
@@ -76,14 +76,16 @@ mock.Func(bar).When(arg.Any(), arg.In(1, 2)).Return(100)
 #### 结构体方法mock
 ```golang
 // 结构体定义如下
-type fake struct{}
+type Struct1 struct{
+}
 
-func (f *fake) Call(i int) int {
+// Call 导出方法
+func (f *Struct1) Call(i int) int {
     return i
 }
 
-// 私有方法
-func (f *fake) call(i int) int {
+// call 未导出方法
+func (f *Struct1) call(i int) int {
     return i
 }
 
@@ -91,22 +93,22 @@ func (f *fake) call(i int) int {
 // 创建当前包的mocker
 mock := mocker.Create()
 
-// mock 结构体fake的方法Call并设置其回调函数
-mock.Struct(&fake{}).Method("Call").Apply(func(_ *fake, i int) int {
+// mock 结构体Struct1的方法Call并设置其回调函数
+mock.Struct(&Struct1{}).Method("Call").Apply(func(_ *Struct1, i int) int {
     return i * 2
  })
 
-// mock 结构体fake的方法Call并返回1
-mock.Struct(&fake{}).Method("Call").Return(1)
+// mock 结构体struct1的方法Call并返回1
+mock.Struct(&Struct1{}).Method("Call").Return(1)
 
-// mock 结构体fake的私有方法call, mock前先调用ExportMethod将其导出，并设置其回调函数
-mock.Struct(&fake{}).ExportMethod("call").Apply(func(_ *fake, i int) int {
+// mock 结构体Struct1的未导出方法call, mock前先调用ExportMethod将其导出，并设置其回调函数
+mock.Struct(&Struct1{}).ExportMethod("call").Apply(func(_ *Struct1, i int) int {
     return i * 2
 })
 
-// mock 结构体fake的私有方法call, mock前先调用ExportMethod将其导出为函数类型，后续支持设置When, Return等
+// mock 结构体Struct1的未导出方法call, mock前先调用ExportMethod将其导出为函数类型，后续支持设置When, Return等
 // As调用之后，请使用Return或When API的方式来指定mock返回。
-mock.Struct(&fake{}).ExportMethod("call").As(func(_ *fake, i int) int {
+mock.Struct(&Struct1{}).ExportMethod("call").As(func(_ *Struct1, i int) int {
     return i * 2
 }).Return(1)
 ```
@@ -167,18 +169,44 @@ mock.ExportFunc("foo1").As(func(i int) int {
 #### 未导出结构体方法mock
 ```golang
 // 针对其它包的mock示例
+
+-------
+
+package git.code.oa.com/goom/a
+
+// struct2 要mock的目标结构体
+type struct2 struct {
+    field1 <type>
+    // ...
+}
+
+-------
+
+package git.code.oa.com/goom/b
+
+// fake fake一个结构体, 用于作为回调函数的Receiver
+type fake struct {
+    // fake结构体要和原未导出结构体的内存结构对齐
+    // 即: 字段个数、顺序、类型必须一致; 比如: field1 <type> 如果有
+    // 此结构体无需定义任何方法
+	field1 <type>
+    // ...
+}
+
+----------
+
 // 创建指定包的mocker，设置引用路径
 mock := mocker.Create()
 
-// mock其它包的私有结构体fake的私有方法call，并设置其回调函数
-// 如果参数是私有的，那么需要在当前包fake一个同等结构的struct(只需要fake结构体，方法不需要fake)，fake结构体要和原私有结构体的内存结构对齐
-// 注意: 如果方法是指针方法，那么需要给struct加上*，比如:ExportStruct("*fake")
-mock.Pkg("git.code.oa.com/goom/mocker_test").ExportStruct("fake").Method("call").Apply(func(_ *fake, i int) int {
+// mock其它包的未导出结构体struct2的未导出方法call，并设置其回调函数
+// 如果参数是未导出的，那么需要在当前包fake一个同等结构的struct(只需要fake结构体，方法不需要fake)，fake结构体要和原未导出结构体struct2的内存结构对齐
+// 注意: 如果方法是指针方法，那么需要给struct加上*，比如:ExportStruct("*struct2")
+mock.Pkg("git.code.oa.com/goom/a").ExportStruct("struct2").Method("call").Apply(func(_ *fake, i int) int {
     return i * 2
 })
 
-// mock其它包的私有结构体fake的私有方法call，并设置其返回值
-mock.ExportStruct("fake").Method("call").As(func(_ *fake, i int) int {
+// mock其它包的未导出结构体struct2的未导出方法call，并设置其返回值
+mock.ExportStruct("struct2").Method("call").As(func(_ *fake, i int) int {
     return i * 2
 }).Return(1)
 ```

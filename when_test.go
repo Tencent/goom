@@ -56,6 +56,15 @@ func (s *Struct) Div(a int, b int) int {
 	return a / b
 }
 
+// Expand 展开数组
+//go:noinline
+func (s *Struct) Expand(arg []int) (int, int) {
+	if len(arg) != 2 {
+		return 0, 0
+	}
+	return arg[0], arg[1]
+}
+
 // StructOuter 嵌套结构外层
 type StructOuter struct {
 }
@@ -105,6 +114,25 @@ func (s *WhenTestSuite) TestReturns() {
 		s.Equal(4, when.Eval(2)[0], "when result check")
 		s.Equal(5, when.Eval(2)[0], "when result check")
 		s.Equal(6, when.Eval(2)[0], "when result check")
+
+		// 多参Returns
+		struct1 := new(Struct)
+		m := mocker.Create()
+		m.Struct(struct1).Method("Expand").Returns(
+			[]interface{}{1, 1}, []interface{}{2, 2}, []interface{}{3, 3})
+
+		ret1, ret2 := struct1.Expand([]int{0, 0})
+		s.Equal(1, ret1, "method when check")
+		s.Equal(1, ret2, "method when check")
+
+		ret1, ret2 = struct1.Expand([]int{0, 0})
+		s.Equal(2, ret1, "method when check")
+		s.Equal(2, ret2, "method when check")
+
+		ret1, ret2 = struct1.Expand([]int{0, 0})
+		s.Equal(3, ret1, "method when check")
+		s.Equal(3, ret2, "method when check")
+
 	})
 }
 

@@ -10,7 +10,7 @@ type ReturnParamNotFound struct {
 
 // ArgNotFound 返回值未找到异常
 func (e *ReturnParamNotFound) Error() string {
-	return "arg not found:" + e.funcName + ":" + strconv.Itoa(e.arg)
+	return "arg not found: " + e.funcName + ":" + strconv.Itoa(e.arg)
 }
 
 // NewReturnParamNotFoundError 函数未找到

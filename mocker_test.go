@@ -235,6 +235,37 @@ func (s *mockerTestSuite) TestMultiReturn() {
 	})
 }
 
+// TestMultiReturns 测试调用原函数多返回
+func (s *mockerTestSuite) TestMultiReturns() {
+	s.Run("success", func() {
+		mock := mocker.Create()
+
+		mock.Func(foo).Returns(2, 3)
+
+		s.Equal(2, foo(1), "foo mock check")
+		s.Equal(3, foo(1), "foo mock check")
+
+		mock.Func(foo).Returns(4, 5)
+
+		s.Equal(4, foo(1), "foo mock check")
+		s.Equal(5, foo(1), "foo mock check")
+
+		mock.Func(foo).When(-1).Returns(6, 7)
+
+		s.Equal(6, foo(-1), "foo mock check")
+		s.Equal(7, foo(-1), "foo mock check")
+
+		mock.Func(foo).When(-2).Returns(8, 9)
+
+		s.Equal(8, foo(-2), "foo mock check")
+		s.Equal(9, foo(-2), "foo mock check")
+
+		mock.Reset()
+
+		s.Equal(1, foo(1), "foo mock reset check")
+	})
+}
+
 // TestUnitFuncTwiceApply 测试函数mock apply多次
 func (s *mockerTestSuite) TestUnitFuncTwiceApply() {
 	s.Run("success", func() {

@@ -127,14 +127,18 @@ func (w *When) In(slices ...interface{}) *When {
 
 // Return 指定返回值
 func (w *When) Return(results ...interface{}) *When {
-	if w.curMatch == nil {
-		w.defaultReturns = newAlwaysMatch(results, w.funcTyp)
+	if w.curMatch != nil {
+		w.curMatch.AddResult(results)
+		w.matches = append(w.matches, w.curMatch)
+
 		return w
 	}
 
-	w.curMatch.AddResult(results)
-	w.matches = append(w.matches, w.curMatch)
-
+	if w.defaultReturns == nil {
+		w.defaultReturns = newAlwaysMatch(results, w.funcTyp)
+	} else {
+		w.defaultReturns.AddResult(results)
+	}
 	return w
 }
 
@@ -149,25 +153,48 @@ func (w *When) AndReturn(results ...interface{}) *When {
 	return w
 }
 
-// Returns 多个条件匹配
-func (w *When) Returns(resultsMap map[interface{}]interface{}) *When {
-	if len(resultsMap) == 0 {
+// Matches 多个条件匹配
+func (w *When) Matches(matches ...arg.Pair) *When {
+	if len(matches) == 0 {
 		return w
 	}
 
-	for k, v := range resultsMap {
-		args, ok := k.([]interface{})
+	for _, v := range matches {
+		args, ok := v.Args.([]interface{})
 		if !ok {
-			args = []interface{}{k}
+			args = []interface{}{v.Args}
 		}
 
-		results, ok := v.([]interface{})
+		results, ok := v.Return.([]interface{})
 		if !ok {
-			results = []interface{}{v}
+			results = []interface{}{v.Return}
 		}
 
+		w.Return(results...)
 		matcher := newDefaultMatch(args, results, w.isMethod, w.funcTyp)
 		w.matches = append(w.matches, matcher)
+	}
+
+	return w
+}
+
+// Returns 按顺序依次返回值
+func (w *When) Returns(rets ...interface{}) *When {
+	if len(rets) == 0 {
+		return w
+	}
+
+	for i, v := range rets {
+		ret, ok := v.([]interface{})
+		if !ok {
+			ret = []interface{}{v}
+		}
+
+		if i == 0 {
+			w.Return(ret...)
+		} else {
+			w.AndReturn(ret...)
+		}
 	}
 
 	return w
@@ -197,7 +224,7 @@ func (w *When) Eval(args ...interface{}) []interface{} {
 // returnDefaults 返回默认值
 func (w *When) returnDefaults() []reflect.Value {
 	if w.defaultReturns == nil && w.funcTyp.NumOut() != 0 {
-		panic("default returns not set.")
+		panic("default returns not set, please spec default return use: mocker.Return()")
 	}
 
 	return w.defaultReturns.Result()

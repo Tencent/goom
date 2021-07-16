@@ -31,7 +31,9 @@ type ExportedMocker interface {
 	// When 指定条件匹配
 	When(args ...interface{}) *When
 	// Return 执行返回值
-	Return(args ...interface{}) *When
+	Return(ret ...interface{}) *When
+	// Returns 依次按顺序返回值, 如果是多参可使用[]interface{}
+	Returns(rets ...interface{}) *When
 	// Origin 指定Mock之后的原函数, origin签名和mock的函数一致
 	Origin(origin interface{}) ExportedMocker
 }
@@ -127,14 +129,6 @@ func (m *baseMocker) whens(when *When) error {
 
 	return nil
 }
-
-// if 指定的返回值 TODO 功能在适配中
-// func (m *baseMocker) ifs(_if *If) error {
-// 	m.imp = reflect.MakeFunc(_if.funcTyp, m.callback).Interface()
-// 	m._if = _if
-//
-// 	return nil
-// }
 
 // callback 通用的MakeFunc callback
 func (m *baseMocker) callback(args []reflect.Value) (results []reflect.Value) {
@@ -268,13 +262,13 @@ func (m *MethodMocker) When(args ...interface{}) *When {
 }
 
 // Return 指定返回值
-func (m *MethodMocker) Return(returns ...interface{}) *When {
+func (m *MethodMocker) Return(ret ...interface{}) *When {
 	if m.method == "" {
 		panic("method is empty")
 	}
 
 	if m.when != nil {
-		return m.when.Return(returns...)
+		return m.when.Return(ret...)
 	}
 
 	var (
@@ -282,7 +276,7 @@ func (m *MethodMocker) Return(returns ...interface{}) *When {
 		err  error
 	)
 
-	if when, err = CreateWhen(m, m.methodIns, nil, returns, true); err != nil {
+	if when, err = CreateWhen(m, m.methodIns, nil, ret, true); err != nil {
 		panic(err)
 	}
 
@@ -290,6 +284,35 @@ func (m *MethodMocker) Return(returns ...interface{}) *When {
 		panic(err)
 	}
 
+	m.Apply(m.imp)
+
+	return when
+}
+
+// Returns 依次按顺序返回值
+func (m *MethodMocker) Returns(rets ...interface{}) *When {
+	if m.method == "" {
+		panic("method is empty")
+	}
+
+	if m.when != nil {
+		return m.when.Returns(rets...)
+	}
+
+	var (
+		when *When
+		err  error
+	)
+
+	if when, err = CreateWhen(m, m.methodIns, nil, nil, true); err != nil {
+		panic(err)
+	}
+
+	if err := m.whens(when); err != nil {
+		panic(err)
+	}
+
+	m.when.Returns(rets...)
 	m.Apply(m.imp)
 
 	return when
@@ -507,6 +530,31 @@ func (m *DefMocker) Return(returns ...interface{}) *When {
 		panic(err)
 	}
 
+	m.Apply(m.imp)
+
+	return when
+}
+
+// Returns 依次按顺序返回值, 如果是多参可使用[]interface{}
+func (m *DefMocker) Returns(rets ...interface{}) *When {
+	if m.when != nil {
+		return m.when.Returns(rets...)
+	}
+
+	var (
+		when *When
+		err  error
+	)
+
+	if when, err = CreateWhen(m, m.funcDef, nil, nil, false); err != nil {
+		panic(err)
+	}
+
+	if err := m.whens(when); err != nil {
+		panic(err)
+	}
+
+	m.when.Returns(rets...)
 	m.Apply(m.imp)
 
 	return when

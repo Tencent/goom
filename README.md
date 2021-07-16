@@ -166,7 +166,7 @@ mock.ExportFunc("foo1").As(func(i int) int {
 }).Return(1)
 ```
 
-#### 未导出结构体方法mock
+#### 未导出结构体的mock(不建议对不同包下的未导出结构体进行mock)
 ```golang
 // 针对其它包的mock示例
 -------

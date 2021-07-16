@@ -19,7 +19,7 @@ func (i *ReturnsNotMatch) Error() string {
 			": " + strconv.Itoa(i.argLen) + ", expect: " + strconv.Itoa(i.expectLen)
 	}
 
-	return "returns lenth not match : " + strconv.Itoa(i.argLen) + ", expect: " + strconv.Itoa(i.expectLen)
+	return "returns lenth not match: " + strconv.Itoa(i.argLen) + ", expect: " + strconv.Itoa(i.expectLen)
 }
 
 // NewReturnsNotMatchError 创建参数异常

@@ -90,6 +90,24 @@ func (s *WhenTestSuite) TestWhenAndReturn() {
 	})
 }
 
+// TestReturns 依次返回不同的值
+func (s *WhenTestSuite) TestReturns() {
+	s.Run("success", func() {
+		when := mocker.NewWhen(reflect.TypeOf(simple))
+		when.Returns(1, 2, 3)
+
+		s.Equal(1, when.Eval(1)[0], "when result check")
+		s.Equal(2, when.Eval(1)[0], "when result check")
+		s.Equal(3, when.Eval(1)[0], "when result check")
+
+		when.When(2).Returns(4, 5, 6)
+
+		s.Equal(4, when.Eval(2)[0], "when result check")
+		s.Equal(5, when.Eval(2)[0], "when result check")
+		s.Equal(6, when.Eval(2)[0], "when result check")
+	})
+}
+
 // TestWhenContains 任意一个配
 func (s *WhenTestSuite) TestWhenContains() {
 	s.Run("success", func() {
@@ -106,19 +124,22 @@ func (s *WhenTestSuite) TestWhenContains() {
 	})
 }
 
-// TestReturns 测试批量设置条件
-func (s *WhenTestSuite) TestReturns() {
+// TestMatches 测试批量设置条件
+func (s *WhenTestSuite) TestMatches() {
 	s.Run("success", func() {
 		when := mocker.NewWhen(reflect.TypeOf(simple))
-		when.Return(-1).Returns(map[interface{}]interface{}{
-			1: 5,
-			2: 5,
-			3: 6,
-		})
+		when.Return(-1).Matches(
+			arg.Pair{Args: 1, Return: 5},
+			arg.Pair{Args: 2, Return: 5},
+			arg.Pair{Args: 3, Return: 6})
 
 		s.Equal(5, when.Eval(1)[0], "when result check")
 		s.Equal(5, when.Eval(2)[0], "when result check")
 		s.Equal(6, when.Eval(3)[0], "when result check")
+
+		when.Matches(arg.Pair{Args: arg.Any(), Return: 100})
+
+		s.Equal(100, when.Eval(4)[0], "when result check")
 	})
 }
 
@@ -204,5 +225,12 @@ func (s *WhenTestSuite) TestMethodMultiIn() {
 		s.Equal(101, structOuter.Compute(5, 1), "method when check")
 		s.Equal(101, structOuter.Compute(5, 2), "method when check")
 		s.Equal(101, structOuter.Compute(5, -1), "method when check")
+
+		when.Matches(
+			arg.Pair{Args: []interface{}{6, arg.Any()}, Return: []interface{}{101}},
+			arg.Pair{Args: []interface{}{7, arg.Any()}, Return: []interface{}{102}},
+		)
+		s.Equal(101, structOuter.Compute(6, -1), "method when check")
+		s.Equal(102, structOuter.Compute(7, -1), "method when check")
 	})
 }

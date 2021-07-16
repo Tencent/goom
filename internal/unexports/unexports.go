@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"reflect"
 	"runtime"
+	"strings"
 	"unsafe"
 
 	"git.code.oa.com/goom/mocker/erro"
@@ -22,6 +23,12 @@ const ptrMax uintptr = (1<<31 - 1) * 100
 // them below (and they need to stay in sync or else things will fail
 // catastrophically).
 func FindFuncByName(name string) (uintptr, error) {
+	if len(name) == 0 {
+		return 0, errors.New("FindFuncByName error: func name is empty")
+	}
+
+	var i = 0
+	var suggestionA, suggestionB string
 	for moduleData := &hack.Firstmoduledata; moduleData != nil; moduleData = moduleData.Next {
 		for _, ftab := range moduleData.Ftab {
 			if ftab.Funcoff >= uintptr(len(moduleData.Pclntable)) {
@@ -40,11 +47,20 @@ func FindFuncByName(name string) (uintptr, error) {
 			if fName == name {
 				return f.Entry(), nil
 			}
+
+			if fuzzyMatch(fName, name) {
+				if i%2 == 0 {
+					suggestionA = fName
+				} else {
+					suggestionB = fName
+				}
+				i++
+			}
 		}
 	}
 	logger.LogDebugf("FindFuncByName not found %s", name)
 
-	return 0, erro.NewFuncNotFoundError(name)
+	return 0, erro.NewFuncNotFoundErrorWithSuggestion(name, []string{suggestionA, suggestionB})
 }
 
 // funcName 获取函数名字
@@ -59,6 +75,23 @@ func funcName(f *runtime.Func) string {
 	}()
 
 	return f.Name()
+}
+
+// fuzzyMatch 模糊匹配,用于提供suggestion
+func fuzzyMatch(target, source string) bool {
+	if len(target) == 0 || len(source) == 0 {
+		return false
+	}
+
+	keywords := strings.Split(source, "/")
+	keyword := keywords[len(keywords)-1]
+	if strings.Contains(target, keyword) {
+		return true
+	}
+
+	keywords = strings.Split(source, ".")
+	keyword = keywords[len(keywords)-1]
+	return strings.Contains(target, keyword)
 }
 
 // FindFuncByPtr 根据地址找到函数信息

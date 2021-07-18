@@ -33,13 +33,13 @@ go get git.code.oa.com/goom/mocker
 例如: go test -gcflags=all=-l hello.go
 ```
 
-## Example
+## Getting Start
 ```golang
 // 在需要使用mock的测试文件import
 import "git.code.oa.com/goom/mocker"
 ```
-### 基本使用
-#### 函数mock
+### 1. 基本使用
+#### 1.1. 函数mock
 ```golang
 // foo 函数定义如下
 func foo(i int) int {
@@ -53,14 +53,25 @@ mock := mocker.Create()
 
 // mock函数foo并设定返回值为1
 mock.Func(foo).Return(1)
+s.Equal(1, foo(0), "return result check")
 
-// 使用arg表达式,当参数为1、2时返回值为100
+// 使用arg.In表达式,当参数为1、2时返回值为100
 mock.Func(foo).When(arg.In(1, 2)).Return(100)
+s.Equal(100, foo(1), "when in result check")
+s.Equal(100, foo(2), "when in result check")
+
+// 按顺序依次返回(等价于gomonkey的Sequence)
+mock.Func(foo).Returns(1, 2, 3)
+s.Equal(1, foo(0), "returns result check")
+s.Equal(2, foo(0), "returns result check")
+s.Equal(3, foo(0), "returns result check")
 
 // mock函数foo，使用Apply方法设置回调函数
 mock.Func(foo).Apply(func(int) int {
     return 1
 })
+s.Equal(1, foo(0), "apply callback check")
+
 
 // bar 多参数函数
 func bar(i interface{}, j int) int {
@@ -70,10 +81,13 @@ func bar(i interface{}, j int) int {
 
 // 忽略第一个参数, 当第二个参数为1、2时返回值为100
 mock.Func(bar).When(arg.Any(), arg.In(1, 2)).Return(100)
-
+s.Equal(100, bar(-1, 1), "any args result check")
+s.Equal(100, bar(0, 1), "any args result check")
+s.Equal(100, bar(1, 2), "any args result check")
+s.Equal(100, bar(999, 2), "any args result check")
 ```
 
-#### 结构体方法mock
+#### 1.2. 结构体方法mock
 ```golang
 // 结构体定义如下
 type Struct1 struct{
@@ -109,11 +123,12 @@ mock.Struct(&Struct1{}).ExportMethod("call").Apply(func(_ *Struct1, i int) int {
 // mock 结构体Struct1的未导出方法call, mock前先调用ExportMethod将其导出为函数类型，后续支持设置When, Return等
 // As调用之后，请使用Return或When API的方式来指定mock返回。
 mock.Struct(&Struct1{}).ExportMethod("call").As(func(_ *Struct1, i int) int {
+    // 随机返回值即可; 因后面已经使用了Return,此函数不会真正被调用, 主要用于指定未导出函数的参数签名
     return i * 2
 }).Return(1)
 ```
 
-#### 接口Mock
+### 2. 接口Mock
 接口定义举例:
 ```golang
 // I 接口测试
@@ -130,26 +145,26 @@ mock := mocker.Create()
 // 任意接口变量
 i := (I)(nil)
 
-// 将Mock应用到接口变量(mock仅对该变量有效)
+// 将Mock应用到接口变量; 非全局mock, 仅对该接口变量有效, 因此需要将被测逻辑结构中的I类型属性或变量替换为i,mock才可生效
 // Apply调用的第一个参数必须为*mocker.IContext, 作用是指定接口实现的接收体; 后续的参数原样照抄。
 mock.Interface(&i).Method("Call").Apply(func(ctx *mocker.IContext, i int) int {
-    return 3
+    return 100
 })
-mock.Interface(&i).Method("Call1").As(func(ctx *mocker.IContext, i string) string {
-			return ""
-}).When("").Return("ok")
+s.Equal(100, i.Call(1), "interface mock check")
 
-s.Equal(3, i.Call(1), "interface mock check")
+mock.Interface(&i).Method("Call1").As(func(ctx *mocker.IContext, i string) string {
+    // 随机返回值即可; 因后面已经使用了Return,此函数不会真正被调用, 主要用于指定未导出函数的参数签名
+	return ""
+}).When("").Return("ok")
 s.Equal("ok", i.Call1(""), "interface mock check")
 
 // Mock重置, 接口变量将恢复原来的值
 mock.Reset()
-
 s.Equal(nil, i, "interface mock reset check")
 ```
 
-### 高阶用法
-#### 未导出函数mock
+### 3. 高阶用法
+#### 3.1. 外部package的未导出函数mock
 ```golang
 // 针对其它包的mock示例
 // 创建指定包的mocker，设置引用路径
@@ -162,11 +177,12 @@ mock.Pkg("git.code.oa.com/goom/mocker_test").ExportFunc("foo1").Apply(func(i int
 
 // mock函数foo1并设置其返回值
 mock.ExportFunc("foo1").As(func(i int) int {
+    // 随机返回值即可; 因后面已经使用了Return,此函数不会真正被调用, 主要用于指定未导出函数的参数签名
     return 0
 }).Return(1)
 ```
 
-#### 未导出结构体的mock(不建议对不同包下的未导出结构体进行mock)
+#### 3.2. 外部package的未导出结构体的mock(不建议对不同包下的未导出结构体进行mock)
 ```golang
 // 针对其它包的mock示例
 -------
@@ -199,13 +215,16 @@ mock := mocker.Create()
 // 如果参数是未导出的，那么需要在当前包fake一个同等结构的struct(只需要fake结构体，方法不需要fake)，fake结构体要和原未导出结构体struct2的内存结构对齐
 // 注意: 如果方法是指针方法，那么需要给struct加上*，比如:ExportStruct("*struct2")
 mock.Pkg("git.code.oa.com/goom/a").ExportStruct("struct2").Method("call").Apply(func(_ *fake, i int) int {
-    return i * 2
+    return 1
 })
+s.Equal(1, struct2Wrapper.call(0), "unexported struct mock check")
 
 // mock其它包的未导出结构体struct2的未导出方法call，并设置其返回值
 mock.ExportStruct("struct2").Method("call").As(func(_ *fake, i int) int {
-    return i * 2
-}).Return(1)
+	// 随机返回值即可; 因后面已经使用了Return,此函数不会真正被调用, 主要用于指定未导出函数的参数签名
+    return 0
+}).Return(1) // 指定返回值
+s.Equal(1, struct2Wrapper.call(0), "unexported struct mock check")
 ```
 
 #### 根据参数定义多次返回
@@ -214,9 +233,11 @@ mock := mocker.Create()
 
 // 设置函数foo当传入参数为1时，第一次返回3，第二次返回2
 mock.Func(foo).When(1).Return(3).AndReturn(2)
+s.Equal(3, foo(1), "andReturn result check")
+s.Equal(2, foo(1), "andReturn result check")
 ```
 
-#### 在回调函数中调用原函数
+### 4. 在回调函数中调用原函数
 ```golang
 mock := mocker.Create()
 
@@ -224,9 +245,9 @@ mock := mocker.Create()
 // 需要和原函数的参数列表保持一致
 // 定义原函数,用于占位,实际不会执行该函数体
 var origin = func(i int) int {
-    // 用于占位,实际不会执行该函数体, 但是必须编写
+    // 用于占位, 实际不会执行该函数体; 因底层trampoline技术的占位要求, 必须编写方法体
     fmt.Println("only for placeholder, will not call")
-	// return 任意值
+	// return 指定随机返回值即可
     return 0
 }
 
@@ -239,6 +260,8 @@ mock.Func(foo1).Origin(&origin).Apply(func(i int) int {
 
     return originResult + 100
 })
+// foo1(1) 等待1秒之后返回:101
+s.Equal(101, foo1(1), "call origin result check")
 ```
 
 ## 问题答疑

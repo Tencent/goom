@@ -55,6 +55,10 @@ mock := mocker.Create()
 mock.Func(foo).Return(1)
 s.Equal(1, foo(0), "return result check")
 
+// 参数匹配时返回指定值
+mock.Func(foo).When(1).Return(2)
+s.Equal(2, foo(1), "when result check")
+
 // 使用arg.In表达式,当参数为1、2时返回值为100
 mock.Func(foo).When(arg.In(1, 2)).Return(100)
 s.Equal(100, foo(1), "when in result check")
@@ -98,11 +102,6 @@ func (f *Struct1) Call(i int) int {
     return i
 }
 
-// call 未导出方法
-func (f *Struct1) call(i int) int {
-    return i
-}
-
 // mock示例
 // 创建当前包的mocker
 mock := mocker.Create()
@@ -114,6 +113,15 @@ mock.Struct(&Struct1{}).Method("Call").Apply(func(_ *Struct1, i int) int {
 
 // mock 结构体struct1的方法Call并返回1
 mock.Struct(&Struct1{}).Method("Call").Return(1)
+```
+
+#### 1.3. 结构体的未导出方法mock
+```golang
+
+// call 未导出方法示例
+func (f *Struct1) call(i int) int {
+    return i
+}
 
 // mock 结构体Struct1的未导出方法call, mock前先调用ExportMethod将其导出，并设置其回调函数
 mock.Struct(&Struct1{}).ExportMethod("call").Apply(func(_ *Struct1, i int) int {
@@ -164,7 +172,7 @@ s.Equal(nil, i, "interface mock reset check")
 ```
 
 ### 3. 高阶用法
-#### 3.1. 外部package的未导出函数mock
+#### 3.1. 外部package的未导出函数mock(一般不建议对不同包下的未导出函数进行mock)
 ```golang
 // 针对其它包的mock示例
 // 创建指定包的mocker，设置引用路径
@@ -182,7 +190,7 @@ mock.ExportFunc("foo1").As(func(i int) int {
 }).Return(1)
 ```
 
-#### 3.2. 外部package的未导出结构体的mock(不建议对不同包下的未导出结构体进行mock)
+#### 3.2. 外部package的未导出结构体的mock(一般不建议对不同包下的未导出结构体进行mock)
 ```golang
 // 针对其它包的mock示例
 -------
@@ -227,17 +235,22 @@ mock.ExportStruct("struct2").Method("call").As(func(_ *fake, i int) int {
 s.Equal(1, struct2Wrapper.call(0), "unexported struct mock check")
 ```
 
-#### 根据参数定义多次返回
+### 4. 追加多个返回值序列
 ```golang
 mock := mocker.Create()
 
 // 设置函数foo当传入参数为1时，第一次返回3，第二次返回2
-mock.Func(foo).When(1).Return(3).AndReturn(2)
-s.Equal(3, foo(1), "andReturn result check")
+when := mock.Func(foo).When(1).Return(0)
+for i := 1;i <= 100;i++ {
+    when.AndReturn(i)
+}
+s.Equal(0, foo(1), "andReturn result check")
+s.Equal(1, foo(1), "andReturn result check")
 s.Equal(2, foo(1), "andReturn result check")
+ ...
 ```
 
-### 4. 在回调函数中调用原函数
+### 5. 在回调函数中调用原函数
 ```golang
 mock := mocker.Create()
 

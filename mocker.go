@@ -140,7 +140,7 @@ func (m *baseMocker) callback(args []reflect.Value) (results []reflect.Value) {
 		}
 	}
 
-	panic("not match any args, please spec default return use: mocker.Return()")
+	panic("there is no suitable condition matched, or set default return with: mocker.Return(...)")
 }
 
 // Cancel 取消Mock

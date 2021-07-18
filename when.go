@@ -224,7 +224,7 @@ func (w *When) Eval(args ...interface{}) []interface{} {
 // returnDefaults 返回默认值
 func (w *When) returnDefaults() []reflect.Value {
 	if w.defaultReturns == nil && w.funcTyp.NumOut() != 0 {
-		panic("default returns not set, please spec default return use: mocker.Return()")
+		panic("there is no suitable condition matched, or set default return with: mocker.Return(...)")
 	}
 
 	return w.defaultReturns.Result()

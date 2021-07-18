@@ -27,8 +27,8 @@ func FindFuncByName(name string) (uintptr, error) {
 		return 0, errors.New("FindFuncByName error: func name is empty")
 	}
 
-	var i = 0
-	var suggestionA, suggestionB string
+	var i, j = 0, 0
+	var suggestionA, suggestionB, suggestionC string
 	for moduleData := &hack.Firstmoduledata; moduleData != nil; moduleData = moduleData.Next {
 		for _, ftab := range moduleData.Ftab {
 			if ftab.Funcoff >= uintptr(len(moduleData.Pclntable)) {
@@ -48,11 +48,20 @@ func FindFuncByName(name string) (uintptr, error) {
 				return f.Entry(), nil
 			}
 
-			if fuzzyMatch(fName, name) {
-				if i%2 == 0 {
+			if fuzzyMatch(fName, name, "/") {
+				if j%3 == 0 {
 					suggestionA = fName
-				} else {
+				} else if j%3 == 1 {
 					suggestionB = fName
+				} else {
+					suggestionC = fName
+				}
+				j++
+			} else if fuzzyMatch(fName, name, ".") {
+				if i%2 == 0 {
+					suggestionB = fName
+				} else {
+					suggestionC = fName
 				}
 				i++
 			}
@@ -60,7 +69,7 @@ func FindFuncByName(name string) (uintptr, error) {
 	}
 	logger.LogDebugf("FindFuncByName not found %s", name)
 
-	return 0, erro.NewFuncNotFoundErrorWithSuggestion(name, []string{suggestionA, suggestionB})
+	return 0, erro.NewFuncNotFoundErrorWithSuggestion(name, []string{suggestionA, suggestionB, suggestionC})
 }
 
 // funcName 获取函数名字
@@ -70,7 +79,7 @@ func funcName(f *runtime.Func) string {
 			var buf = make([]byte, 1024)
 
 			runtime.Stack(buf, true)
-			logger.LogErrorf("funcName error:[%+v]\n%s", err, buf)
+			logger.LogErrorf("get funcName error:[%+v]\n%s", err, buf)
 		}
 	}()
 
@@ -78,19 +87,13 @@ func funcName(f *runtime.Func) string {
 }
 
 // fuzzyMatch 模糊匹配,用于提供suggestion
-func fuzzyMatch(target, source string) bool {
-	if len(target) == 0 || len(source) == 0 {
+func fuzzyMatch(target, source, token string) bool {
+	if len(target) == 0 || len(source) == 0 || len(token) == 0 {
 		return false
 	}
 
-	keywords := strings.Split(source, "/")
+	keywords := strings.Split(source, token)
 	keyword := keywords[len(keywords)-1]
-	if strings.Contains(target, keyword) {
-		return true
-	}
-
-	keywords = strings.Split(source, ".")
-	keyword = keywords[len(keywords)-1]
 	return strings.Contains(target, keyword)
 }
 

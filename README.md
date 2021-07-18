@@ -229,7 +229,7 @@ s.Equal(1, struct2Wrapper.call(0), "unexported struct mock check")
 
 // mock其它包的未导出结构体struct2的未导出方法call，并设置其返回值
 mock.ExportStruct("struct2").Method("call").As(func(_ *fake, i int) int {
-	// 随机返回值即可; 因后面已经使用了Return,此函数不会真正被调用, 主要用于指定未导出函数的参数签名
+	// 随机返回值即可; 因后面已经使用了Return,此函数不会真正被调用, 主要用于指定接口方法的参数签名
     return 0
 }).Return(1) // 指定返回值
 s.Equal(1, struct2Wrapper.call(0), "unexported struct mock check")
@@ -260,7 +260,7 @@ mock := mocker.Create()
 var origin = func(i int) int {
     // 用于占位, 实际不会执行该函数体; 因底层trampoline技术的占位要求, 必须编写方法体
     fmt.Println("only for placeholder, will not call")
-	// return 指定随机返回值即可
+    // return 指定随机返回值即可
     return 0
 }
 

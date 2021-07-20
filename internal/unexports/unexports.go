@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"reflect"
 	"runtime"
-	"strings"
 	"unsafe"
 
 	"git.code.oa.com/goom/mocker/erro"
@@ -27,8 +26,7 @@ func FindFuncByName(name string) (uintptr, error) {
 		return 0, errors.New("FindFuncByName error: func name is empty")
 	}
 
-	var i, j = 0, 0
-	var suggestionA, suggestionB, suggestionC string
+	suggester := newSuggester(name)
 	for moduleData := &hack.Firstmoduledata; moduleData != nil; moduleData = moduleData.Next {
 		for _, ftab := range moduleData.Ftab {
 			if ftab.Funcoff >= uintptr(len(moduleData.Pclntable)) {
@@ -48,28 +46,12 @@ func FindFuncByName(name string) (uintptr, error) {
 				return f.Entry(), nil
 			}
 
-			if fuzzyMatch(fName, name, "/") {
-				if j%3 == 0 {
-					suggestionA = fName
-				} else if j%3 == 1 {
-					suggestionB = fName
-				} else {
-					suggestionC = fName
-				}
-				j++
-			} else if fuzzyMatch(fName, name, ".") {
-				if i%2 == 0 {
-					suggestionB = fName
-				} else {
-					suggestionC = fName
-				}
-				i++
-			}
+			suggester.AddItem(fName)
 		}
 	}
 	logger.LogDebugf("FindFuncByName not found %s", name)
 
-	return 0, erro.NewFuncNotFoundErrorWithSuggestion(name, []string{suggestionA, suggestionB, suggestionC})
+	return 0, erro.NewFuncNotFoundErrorWithSuggestion(name, suggester.Suggestions())
 }
 
 // funcName 获取函数名字
@@ -84,17 +66,6 @@ func funcName(f *runtime.Func) string {
 	}()
 
 	return f.Name()
-}
-
-// fuzzyMatch 模糊匹配,用于提供suggestion
-func fuzzyMatch(target, source, token string) bool {
-	if len(target) == 0 || len(source) == 0 || len(token) == 0 {
-		return false
-	}
-
-	keywords := strings.Split(source, token)
-	keyword := keywords[len(keywords)-1]
-	return strings.Contains(target, keyword)
 }
 
 // FindFuncByPtr 根据地址找到函数信息

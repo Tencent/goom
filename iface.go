@@ -151,6 +151,36 @@ func (m *DefaultInterfaceMocker) Return(returns ...interface{}) *When {
 	return when
 }
 
+// Returns 指定返回多个值
+func (m *DefaultInterfaceMocker) Returns(returns ...interface{}) *When {
+	if m.funcDef == nil {
+		panic("must use As() API before call Return()")
+	}
+
+	if m.method == "" {
+		panic("method is empty")
+	}
+
+	if m.when != nil {
+		return m.when.Returns(returns...)
+	}
+
+	var (
+		when *When
+		err  error
+	)
+
+	if when, err = CreateWhen(m, m.funcDef, nil, nil, true); err != nil {
+		panic(err)
+	}
+
+	m.when.Returns(returns...)
+	m.applyByIFaceMethod(m.ctx, m.iFace, m.method, m.funcDef, m.callback)
+	m.when = when
+
+	return when
+}
+
 // Origin 回调原函数(暂时不支持)
 func (m *DefaultInterfaceMocker) Origin(interface{}) ExportedMocker {
 	panic("implement me")
@@ -158,10 +188,5 @@ func (m *DefaultInterfaceMocker) Origin(interface{}) ExportedMocker {
 
 // Inject 回调原函数(暂时不支持)
 func (m *DefaultInterfaceMocker) Inject(interface{}) InterfaceMocker {
-	panic("implement me")
-}
-
-// If 回调原函数(暂时不支持)
-func (m *DefaultInterfaceMocker) If() *If {
 	panic("implement me")
 }

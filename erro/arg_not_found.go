@@ -1,4 +1,4 @@
-package errobj
+package erro
 
 import "strconv"
 
@@ -10,7 +10,7 @@ type ArgNotFound struct {
 
 // Error() 返回错误
 func (e *ArgNotFound) Error() string {
-	return "arg not found:" + e.funcName + ":" + strconv.Itoa(e.arg)
+	return "arg not found: " + e.funcName + ":" + strconv.Itoa(e.arg)
 }
 
 // NewArgNotFoundError 函数未找到

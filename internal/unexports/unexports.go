@@ -9,7 +9,7 @@ import (
 	"runtime"
 	"unsafe"
 
-	"git.code.oa.com/goom/mocker/errobj"
+	"git.code.oa.com/goom/mocker/erro"
 	"git.code.oa.com/goom/mocker/internal/hack"
 	"git.code.oa.com/goom/mocker/internal/logger"
 )
@@ -22,6 +22,11 @@ const ptrMax uintptr = (1<<31 - 1) * 100
 // them below (and they need to stay in sync or else things will fail
 // catastrophically).
 func FindFuncByName(name string) (uintptr, error) {
+	if len(name) == 0 {
+		return 0, errors.New("FindFuncByName error: func name is empty")
+	}
+
+	suggester := newSuggester(name)
 	for moduleData := &hack.Firstmoduledata; moduleData != nil; moduleData = moduleData.Next {
 		for _, ftab := range moduleData.Ftab {
 			if ftab.Funcoff >= uintptr(len(moduleData.Pclntable)) {
@@ -40,11 +45,13 @@ func FindFuncByName(name string) (uintptr, error) {
 			if fName == name {
 				return f.Entry(), nil
 			}
+
+			suggester.AddItem(fName)
 		}
 	}
 	logger.LogDebugf("FindFuncByName not found %s", name)
 
-	return 0, errobj.NewFuncNotFoundError(name)
+	return 0, erro.NewFuncNotFoundErrorWithSuggestion(name, suggester.Suggestions())
 }
 
 // funcName 获取函数名字
@@ -54,7 +61,7 @@ func funcName(f *runtime.Func) string {
 			var buf = make([]byte, 1024)
 
 			runtime.Stack(buf, true)
-			logger.LogErrorf("funcName error:[%+v]\n%s", err, buf)
+			logger.LogErrorf("get funcName error:[%+v]\n%s", err, buf)
 		}
 	}()
 

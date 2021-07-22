@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"git.code.oa.com/goom/mocker"
+	"git.code.oa.com/goom/mocker/arg"
 )
 
 // TestUnitWhenTestSuite 测试入口
@@ -55,6 +56,15 @@ func (s *Struct) Div(a int, b int) int {
 	return a / b
 }
 
+// Expand 展开数组
+//go:noinline
+func (s *Struct) Expand(arg []int) (int, int) {
+	if len(arg) != 2 {
+		return 0, 0
+	}
+	return arg[0], arg[1]
+}
+
 // StructOuter 嵌套结构外层
 type StructOuter struct {
 }
@@ -89,6 +99,43 @@ func (s *WhenTestSuite) TestWhenAndReturn() {
 	})
 }
 
+// TestReturns 依次返回不同的值
+func (s *WhenTestSuite) TestReturns() {
+	s.Run("success", func() {
+		when := mocker.NewWhen(reflect.TypeOf(simple))
+		when.Returns(1, 2, 3)
+
+		s.Equal(1, when.Eval(1)[0], "when result check")
+		s.Equal(2, when.Eval(1)[0], "when result check")
+		s.Equal(3, when.Eval(1)[0], "when result check")
+
+		when.When(2).Returns(4, 5, 6)
+
+		s.Equal(4, when.Eval(2)[0], "when result check")
+		s.Equal(5, when.Eval(2)[0], "when result check")
+		s.Equal(6, when.Eval(2)[0], "when result check")
+
+		// 多参Returns
+		struct1 := new(Struct)
+		m := mocker.Create()
+		m.Struct(struct1).Method("Expand").Returns(
+			[]interface{}{1, 1}, []interface{}{2, 2}, []interface{}{3, 3})
+
+		ret1, ret2 := struct1.Expand([]int{0, 0})
+		s.Equal(1, ret1, "method when check")
+		s.Equal(1, ret2, "method when check")
+
+		ret1, ret2 = struct1.Expand([]int{0, 0})
+		s.Equal(2, ret1, "method when check")
+		s.Equal(2, ret2, "method when check")
+
+		ret1, ret2 = struct1.Expand([]int{0, 0})
+		s.Equal(3, ret1, "method when check")
+		s.Equal(3, ret2, "method when check")
+
+	})
+}
+
 // TestWhenContains 任意一个配
 func (s *WhenTestSuite) TestWhenContains() {
 	s.Run("success", func() {
@@ -98,22 +145,29 @@ func (s *WhenTestSuite) TestWhenContains() {
 		s.Equal(5, when.Eval(1)[0], "when result check")
 		s.Equal(5, when.Eval(1)[0], "when result check")
 		s.Equal(-1, when.Eval(0)[0], "when result check")
+
+		when.Return(-1).When(arg.In(3, 4)).Return(6)
+		s.Equal(6, when.Eval(3)[0], "when result check")
+		s.Equal(6, when.Eval(4)[0], "when result check")
 	})
 }
 
-// TestReturns 测试批量设置条件
-func (s *WhenTestSuite) TestReturns() {
+// TestMatches 测试批量设置条件
+func (s *WhenTestSuite) TestMatches() {
 	s.Run("success", func() {
 		when := mocker.NewWhen(reflect.TypeOf(simple))
-		when.Return(-1).Returns(map[interface{}]interface{}{
-			1: 5,
-			2: 5,
-			3: 6,
-		})
+		when.Return(-1).Matches(
+			arg.Pair{Args: 1, Return: 5},
+			arg.Pair{Args: 2, Return: 5},
+			arg.Pair{Args: 3, Return: 6})
 
 		s.Equal(5, when.Eval(1)[0], "when result check")
 		s.Equal(5, when.Eval(2)[0], "when result check")
 		s.Equal(6, when.Eval(3)[0], "when result check")
+
+		when.Matches(arg.Pair{Args: arg.Any(), Return: 100})
+
+		s.Equal(100, when.Eval(4)[0], "when result check")
 	})
 }
 
@@ -165,5 +219,46 @@ func (s *WhenTestSuite) TestMethodWhen() {
 			return a/b + 1
 		})
 		s.Equal(3, structOuter.Compute(2, 1), "method when check")
+	})
+}
+
+// TestMethodAny 方法参数Any条件匹配
+func (s *WhenTestSuite) TestMethodAny() {
+	s.Run("success", func() {
+		structOuter := new(StructOuter)
+		struct1 := new(Struct)
+		m := mocker.Create()
+
+		m.Struct(struct1).Method("Div").When(3, arg.Any()).Return(100)
+		s.Equal(100, structOuter.Compute(3, 1), "method when check")
+		s.Equal(100, structOuter.Compute(3, 2), "method when check")
+		s.Equal(100, structOuter.Compute(3, -1), "method when check")
+	})
+}
+
+// TestMethodMultiIn 方法参数Any条件匹配
+func (s *WhenTestSuite) TestMethodMultiIn() {
+	s.Run("success", func() {
+		structOuter := new(StructOuter)
+		struct1 := new(Struct)
+		m := mocker.Create()
+
+		when := m.Struct(struct1).Method("Div").Return(-1).When(arg.In(3, 4), arg.Any()).Return(100)
+		s.Equal(100, structOuter.Compute(3, 1), "method when check")
+		s.Equal(100, structOuter.Compute(3, 2), "method when check")
+		s.Equal(100, structOuter.Compute(4, 3), "method when check")
+		s.Equal(100, structOuter.Compute(3, -1), "method when check")
+
+		when.In([]interface{}{5, arg.Any()}).Return(101)
+		s.Equal(101, structOuter.Compute(5, 1), "method when check")
+		s.Equal(101, structOuter.Compute(5, 2), "method when check")
+		s.Equal(101, structOuter.Compute(5, -1), "method when check")
+
+		when.Matches(
+			arg.Pair{Args: []interface{}{6, arg.Any()}, Return: []interface{}{101}},
+			arg.Pair{Args: []interface{}{7, arg.Any()}, Return: []interface{}{102}},
+		)
+		s.Equal(101, structOuter.Compute(6, -1), "method when check")
+		s.Equal(102, structOuter.Compute(7, -1), "method when check")
 	})
 }

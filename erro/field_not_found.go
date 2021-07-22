@@ -1,4 +1,4 @@
-package errobj
+package erro
 
 // FieldNotFound 类型没有找到
 type FieldNotFound struct {
@@ -8,7 +8,7 @@ type FieldNotFound struct {
 
 // FieldNotFound 类型没有找到
 func (t *FieldNotFound) Error() string {
-	return "field not found:" + t.typName + "." + t.fieldName
+	return "field not found: " + t.typName + "." + t.fieldName
 }
 
 // NewFieldNotFoundError 创建类型未找到异常

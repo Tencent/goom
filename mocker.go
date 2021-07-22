@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"strings"
 
-	"git.code.oa.com/goom/mocker/errobj"
+	"git.code.oa.com/goom/mocker/erro"
 	"git.code.oa.com/goom/mocker/internal/proxy"
 	"git.code.oa.com/goom/mocker/internal/unexports"
 )
@@ -31,11 +31,11 @@ type ExportedMocker interface {
 	// When 指定条件匹配
 	When(args ...interface{}) *When
 	// Return 执行返回值
-	Return(args ...interface{}) *When
+	Return(ret ...interface{}) *When
+	// Returns 依次按顺序返回值, 如果是多参可使用[]interface{}
+	Returns(rets ...interface{}) *When
 	// Origin 指定Mock之后的原函数, origin签名和mock的函数一致
 	Origin(origin interface{}) ExportedMocker
-	// If 条件表达式匹配
-	If() *If
 }
 
 // UnExportedMocker 未导出函数mock接口
@@ -56,7 +56,6 @@ type baseMocker struct {
 	imp     interface{}
 
 	when *When
-	_if  *If
 	// canceled 是否被取消
 	canceled bool
 }
@@ -110,12 +109,12 @@ func (m *baseMocker) applyByIFaceMethod(ctx *proxy.IContext, iFace interface{}, 
 
 	impV := reflect.TypeOf(imp)
 	if impV.In(0) != reflect.TypeOf(&IContext{}) {
-		panic(errobj.NewIllegalParamTypeError("<first arg>", impV.In(0).Name(), "*IContext"))
+		panic(erro.NewIllegalParamTypeError("<first arg>", impV.In(0).Name(), "*IContext"))
 	}
 
 	err := proxy.MakeInterfaceImpl(iFace, ctx, method, imp, implV)
 	if err != nil {
-		panic(errobj.NewTraceableErrorf("interface mock apply error", err))
+		panic(erro.NewTraceableErrorf("interface mock apply error", err))
 	}
 
 	m.guard = NewIFaceMockGuard(ctx)
@@ -131,14 +130,6 @@ func (m *baseMocker) whens(when *When) error {
 	return nil
 }
 
-// if 指定的返回值 TODO 功能在适配中
-// func (m *baseMocker) ifs(_if *If) error {
-// 	m.imp = reflect.MakeFunc(_if.funcTyp, m.callback).Interface()
-// 	m._if = _if
-//
-// 	return nil
-// }
-
 // callback 通用的MakeFunc callback
 func (m *baseMocker) callback(args []reflect.Value) (results []reflect.Value) {
 	if m.when != nil {
@@ -149,14 +140,7 @@ func (m *baseMocker) callback(args []reflect.Value) (results []reflect.Value) {
 		}
 	}
 
-	if m._if != nil {
-		results = m._if.invoke(args)
-		if results != nil {
-			return results
-		}
-	}
-
-	panic("not match any args, please spec default return use: mocker.Return()")
+	panic("there is no suitable condition matched, or set default return with: mocker.Return(...)")
 }
 
 // Cancel 取消Mock
@@ -166,7 +150,6 @@ func (m *baseMocker) Cancel() {
 	}
 
 	m.when = nil
-	m._if = nil
 	m.origin = nil
 	m.canceled = true
 }
@@ -279,13 +262,13 @@ func (m *MethodMocker) When(args ...interface{}) *When {
 }
 
 // Return 指定返回值
-func (m *MethodMocker) Return(returns ...interface{}) *When {
+func (m *MethodMocker) Return(ret ...interface{}) *When {
 	if m.method == "" {
 		panic("method is empty")
 	}
 
 	if m.when != nil {
-		return m.when.Return(returns...)
+		return m.when.Return(ret...)
 	}
 
 	var (
@@ -293,7 +276,7 @@ func (m *MethodMocker) Return(returns ...interface{}) *When {
 		err  error
 	)
 
-	if when, err = CreateWhen(m, m.methodIns, nil, returns, true); err != nil {
+	if when, err = CreateWhen(m, m.methodIns, nil, ret, true); err != nil {
 		panic(err)
 	}
 
@@ -306,15 +289,39 @@ func (m *MethodMocker) Return(returns ...interface{}) *When {
 	return when
 }
 
+// Returns 依次按顺序返回值
+func (m *MethodMocker) Returns(rets ...interface{}) *When {
+	if m.method == "" {
+		panic("method is empty")
+	}
+
+	if m.when != nil {
+		return m.when.Returns(rets...)
+	}
+
+	var (
+		when *When
+		err  error
+	)
+
+	if when, err = CreateWhen(m, m.methodIns, nil, nil, true); err != nil {
+		panic(err)
+	}
+
+	if err := m.whens(when); err != nil {
+		panic(err)
+	}
+
+	m.when.Returns(rets...)
+	m.Apply(m.imp)
+
+	return when
+}
+
 // Origin 指定调用的原函数
 func (m *MethodMocker) Origin(origin interface{}) ExportedMocker {
 	m.origin = origin
 	return m
-}
-
-// If 条件子句
-func (m *MethodMocker) If() *If {
-	return nil
 }
 
 // UnexportedMethodMocker 对结构体函数或方法进行mock
@@ -528,14 +535,34 @@ func (m *DefMocker) Return(returns ...interface{}) *When {
 	return when
 }
 
+// Returns 依次按顺序返回值, 如果是多参可使用[]interface{}
+func (m *DefMocker) Returns(rets ...interface{}) *When {
+	if m.when != nil {
+		return m.when.Returns(rets...)
+	}
+
+	var (
+		when *When
+		err  error
+	)
+
+	if when, err = CreateWhen(m, m.funcDef, nil, nil, false); err != nil {
+		panic(err)
+	}
+
+	if err := m.whens(when); err != nil {
+		panic(err)
+	}
+
+	m.when.Returns(rets...)
+	m.Apply(m.imp)
+
+	return when
+}
+
 // Origin 调用原函数
 // origin需要和原函数的参数列表保持一致
 func (m *DefMocker) Origin(origin interface{}) ExportedMocker {
 	m.origin = origin
 	return m
-}
-
-// If 条件子句
-func (m *DefMocker) If() *If {
-	return nil
 }

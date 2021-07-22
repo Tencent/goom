@@ -1,5 +1,5 @@
-// Package errobj 收拢了所有的错误类型,错误溯源类型等
-package errobj
+// Package erro 收拢了所有的错误类型,错误溯源类型等
+package erro
 
 // Traceable 带原因的异常类型
 type Traceable interface {

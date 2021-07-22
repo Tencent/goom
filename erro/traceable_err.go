@@ -1,4 +1,4 @@
-package errobj
+package erro
 
 // TraceableError 可跟踪的错误，异常转述包装
 type TraceableError struct {

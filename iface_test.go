@@ -63,11 +63,12 @@ func (s *ifaceMockerTestSuite) TestUnitInterfaceReturn() {
 		}).When("").Return("ok")
 		mock.Interface(&i).Method("call2").As(func(ctx *mocker.IContext, i int32) int32 {
 			return 0
-		}).Return(int32(5))
+		}).Returns(int32(5), int32(6))
 
 		s.Equal(3, i.Call(1), "interface mock check")
 		s.Equal("ok", i.Call1(""), "interface mock check")
 		s.Equal(int32(5), i.call2(0), "interface mock check")
+		s.Equal(int32(6), i.call2(0), "interface mock check")
 
 		s.NotNil(i, "interface var nil check")
 

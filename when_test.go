@@ -133,6 +133,11 @@ func (s *WhenTestSuite) TestReturns() {
 		s.Equal(3, ret1, "method when check")
 		s.Equal(3, ret2, "method when check")
 
+		// 复杂返回结构
+		when = mocker.NewWhen(reflect.TypeOf(complex1))
+		when.Returns(&Result{}, nil)
+		s.Equal(&Result{}, when.Eval(Arg{})[0], "when result check")
+		s.Equal(nil, when.Eval(Arg{})[0], "when result check")
 	})
 }
 

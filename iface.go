@@ -174,7 +174,7 @@ func (m *DefaultInterfaceMocker) Returns(returns ...interface{}) *When {
 		panic(err)
 	}
 
-	m.when.Returns(returns...)
+	when.Returns(returns...)
 	m.applyByIFaceMethod(m.ctx, m.iFace, m.method, m.funcDef, m.callback)
 	m.when = when
 

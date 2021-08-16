@@ -278,8 +278,12 @@ s.Equal(101, foo1(1), "call origin result check")
 ```
 
 ## 问题答疑
-[问题答疑记录wiki地址](https://iwiki.woa.com/pages/viewpage.action?pageId=263748529)
-
+[问题答疑记录wiki地址](https://iwiki.woa.com/pages/viewpage.action?pageId=263748529)    
+常见问题:
+1. 如果是Arm架构的MAC机器, 请添加编译参数:
+```shell
+GOARCH=amd64
+```
 
 ## Contributor
 @yongfuchen、@adrewchen、@ivyyi、@miliao

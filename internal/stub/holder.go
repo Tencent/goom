@@ -33,6 +33,12 @@ func Placeholder()
 func init() {
 	offset := reflect.ValueOf(Placeholder).Pointer()
 
+	// 兼容go 1.17(1.17以上会对assembler函数进行wrap, 需要找到其内部的调用)
+	innerOffset, err := patch.GetInnerFunc(64, offset)
+	if innerOffset > 0 && err == nil {
+		offset = innerOffset
+	}
+
 	size, err := patch.GetFuncSize(64, offset, false)
 	if err != nil {
 		logger.LogError("GetFuncSize error", err)

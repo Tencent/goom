@@ -72,6 +72,41 @@ func GetFuncSize(mode int, start uintptr, minimal bool) (lenth int, err error) {
 	}
 }
 
+// Get the first real func location from wrapper
+// not absolutely safe
+func GetInnerFunc(mode int, start uintptr) (uintptr, error) {
+	prologueLen := len(funcPrologue)
+	code := rawMemoryRead(start, 16) // instruction takes at most 16 bytes
+
+	int3Found := false
+	curLen := 0
+
+	for {
+		inst, err := x86asm.Decode(code, mode)
+		if err != nil || (inst.Opcode == 0 && inst.Len == 1 && inst.Prefix[0] == x86asm.Prefix(code[0])) {
+			return 0, nil
+		}
+
+		if inst.Len == 1 && code[0] == 0xcc {
+			int3Found = true
+		} else if int3Found {
+			return 0, nil
+		}
+
+		if inst.Op.String() == callInsName {
+			relativeAddr := decodeRelativeAddr(&inst, code, inst.PCRelOff)
+			return start + (uintptr)(relativeAddr) + uintptr(inst.Len), nil
+		}
+
+		curLen = curLen + inst.Len
+		code = rawMemoryRead(start+uintptr(curLen), 16) // instruction takes at most 16 bytes
+
+		if bytes.Equal(funcPrologue, code[:prologueLen]) {
+			return 0, nil
+		}
+	}
+}
+
 // value value
 type value struct {
 	_   uintptr

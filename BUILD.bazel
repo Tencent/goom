@@ -1,0 +1,49 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@bazel_gazelle//:def.bzl", "gazelle")
+
+# gazelle:go_naming_convention go_default_library
+# gazelle:prefix git.code.oa.com/goom/mocker
+# gazelle:proto disable
+gazelle(
+    name = "gazelle",
+)
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "builder.go",
+        "cache.go",
+        "guard.go",
+        "iface.go",
+        "matcher.go",
+        "mocker.go",
+        "reflect.go",
+        "when.go",
+    ],
+    importpath = "git.code.oa.com/goom/mocker",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//arg:go_default_library",
+        "//erro:go_default_library",
+        "//internal/logger:go_default_library",
+        "//internal/patch:go_default_library",
+        "//internal/proxy:go_default_library",
+        "//internal/unexports:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = [
+        "builder_test.go",
+        "iface_test.go",
+        "when_test.go",
+    ],
+    embed = [":go_default_library"],
+    deps = [
+        "//arg:go_default_library",
+        "//erro:go_default_library",
+        "//testdata:go_default_library",
+        "@com_github_stretchr_testify//suite:go_default_library",
+    ],
+)

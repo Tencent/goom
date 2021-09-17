@@ -1,0 +1,21 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "arg_not_found.go",
+        "arg_not_match.go",
+        "field_not_found.go",
+        "func_not_found.go",
+        "illegal_param.go",
+        "illegal_param_type.go",
+        "illegal_status.go",
+        "ret_param_not_found.go",
+        "return_not_match.go",
+        "traceable.go",
+        "traceable_err.go",
+        "type_not_found.go",
+    ],
+    importpath = "git.code.oa.com/goom/mocker/erro",
+    visibility = ["//visibility:public"],
+)

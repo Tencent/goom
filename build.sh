@@ -1,4 +1,5 @@
 #!/bin/bash
 
-go mod tidy
-go build
+cd ${WORKSPACE}/${projectPath}
+
+bazel build ...

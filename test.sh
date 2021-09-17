@@ -1,12 +1,13 @@
 #! /bin/bash
 
-# 未 Bazel 化的 Go 项目 test.sh 示例，仅为示例，请根据实际情况调整！
 cd ${WORKSPACE}/${projectPath}
+bazel clean
 # 单元测试命令
-go test -v -gcflags=all=-l -covermode=count -coverpkg=./... -coverprofile=coverage_unit.out $(go list ./... | grep -v apitest | grep -v x86asm | grep -v proxy) | tee report.out
-# 归置测试产物
-# 归置单测覆盖率报告文件
-zip coverage coverage_unit.out
+bazel coverage ... --test_arg=-test.v
+# 收集覆盖率产物 cover.out
+python ${WORKSPACE}/ops/ci/coverage/convert_bazel_dat_to_coverfile.py ${WORKSPACE}/${projectPath}/bazel-testlogs
+zip coverage cover.out
 cp coverage.zip ${testOutputDir}/coverage.zip
-# 归置测试报告文件
-cp report.out ${testOutputDir}/report.out
+# 归置测试报告
+zip report -r bazel-testlogs
+cp report.zip ${testOutputDir}/report.zip

@@ -1,0 +1,40 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "binary_util.go",
+        "func_util.go",
+        "guard.go",
+        "inline_chk.go",
+        "ins_fix.go",
+        "monkey.go",
+        "monkey_386.go",
+        "monkey_amd64.go",
+        "monkey_arm64.go",
+        "patch.go",
+        "replace.go",
+        "replace_unix.go",
+        "replace_windows.go",
+        "trampoline.go",
+    ],
+    importpath = "git.code.oa.com/goom/mocker/internal/patch",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "//internal/logger:go_default_library",
+        "//internal/unexports:go_default_library",
+        "//internal/x86asm:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = [
+        "ins_fix_test.go",
+    ],
+    embed = [":go_default_library"],
+    deps = [
+        "//internal/logger:go_default_library",
+        "@com_github_stretchr_testify//assert:go_default_library",
+    ],
+)

@@ -1,0 +1,35 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "interface.go",
+        "proxy.go",
+    ],
+    importpath = "git.code.oa.com/goom/mocker/internal/proxy",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "//erro:go_default_library",
+        "//internal/hack:go_default_library",
+        "//internal/logger:go_default_library",
+        "//internal/patch:go_default_library",
+        "//internal/stub:go_default_library",
+        "//internal/unexports:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = [
+        "interface_test.go",
+        "proxy_data_test.go",
+        "proxy_fixins_test.go",
+        "proxy_test.go",
+    ],
+    embed = [":go_default_library"],
+    deps = [
+        "//internal/hack:go_default_library",
+        "//internal/logger:go_default_library",
+        "//internal/stub:go_default_library",
+    ],
+)

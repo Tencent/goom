@@ -8,8 +8,5 @@ package unexports
 import "git.code.oa.com/goom/mocker/internal/hack"
 
 func checkOverflow(ftab hack.Functab, moduleData *hack.Moduledata) bool {
-	if ftab.Funcoff >= uint32(len(moduleData.Pclntable)) {
-		return true
-	}
-	return false
+	return ftab.Funcoff >= uint32(len(moduleData.Pclntable))
 }

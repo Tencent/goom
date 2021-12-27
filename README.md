@@ -158,8 +158,10 @@ mock := mocker.Create()
 // 任意接口变量
 i := (I)(nil)
 
-// 将Mock应用到接口变量; 非全局mock, 仅对该接口变量有效, 因此需要将被测逻辑结构中的I类型属性或变量替换为i,mock才可生效
-// Apply调用的第一个参数必须为*mocker.IContext, 作用是指定接口实现的接收体; 后续的参数原样照抄。
+// 将Mock应用到接口变量,不支持对接口的所有实现类生效。 
+// 1. interface mock只对mock.Interface(&目标接口变量) 的目标接口变量生效, 因此需要将被测逻辑结构中的I类型属性或变量替换为i,mock才可生效
+// 2. 一般建议使用struct mock即可。
+// 3. Apply调用的第一个参数必须为*mocker.IContext, 作用是指定接口实现的接收体; 后续的参数原样照抄。
 mock.Interface(&i).Method("Call").Apply(func(ctx *mocker.IContext, i int) int {
     return 100
 })

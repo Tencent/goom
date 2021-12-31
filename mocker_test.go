@@ -378,6 +378,7 @@ func (s *mockerTestSuite) TestVarApply() {
 	})
 }
 
+// globalVar 用于测试全局变量mock
 var globalVar = 1
 
 //go:noinline

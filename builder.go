@@ -154,6 +154,18 @@ func (b *Builder) ExportFunc(name string) *UnexportedFuncMocker {
 	return mocker
 }
 
+// Var 变量mock, 主要方便Reset
+func (b *Builder) Var(target interface{}) VarMock {
+	cacheKey := fmt.Sprintf("var_%d", reflect.ValueOf(target).Pointer())
+	if mocker, ok := b.mCache[cacheKey]; ok && !mocker.Canceled() {
+		return mocker.(VarMock)
+	}
+
+	mocker := NewVarMocker(target)
+	b.cache(cacheKey, mocker)
+	return mocker
+}
+
 // Reset 取消当前builder的所有Mock
 func (b *Builder) Reset() *Builder {
 	for _, mocker := range b.mockers {

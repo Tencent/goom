@@ -344,7 +344,7 @@ func (s *mockerTestSuite) TestUnitEmptyMatch() {
 }
 
 func (s *mockerTestSuite) TestUnitNilReturn() {
-	s.Run("nil return ", func() {
+	s.Run("nil return", func() {
 		mocker.Create().Func(getS).Return(nil, s.fakeErr)
 
 		res, err := getS()
@@ -353,6 +353,32 @@ func (s *mockerTestSuite) TestUnitNilReturn() {
 		s.Equal(s.fakeErr, err)
 	})
 }
+
+// TestVarMock 测试简单变量mock
+func (s *mockerTestSuite) TestVarMock() {
+	s.Run("simple var mock", func() {
+		mock := mocker.Create()
+		mock.Var(&globalVar).Return(2)
+		s.Equal(2, globalVar)
+		mock.Reset()
+		s.Equal(1, globalVar)
+	})
+}
+
+// TestVarApply 测试变量应用mock
+func (s *mockerTestSuite) TestVarApply() {
+	s.Run("var mock apply", func() {
+		mock := mocker.Create()
+		mock.Var(&globalVar).Apply(func() int {
+			return 2
+		})
+		s.Equal(2, globalVar)
+		mock.Reset()
+		s.Equal(1, globalVar)
+	})
+}
+
+var globalVar = 1
 
 //go:noinline
 func foo(i int) int {

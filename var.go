@@ -14,7 +14,7 @@ type VarMock interface {
 type defaultVarMocker struct {
 	target      interface{}
 	mockValue   interface{}
-	originValue reflect.Value
+	originValue interface{}
 	canceled    bool // canceled 是否被取消
 }
 
@@ -48,7 +48,7 @@ func (m *defaultVarMocker) Apply(valueCallback interface{}) {
 // Cancel 取消mock
 func (m *defaultVarMocker) Cancel() {
 	t := reflect.ValueOf(m.target)
-	t.Elem().Set(m.originValue)
+	t.Elem().Set(reflect.ValueOf(m.originValue))
 	m.canceled = true
 }
 
@@ -65,7 +65,7 @@ func (m *defaultVarMocker) Return(ret ...interface{}) *When {
 	}
 
 	t := reflect.ValueOf(m.target)
-	m.originValue = reflect.ValueOf(t.Elem().Interface())
+	m.originValue = t.Elem().Interface()
 	d := reflect.ValueOf(ret[0])
 	t.Elem().Set(d)
 	m.mockValue = ret[0]

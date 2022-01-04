@@ -32,7 +32,7 @@ func NewVarMocker(target interface{}) VarMock {
 }
 
 // Apply 变量取值回调函数, 只会执行一次
-// 注意: Apply会覆盖之前设定的Set
+// 注意: Apply会覆盖之前设定Set的值
 func (m *defaultVarMocker) Apply(valueCallback interface{}) {
 	f := reflect.ValueOf(valueCallback)
 	if f.Kind() != reflect.Func {
@@ -59,7 +59,7 @@ func (m *defaultVarMocker) Canceled() bool {
 }
 
 // Set 设置变量值
-// 注意: Set会覆盖之前设定的Apply
+// 注意: Set会覆盖之前设定Apply的值
 func (m *defaultVarMocker) Set(val interface{}) {
 	t := reflect.ValueOf(m.target)
 	m.originValue = t.Elem().Interface()

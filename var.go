@@ -7,7 +7,7 @@ import "reflect"
 // 主要提供方便变量mock/reset场景的能力支持
 type VarMock interface {
 	Mocker
-	// Set 设置返回值, val类型必须和变量指针指向的值的类型一致
+	// Set 设置变量值, val类型必须和变量指针指向的值的类型一致
 	Set(val interface{})
 }
 

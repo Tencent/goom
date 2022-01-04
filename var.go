@@ -4,7 +4,7 @@ import "reflect"
 
 // VarMock 变量mock
 // 支持全局变量, 任意类型包括不限于基本类型，结构体，函数变量，指针与非指针类型
-// 主要提供方便变量Reset场景的能力支持
+// 主要提供方便变量mock/reset场景的能力支持
 type VarMock interface {
 	Mocker
 	// Set 设置返回值, val类型必须和变量指针指向的值的类型一致

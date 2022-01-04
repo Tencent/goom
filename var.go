@@ -4,10 +4,11 @@ import "reflect"
 
 // VarMock 变量mock
 // 支持全局变量, 任意类型包括不限于基本类型，结构体，函数变量，指针与非指针类型
+// 主要提供方便变量Reset场景的能力支持
 type VarMock interface {
 	Mocker
-	// Return 执行返回值
-	Return(ret ...interface{}) *When
+	// Set 设置返回值, val类型必须和变量指针指向的值的类型一致
+	Set(val interface{})
 }
 
 // defaultVarMocker 默认变量mock实现
@@ -31,7 +32,7 @@ func NewVarMocker(target interface{}) VarMock {
 }
 
 // Apply 变量取值回调函数, 只会执行一次
-// 注意: Apply会覆盖之前设定的Return
+// 注意: Apply会覆盖之前设定的Set
 func (m *defaultVarMocker) Apply(valueCallback interface{}) {
 	f := reflect.ValueOf(valueCallback)
 	if f.Kind() != reflect.Func {
@@ -42,7 +43,7 @@ func (m *defaultVarMocker) Apply(valueCallback interface{}) {
 		panic("VarMock Apply valueCallback's returns length must be 1.")
 	}
 
-	m.Return(ret[0].Interface())
+	m.Set(ret[0].Interface())
 }
 
 // Cancel 取消mock
@@ -57,17 +58,12 @@ func (m *defaultVarMocker) Canceled() bool {
 	return m.canceled
 }
 
-// Return 设置变量值
-// 注意: Return会覆盖之前设定的Apply; 参数ret个数必须为1, 如果大于1则去第0个
-func (m *defaultVarMocker) Return(ret ...interface{}) *When {
-	if len(ret) == 0 {
-		panic("VarMock return value must not be empty.")
-	}
-
+// Set 设置变量值
+// 注意: Set会覆盖之前设定的Apply
+func (m *defaultVarMocker) Set(val interface{}) {
 	t := reflect.ValueOf(m.target)
 	m.originValue = t.Elem().Interface()
-	d := reflect.ValueOf(ret[0])
+	d := reflect.ValueOf(val)
 	t.Elem().Set(d)
-	m.mockValue = ret[0]
-	return nil
+	m.mockValue = val
 }

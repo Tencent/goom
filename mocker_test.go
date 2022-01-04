@@ -358,7 +358,7 @@ func (s *mockerTestSuite) TestUnitNilReturn() {
 func (s *mockerTestSuite) TestVarMock() {
 	s.Run("simple var mock", func() {
 		mock := mocker.Create()
-		mock.Var(&globalVar).Return(2)
+		mock.Var(&globalVar).Set(2)
 		s.Equal(2, globalVar)
 		mock.Reset()
 		s.Equal(1, globalVar)

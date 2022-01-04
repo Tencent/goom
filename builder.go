@@ -154,7 +154,7 @@ func (b *Builder) ExportFunc(name string) *UnexportedFuncMocker {
 	return mocker
 }
 
-// Var 变量mock, 主要方便Reset
+// Var 变量mock, target类型必须传递指针类型
 func (b *Builder) Var(target interface{}) VarMock {
 	cacheKey := fmt.Sprintf("var_%d", reflect.ValueOf(target).Pointer())
 	if mocker, ok := b.mCache[cacheKey]; ok && !mocker.Canceled() {

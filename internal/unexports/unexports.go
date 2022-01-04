@@ -29,7 +29,7 @@ func FindFuncByName(name string) (uintptr, error) {
 	suggester := newSuggester(name)
 	for moduleData := &hack.Firstmoduledata; moduleData != nil; moduleData = moduleData.Next {
 		for _, ftab := range moduleData.Ftab {
-			if ftab.Funcoff >= uintptr(len(moduleData.Pclntable)) {
+			if checkOverflow(ftab, moduleData) {
 				break
 			}
 			f := (*runtime.Func)(unsafe.Pointer(&moduleData.Pclntable[ftab.Funcoff]))
@@ -74,7 +74,7 @@ func funcName(f *runtime.Func) string {
 func FindFuncByPtr(ptr uintptr) (*runtime.Func, string, error) {
 	for moduleData := &hack.Firstmoduledata; moduleData != nil; moduleData = moduleData.Next {
 		for _, ftab := range moduleData.Ftab {
-			if ftab.Funcoff >= uintptr(len(moduleData.Pclntable)) {
+			if checkOverflow(ftab, moduleData) {
 				break
 			}
 			f := (*runtime.Func)(unsafe.Pointer(&moduleData.Pclntable[ftab.Funcoff]))

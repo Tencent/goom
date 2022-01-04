@@ -23,7 +23,7 @@
 
 ## Install
 ```bash
-# 支持的golang版本: go1.13-go1.17
+# 支持的golang版本: go1.11-go1.18
 go get git.code.oa.com/goom/mocker
 ```
 
@@ -55,7 +55,7 @@ mock := mocker.Create()
 mock.Func(foo).Return(1)
 s.Equal(1, foo(0), "return result check")
 
-// 参数匹配时返回指定值
+// 可搭配When使用: 参数匹配时返回指定值
 mock.Func(foo).When(1).Return(2)
 s.Equal(2, foo(1), "when result check")
 
@@ -71,6 +71,8 @@ s.Equal(2, foo(0), "returns result check")
 s.Equal(3, foo(0), "returns result check")
 
 // mock函数foo，使用Apply方法设置回调函数
+// 注意: Apply和直接使用Return都可以实现mock，两种方式二选一即可
+// Apply可以在桩函数内部实现自己的逻辑，比如根据不同参数返回不同值等等。
 mock.Func(foo).Apply(func(int) int {
     return 1
 })
@@ -156,8 +158,10 @@ mock := mocker.Create()
 // 任意接口变量
 i := (I)(nil)
 
-// 将Mock应用到接口变量; 非全局mock, 仅对该接口变量有效, 因此需要将被测逻辑结构中的I类型属性或变量替换为i,mock才可生效
-// Apply调用的第一个参数必须为*mocker.IContext, 作用是指定接口实现的接收体; 后续的参数原样照抄。
+// 将Mock应用到接口变量,不支持对接口的所有实现类生效。 
+// 1. interface mock只对mock.Interface(&目标接口变量) 的目标接口变量生效, 因此需要将被测逻辑结构中的I类型属性或变量替换为i,mock才可生效
+// 2. 一般建议使用struct mock即可。
+// 3. Apply调用的第一个参数必须为*mocker.IContext, 作用是指定接口实现的接收体; 后续的参数原样照抄。
 mock.Interface(&i).Method("Call").Apply(func(ctx *mocker.IContext, i int) int {
     return 100
 })

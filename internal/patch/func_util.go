@@ -72,7 +72,7 @@ func GetFuncSize(mode int, start uintptr, minimal bool) (lenth int, err error) {
 	}
 }
 
-// Get the first real func location from wrapper
+// GetInnerFunc Get the first real func location from wrapper
 // not absolutely safe
 func GetInnerFunc(mode int, start uintptr) (uintptr, error) {
 	prologueLen := len(funcPrologue)

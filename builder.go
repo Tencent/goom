@@ -17,9 +17,7 @@ import (
 // Builder Mock构建器, 负责创建一个链式构造器.
 type Builder struct {
 	pkgName string
-	mockers []Mocker
-
-	mCache map[interface{}]Mocker
+	mockers map[interface{}]Mocker
 }
 
 // Pkg 指定包名，当前包无需指定
@@ -43,7 +41,7 @@ func Create() *Builder {
 	const currentPackageIndex = 2
 	return &Builder{
 		pkgName: currentPkg(currentPackageIndex),
-		mCache:  make(map[interface{}]Mocker, 30),
+		mockers: make(map[interface{}]Mocker, 30),
 	}
 }
 
@@ -51,7 +49,7 @@ func Create() *Builder {
 // iFace 必须是指针类型, 比如 i为interface类型变量, iFace传递&i
 func (b *Builder) Interface(iFace interface{}) *CachedInterfaceMocker {
 	mKey := reflect.TypeOf(iFace).String()
-	if mocker, ok := b.mCache[mKey]; ok && !mocker.Canceled() {
+	if mocker, ok := b.mockers[mKey]; ok && !mocker.Canceled() {
 		b.reset2CurPkg()
 
 		return mocker.(*CachedInterfaceMocker)
@@ -70,15 +68,14 @@ func (b *Builder) Interface(iFace interface{}) *CachedInterfaceMocker {
 
 // cache 添加到缓存
 func (b *Builder) cache(mKey interface{}, cachedMocker Mocker) {
-	b.mockers = append(b.mockers, cachedMocker)
-	b.mCache[mKey] = cachedMocker
+	b.mockers[mKey] = cachedMocker
 }
 
 // Struct 指定结构体名称
 // 比如需要mock结构体函数 (*conn).Write(b []byte)，则name="conn"
 func (b *Builder) Struct(obj interface{}) *CachedMethodMocker {
 	mKey := reflect.ValueOf(obj).Type().String()
-	if mocker, ok := b.mCache[mKey]; ok && !mocker.Canceled() {
+	if mocker, ok := b.mockers[mKey]; ok && !mocker.Canceled() {
 		b.reset2CurPkg()
 		return mocker.(*CachedMethodMocker)
 	}
@@ -96,24 +93,22 @@ func (b *Builder) Struct(obj interface{}) *CachedMethodMocker {
 // funcDef 函数，比如 foo
 // 方法的mock, 比如 &Struct{}.method
 func (b *Builder) Func(obj interface{}) *DefMocker {
-	if mocker, ok := b.mCache[reflect.ValueOf(obj)]; ok && !mocker.Canceled() {
+	var key = runtime.FuncForPC(reflect.ValueOf(obj).Pointer()).Name()
+	if mocker, ok := b.mockers[key]; ok && !mocker.Canceled() {
 		b.reset2CurPkg()
-
 		return mocker.(*DefMocker)
 	}
 
 	mocker := NewDefMocker(b.pkgName, obj)
-
-	b.cache(reflect.ValueOf(obj), mocker)
+	b.cache(key, mocker)
 	b.reset2CurPkg()
-
 	return mocker
 }
 
 // ExportStruct 导出私有结构体
 // 比如需要mock结构体函数 (*conn).Write(b []byte)，则name="conn"
 func (b *Builder) ExportStruct(name string) *CachedUnexportedMethodMocker {
-	if mocker, ok := b.mCache[b.pkgName+"_"+name]; ok && !mocker.Canceled() {
+	if mocker, ok := b.mockers[b.pkgName+"_"+name]; ok && !mocker.Canceled() {
 		b.reset2CurPkg()
 		return mocker.(*CachedUnexportedMethodMocker)
 	}
@@ -141,7 +136,7 @@ func (b *Builder) ExportFunc(name string) *UnexportedFuncMocker {
 		panic("func name is empty")
 	}
 
-	if mocker, ok := b.mCache[b.pkgName+"_"+name]; ok && !mocker.Canceled() {
+	if mocker, ok := b.mockers[b.pkgName+"_"+name]; ok && !mocker.Canceled() {
 		b.reset2CurPkg()
 		return mocker.(*UnexportedFuncMocker)
 	}
@@ -157,7 +152,7 @@ func (b *Builder) ExportFunc(name string) *UnexportedFuncMocker {
 // Var 变量mock, target类型必须传递指针类型
 func (b *Builder) Var(target interface{}) VarMock {
 	cacheKey := fmt.Sprintf("var_%d", reflect.ValueOf(target).Pointer())
-	if mocker, ok := b.mCache[cacheKey]; ok && !mocker.Canceled() {
+	if mocker, ok := b.mockers[cacheKey]; ok && !mocker.Canceled() {
 		return mocker.(VarMock)
 	}
 
@@ -170,8 +165,8 @@ func (b *Builder) Var(target interface{}) VarMock {
 func (b *Builder) Reset() *Builder {
 	for _, mocker := range b.mockers {
 		mocker.Cancel()
+		logger.Log2Consolef(logger.DebugLevel, "mockers [%s] resets.", mocker.String())
 	}
-
 	return b
 }
 
@@ -205,13 +200,26 @@ func currentPkg(skip int) string {
 	return callerName[:realIndex]
 }
 
-// DebugEnable 开启debug模式
-func DebugEnable(enable bool) {
-	if enable {
-		logger.SetLog2Console(true)
-		logger.LogLevel = logger.DebugLevel
-	} else {
-		logger.LogLevel = logger.InfoLevel
-		logger.SetLog2Console(false)
-	}
+// OpenDebug 开启debug模式
+func OpenDebug() {
+	logger.ConsoleLevel = logger.DebugLevel
+}
+
+// CloseDebug 关闭debug模式
+func CloseDebug() {
+	logger.ConsoleLevel = logger.WarningLevel
+}
+
+// OpenTrace 打开日志跟踪
+func OpenTrace() {
+	OpenDebug()
+	logger.SetLog2Console(true)
+	logger.LogLevel = logger.TraceLevel
+}
+
+// CloseTrace 关闭日志跟踪
+func CloseTrace() {
+	CloseDebug()
+	logger.LogLevel = logger.InfoLevel
+	logger.SetLog2Console(false)
 }

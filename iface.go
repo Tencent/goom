@@ -4,9 +4,11 @@
 package mocker
 
 import (
+	"fmt"
 	"reflect"
 	"unsafe"
 
+	"git.code.oa.com/goom/mocker/internal/logger"
 	"git.code.oa.com/goom/mocker/internal/proxy"
 )
 
@@ -40,6 +42,15 @@ type DefaultInterfaceMocker struct {
 	iFace   interface{}
 	method  string
 	funcDef interface{}
+}
+
+// Name 接口Mock名称
+func (m *DefaultInterfaceMocker) String() string {
+	t := reflect.TypeOf(m.iFace)
+	if t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
+	return fmt.Sprintf("%s.%s", t.String(), m.method)
 }
 
 // NewDefaultInterfaceMocker 创建默认接口Mocker
@@ -189,4 +200,11 @@ func (m *DefaultInterfaceMocker) Origin(interface{}) ExportedMocker {
 // Inject 回调原函数(暂时不支持)
 func (m *DefaultInterfaceMocker) Inject(interface{}) InterfaceMocker {
 	panic("implement me")
+}
+
+// applyByIFaceMethod 根据接口方法应用mock
+func (m *DefaultInterfaceMocker) applyByIFaceMethod(ctx *proxy.IContext, iFace interface{},
+	method string, imp interface{}, implV proxy.PFunc) {
+	m.baseMocker.applyByIFaceMethod(ctx, iFace, method, imp, implV)
+	logger.Log2Consolef(logger.DebugLevel, "mocker [%s] apply.", m.String())
 }

@@ -13,6 +13,7 @@ import (
 
 // TestUnitIFaceTestSuite 接口Mock测试入口
 func TestUnitIFaceTestSuite(t *testing.T) {
+	mocker.OpenDebug()
 	suite.Run(t, new(ifaceMockerTestSuite))
 }
 

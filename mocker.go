@@ -6,9 +6,11 @@ package mocker
 import (
 	"fmt"
 	"reflect"
+	"runtime"
 	"strings"
 
 	"git.code.oa.com/goom/mocker/erro"
+	"git.code.oa.com/goom/mocker/internal/logger"
 	"git.code.oa.com/goom/mocker/internal/proxy"
 	"git.code.oa.com/goom/mocker/internal/unexports"
 )
@@ -23,6 +25,8 @@ type Mocker interface {
 	Cancel()
 	// Canceled 是否已经被取消
 	Canceled() bool
+	// String mock的名称或描述, 方便调试和问题排查
+	String() string
 }
 
 // ExportedMocker 导出函数mock接口
@@ -178,6 +182,15 @@ func NewMethodMocker(pkgName string, structDef interface{}) *MethodMocker {
 	}
 }
 
+// String mock的名称或描述, 方便调试和问题排查
+func (m *MethodMocker) String() string {
+	t := reflect.TypeOf(m.structDef)
+	if t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
+	return fmt.Sprintf("%s.(%s).%s", t.PkgPath(), t.Name(), m.method)
+}
+
 // Method 设置结构体的方法名
 func (m *MethodMocker) Method(name string) ExportedMocker {
 	if name == "" {
@@ -225,6 +238,7 @@ func (m *MethodMocker) Apply(imp interface{}) {
 	}
 
 	m.applyByMethod(m.structDef, m.method, imp)
+	logger.Log2Consolef(logger.DebugLevel, "mocker [%s] apply.", m.String())
 }
 
 // When 指定条件匹配
@@ -342,6 +356,11 @@ func NewUnexportedMethodMocker(pkgName string, structName string) *UnexportedMet
 	}
 }
 
+// String mock的名称或描述, 方便调试和问题排查
+func (m *UnexportedMethodMocker) String() string {
+	return fmt.Sprintf("%s.%s.%s", m.pkgName, m.structName, m.methodName)
+}
+
 // objName 获取对象名
 func (m *UnexportedMethodMocker) objName() string {
 	return fmt.Sprintf("%s.%s.%s", m.pkgName, m.structName, m.methodName)
@@ -367,6 +386,7 @@ func (m *UnexportedMethodMocker) Apply(imp interface{}) {
 	}
 
 	m.applyByName(name, imp)
+	logger.Log2Consolef(logger.DebugLevel, "mocker [%s] apply.", m.String())
 }
 
 // Origin 调用原函数
@@ -418,6 +438,11 @@ func NewUnexportedFuncMocker(pkgName, funcName string) *UnexportedFuncMocker {
 	}
 }
 
+// String mock的名称或描述, 方便调试和问题排查
+func (m *UnexportedFuncMocker) String() string {
+	return fmt.Sprintf("%s.%s", m.pkgName, m.funcName)
+}
+
 // objName 获取对象名
 func (m *UnexportedFuncMocker) objName() string {
 	return fmt.Sprintf("%s.%s", m.pkgName, m.funcName)
@@ -430,6 +455,7 @@ func (m *UnexportedFuncMocker) Apply(imp interface{}) {
 	name := m.objName()
 
 	m.applyByName(name, imp)
+	logger.Log2Consolef(logger.DebugLevel, "mocker [%s] apply.", m.String())
 }
 
 // Origin 调用原函数
@@ -462,6 +488,11 @@ type DefMocker struct {
 	funcDef interface{}
 }
 
+// String mock的名称或描述
+func (m *DefMocker) String() string {
+	return runtime.FuncForPC(reflect.ValueOf(m.funcDef).Pointer()).Name()
+}
+
 // NewDefMocker 创建DefMocker
 // pkgName 包路径
 // funcDef 函数变量定义
@@ -485,6 +516,7 @@ func (m *DefMocker) Apply(imp interface{}) {
 	} else {
 		m.applyByFunc(m.funcDef, imp)
 	}
+	logger.Log2Consolef(logger.DebugLevel, "mocker [%s] apply.", m.String())
 }
 
 // When 指定条件匹配

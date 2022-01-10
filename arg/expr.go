@@ -12,7 +12,7 @@ type Expr interface {
 	// 一般地, 如果执行结果是true, 则参数Match成功
 	// input 表达式执行时的入参
 	Eval(input []reflect.Value) (bool, error)
-	// Resole 解析参数类型
+	// Resolve 解析参数类型
 	Resolve(types []reflect.Type) error
 }
 

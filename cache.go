@@ -22,6 +22,19 @@ func NewCachedMethodMocker(m *MethodMocker) *CachedMethodMocker {
 	}
 }
 
+// String mock的名称
+func (m *CachedMethodMocker) String() string {
+	var s = ""
+	for _, v := range m.mCache {
+		s += v.String() + ","
+	}
+
+	for _, v := range m.umCache {
+		s += v.String() + ","
+	}
+	return s
+}
+
 // Method 设置结构体的方法名
 func (m *CachedMethodMocker) Method(name string) ExportedMocker {
 	if mocker, ok := m.mCache[name]; ok && !mocker.Canceled() {
@@ -73,6 +86,15 @@ func NewCachedUnexportedMethodMocker(m *UnexportedMethodMocker) *CachedUnexporte
 	}
 }
 
+// String mock的名称或描述
+func (m *CachedUnexportedMethodMocker) String() string {
+	var s = ""
+	for _, v := range m.mCache {
+		s += v.String() + ","
+	}
+	return s
+}
+
 // Method 设置结构体的方法名
 func (m *CachedUnexportedMethodMocker) Method(name string) UnExportedMocker {
 	if mocker, ok := m.mCache[name]; ok && !mocker.Canceled() {
@@ -96,35 +118,44 @@ func (m *CachedUnexportedMethodMocker) Cancel() {
 // CachedInterfaceMocker 带缓存的Interface Mocker
 type CachedInterfaceMocker struct {
 	*DefaultInterfaceMocker
-	mCache map[string]InterfaceMocker
-	ctx    *proxy.IContext
+	mockers map[string]InterfaceMocker
+	ctx     *proxy.IContext
 }
 
 // NewCachedInterfaceMocker 创建新的带缓存的Interface Mocker
 func NewCachedInterfaceMocker(interfaceMocker *DefaultInterfaceMocker) *CachedInterfaceMocker {
 	return &CachedInterfaceMocker{
 		DefaultInterfaceMocker: interfaceMocker,
-		mCache:                 make(map[string]InterfaceMocker, 16),
+		mockers:                make(map[string]InterfaceMocker, 16),
 		ctx:                    interfaceMocker.ctx,
 	}
 }
 
+// String mock的名称或描述
+func (m *CachedInterfaceMocker) String() string {
+	var s = ""
+	for _, v := range m.mockers {
+		s += v.String() + ","
+	}
+	return s
+}
+
 // Method 指定方法名
 func (m *CachedInterfaceMocker) Method(name string) InterfaceMocker {
-	if mocker, ok := m.mCache[name]; ok && !mocker.Canceled() {
+	if mocker, ok := m.mockers[name]; ok && !mocker.Canceled() {
 		return mocker
 	}
 
 	mocker := NewDefaultInterfaceMocker(m.pkgName, m.iFace, m.ctx)
 	mocker.Method(name)
-	m.mCache[name] = mocker
+	m.mockers[name] = mocker
 
 	return mocker
 }
 
 // Cancel 取消mock
 func (m *CachedInterfaceMocker) Cancel() {
-	for _, v := range m.mCache {
+	for _, v := range m.mockers {
 		v.Cancel()
 	}
 }

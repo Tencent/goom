@@ -26,7 +26,9 @@ const defaultPrefix = "[goom-mocker]"
 var (
 	// LogLevel 日志级别
 	// level总共分5个级别：debug < info< warning< error< critical
-	LogLevel = 6
+	LogLevel = InfoLevel
+	// ConsoleLevel 控制台打印级别
+	ConsoleLevel = WarningLevel
 	// ShowError2Console 把错误同步打印到控制台
 	ShowError2Console = false
 	// Logger 独立日志文件
@@ -38,6 +40,16 @@ var (
 	// logFile 日志路径
 	logFile *os.File
 )
+
+// levelMap 日志级别-级别名称映射
+var levelMap = map[int]string{
+	TraceLevel:    "trace",
+	DebugLevel:    "debug",
+	InfoLevel:     "info",
+	WarningLevel:  "warn",
+	ErrorLevel:    "error",
+	CriticalLevel: "critical",
+}
 
 // init() 初始化
 func init() {
@@ -55,12 +67,6 @@ func init() {
 	}
 
 	Logger = logFile
-}
-
-// Log2Console 是否打印到控制台
-// Deprecated: 代码重构将此函数重命名为SetLog2Console.
-func Log2Console(b bool) {
-	SetLog2Console(b)
 }
 
 // SetLog2Console 设置是否打印到控制台
@@ -191,10 +197,19 @@ func LogErrorf(format string, a ...interface{}) {
 	}
 }
 
+// Log2Console 打印日志到控制台
+func Log2Console(level int, s string) {
+	if level <= ConsoleLevel {
+		os.Stdout.Write([]byte(s))
+	}
+}
+
 // Log2Consolef 打印日志到控制台
-func Log2Consolef(format string, a ...interface{}) {
-	line := withPrefixStr("warn", format, a...)
-	os.Stdout.Write(line)
+func Log2Consolef(level int, format string, a ...interface{}) {
+	if level <= ConsoleLevel {
+		line := withPrefixStr(levelMap[level], format, a...)
+		os.Stdout.Write(line)
+	}
 }
 
 // write2Console 输出到控制台，如果ShowError2Console==true时

@@ -1,6 +1,11 @@
 package mocker
 
-import "reflect"
+import (
+	"fmt"
+	"reflect"
+
+	"git.code.oa.com/goom/mocker/internal/logger"
+)
 
 // VarMock 变量mock
 // 支持全局变量, 任意类型包括不限于基本类型，结构体，函数变量，指针与非指针类型
@@ -17,6 +22,11 @@ type defaultVarMocker struct {
 	mockValue   interface{}
 	originValue interface{}
 	canceled    bool // canceled 是否被取消
+}
+
+// String mock的名称或描述, 方便调试和问题排查
+func (m *defaultVarMocker) String() string {
+	return fmt.Sprintf("var at[%d]", reflect.ValueOf(m.target).Pointer())
 }
 
 // NewVarMocker 创建VarMock
@@ -44,6 +54,7 @@ func (m *defaultVarMocker) Apply(valueCallback interface{}) {
 	}
 
 	m.Set(ret[0].Interface())
+	logger.Log2Consolef(logger.DebugLevel, "mocker [%s] apply.", m.String())
 }
 
 // Cancel 取消mock
@@ -66,4 +77,5 @@ func (m *defaultVarMocker) Set(val interface{}) {
 	d := reflect.ValueOf(val)
 	t.Elem().Set(d)
 	m.mockValue = val
+	logger.Log2Consolef(logger.DebugLevel, "mocker [%s] apply.", m.String())
 }

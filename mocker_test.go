@@ -17,6 +17,10 @@ import (
 
 // TestUnitBuilderTestSuite 测试入口
 func TestUnitBuilderTestSuite(t *testing.T) {
+	// 开启debug
+	// 1.可以查看apply和reset的状态日志
+	// 2.
+	mocker.OpenDebug()
 	suite.Run(t, new(mockerTestSuite))
 }
 

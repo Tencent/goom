@@ -19,7 +19,7 @@ import (
 func TestUnitBuilderTestSuite(t *testing.T) {
 	// 开启debug
 	// 1.可以查看apply和reset的状态日志
-	// 2.
+	// 2.查看mock调用日志
 	mocker.OpenDebug()
 	suite.Run(t, new(mockerTestSuite))
 }
@@ -88,7 +88,7 @@ func (s *mockerTestSuite) TestUnitUnexportedFuncReturn() {
 		mock := mocker.Create()
 
 		mock.Pkg("git.code.oa.com/goom/mocker_test").ExportFunc("foo").As(func(i int) int {
-			return i * 3
+			return i * 1
 		}).Return(3)
 
 		s.Equal(3, foo(1), "foo mock check")

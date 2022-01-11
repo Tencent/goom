@@ -20,8 +20,11 @@ const (
 	CriticalLevel = 1 // 严重错误
 )
 
-// 默认日志前缀
+// defaultPrefix 默认日志前缀
 const defaultPrefix = "[goom-mocker]"
+
+// openDebugEnv 开启debug日志
+const openDebugEnv = "GOOM_DEBUG"
 
 var (
 	// LogLevel 日志级别
@@ -53,6 +56,10 @@ var levelMap = map[int]string{
 
 // init() 初始化
 func init() {
+	if d := os.Getenv(openDebugEnv); d != "" {
+		OpenDebug()
+	}
+
 	loggerPath, err := loggerPath()
 	if err != nil {
 		fmt.Println("loggerPath error:", err)
@@ -67,6 +74,35 @@ func init() {
 	}
 
 	Logger = logFile
+}
+
+// OpenDebug 开启debug模式
+func OpenDebug() {
+	ConsoleLevel = DebugLevel
+}
+
+// CloseDebug 关闭debug模式
+func CloseDebug() {
+	ConsoleLevel = WarningLevel
+}
+
+// IsDebugOpen 是否开启debug模式
+func IsDebugOpen() bool {
+	return ConsoleLevel >= DebugLevel
+}
+
+// OpenTrace 打开日志跟踪
+func OpenTrace() {
+	OpenDebug()
+	SetLog2Console(true)
+	LogLevel = TraceLevel
+}
+
+// CloseTrace 关闭日志跟踪
+func CloseTrace() {
+	CloseDebug()
+	LogLevel = InfoLevel
+	SetLog2Console(false)
 }
 
 // SetLog2Console 设置是否打印到控制台

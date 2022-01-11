@@ -201,25 +201,23 @@ func currentPkg(skip int) string {
 }
 
 // OpenDebug 开启debug模式
+// 1.可以查看apply和reset的状态日志
+// 2.查看mock调用日志
 func OpenDebug() {
-	logger.ConsoleLevel = logger.DebugLevel
+	logger.OpenDebug()
 }
 
 // CloseDebug 关闭debug模式
 func CloseDebug() {
-	logger.ConsoleLevel = logger.WarningLevel
+	logger.CloseDebug()
 }
 
 // OpenTrace 打开日志跟踪
 func OpenTrace() {
-	OpenDebug()
-	logger.SetLog2Console(true)
-	logger.LogLevel = logger.TraceLevel
+	logger.OpenTrace()
 }
 
 // CloseTrace 关闭日志跟踪
 func CloseTrace() {
-	CloseDebug()
-	logger.LogLevel = logger.InfoLevel
-	logger.SetLog2Console(false)
+	logger.CloseTrace()
 }

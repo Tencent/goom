@@ -237,6 +237,7 @@ func (m *MethodMocker) Apply(imp interface{}) {
 		panic("method is empty")
 	}
 
+	imp, _ = interceptDebugInfo(imp, nil, m)
 	m.applyByMethod(m.structDef, m.method, imp)
 	logger.Log2Consolef(logger.DebugLevel, "mocker [%s] apply.", m.String())
 }
@@ -385,6 +386,7 @@ func (m *UnexportedMethodMocker) Apply(imp interface{}) {
 		_, _ = unexports.FindFuncByName(name)
 	}
 
+	imp, _ = interceptDebugInfo(imp, nil, m)
 	m.applyByName(name, imp)
 	logger.Log2Consolef(logger.DebugLevel, "mocker [%s] apply.", m.String())
 }
@@ -454,6 +456,7 @@ func (m *UnexportedFuncMocker) objName() string {
 func (m *UnexportedFuncMocker) Apply(imp interface{}) {
 	name := m.objName()
 
+	imp, _ = interceptDebugInfo(imp, nil, m)
 	m.applyByName(name, imp)
 	logger.Log2Consolef(logger.DebugLevel, "mocker [%s] apply.", m.String())
 }
@@ -509,7 +512,8 @@ func (m *DefMocker) Apply(imp interface{}) {
 		panic("funcDef is empty")
 	}
 
-	var funcName = functionName(m.funcDef)
+	funcName := functionName(m.funcDef)
+	imp, _ = interceptDebugInfo(imp, nil, m)
 
 	if strings.HasSuffix(funcName, "-fm") {
 		m.applyByName(strings.TrimRight(funcName, "-fm"), imp)

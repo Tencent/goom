@@ -205,6 +205,7 @@ func (m *DefaultInterfaceMocker) Inject(interface{}) InterfaceMocker {
 // applyByIFaceMethod 根据接口方法应用mock
 func (m *DefaultInterfaceMocker) applyByIFaceMethod(ctx *proxy.IContext, iFace interface{},
 	method string, imp interface{}, implV proxy.PFunc) {
+	imp, implV = interceptDebugInfo(imp, implV, m)
 	m.baseMocker.applyByIFaceMethod(ctx, iFace, method, imp, implV)
 	logger.Log2Consolef(logger.DebugLevel, "mocker [%s] apply.", m.String())
 }

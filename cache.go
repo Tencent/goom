@@ -4,7 +4,11 @@
 // 以防止在一个单测内重复构造Mocker时, 对上一个相同函数或方法的Mocker的内容规则造成覆盖。
 package mocker
 
-import "git.code.oa.com/goom/mocker/internal/proxy"
+import (
+	"strings"
+
+	"git.code.oa.com/goom/mocker/internal/proxy"
+)
 
 // CachedMethodMocker 带缓存的方法Mocker,将同一个函数或方法的Mocker进行cache
 type CachedMethodMocker struct {
@@ -24,15 +28,15 @@ func NewCachedMethodMocker(m *MethodMocker) *CachedMethodMocker {
 
 // String mock的名称
 func (m *CachedMethodMocker) String() string {
-	var s = ""
+	s := make([]string, 0, len(m.mCache)+len(m.umCache))
 	for _, v := range m.mCache {
-		s += v.String() + ","
+		s = append(s, v.String())
 	}
 
 	for _, v := range m.umCache {
-		s += v.String() + ","
+		s = append(s, v.String())
 	}
-	return s
+	return strings.Join(s, ", ")
 }
 
 // Method 设置结构体的方法名
@@ -75,42 +79,42 @@ func (m *CachedMethodMocker) Cancel() {
 // CachedUnexportedMethodMocker 带缓存的未导出方法Mocker
 type CachedUnexportedMethodMocker struct {
 	*UnexportedMethodMocker
-	mCache map[string]*UnexportedMethodMocker
+	mockers map[string]*UnexportedMethodMocker
 }
 
 // NewCachedUnexportedMethodMocker 创建新的带缓存的未导出方法Mocker
 func NewCachedUnexportedMethodMocker(m *UnexportedMethodMocker) *CachedUnexportedMethodMocker {
 	return &CachedUnexportedMethodMocker{
 		UnexportedMethodMocker: m,
-		mCache:                 make(map[string]*UnexportedMethodMocker, 16),
+		mockers:                make(map[string]*UnexportedMethodMocker, 16),
 	}
 }
 
 // String mock的名称或描述
 func (m *CachedUnexportedMethodMocker) String() string {
-	var s = ""
-	for _, v := range m.mCache {
-		s += v.String() + ","
+	s := make([]string, 0, len(m.mockers))
+	for _, v := range m.mockers {
+		s = append(s, v.String())
 	}
-	return s
+	return strings.Join(s, ", ")
 }
 
 // Method 设置结构体的方法名
 func (m *CachedUnexportedMethodMocker) Method(name string) UnExportedMocker {
-	if mocker, ok := m.mCache[name]; ok && !mocker.Canceled() {
+	if mocker, ok := m.mockers[name]; ok && !mocker.Canceled() {
 		return mocker
 	}
 
 	mocker := NewUnexportedMethodMocker(m.pkgName, m.UnexportedMethodMocker.structName)
 	mocker.Method(name)
-	m.mCache[name] = mocker
+	m.mockers[name] = mocker
 
 	return mocker
 }
 
 // Cancel 清除mock
 func (m *CachedUnexportedMethodMocker) Cancel() {
-	for _, v := range m.mCache {
+	for _, v := range m.mockers {
 		v.Cancel()
 	}
 }
@@ -133,11 +137,11 @@ func NewCachedInterfaceMocker(interfaceMocker *DefaultInterfaceMocker) *CachedIn
 
 // String mock的名称或描述
 func (m *CachedInterfaceMocker) String() string {
-	var s = ""
+	s := make([]string, 0, len(m.mockers))
 	for _, v := range m.mockers {
-		s += v.String() + ","
+		s = append(s, v.String())
 	}
-	return s
+	return strings.Join(s, ", ")
 }
 
 // Method 指定方法名

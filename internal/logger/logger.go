@@ -54,7 +54,7 @@ var levelMap = map[int]string{
 	CriticalLevel: "critical",
 }
 
-// init() 初始化
+// init 初始化
 func init() {
 	if d := os.Getenv(openDebugEnv); d != "" {
 		OpenDebug()

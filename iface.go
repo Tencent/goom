@@ -44,7 +44,7 @@ type DefaultInterfaceMocker struct {
 	funcDef interface{}
 }
 
-// Name 接口Mock名称
+// String 接口Mock名称
 func (m *DefaultInterfaceMocker) String() string {
 	t := reflect.TypeOf(m.iFace)
 	if t.Kind() == reflect.Ptr {

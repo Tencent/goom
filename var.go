@@ -53,7 +53,7 @@ func (m *defaultVarMocker) Apply(valueCallback interface{}) {
 		panic("VarMock Apply valueCallback's returns length must be 1.")
 	}
 
-	m.Set(ret[0].Interface())
+	m.doSet(ret[0].Interface())
 	logger.Log2Consolefc(logger.DebugLevel, "mocker [%s] apply.", logger.Caller(5), m.String())
 }
 
@@ -72,10 +72,14 @@ func (m *defaultVarMocker) Canceled() bool {
 // Set 设置变量值
 // 注意: Set会覆盖之前设定Apply的值
 func (m *defaultVarMocker) Set(val interface{}) {
+	m.doSet(val)
+	logger.Log2Consolefc(logger.DebugLevel, "mocker [%s] apply.", logger.Caller(5), m.String())
+}
+
+func (m *defaultVarMocker) doSet(val interface{}) {
 	t := reflect.ValueOf(m.target)
 	m.originValue = t.Elem().Interface()
 	d := reflect.ValueOf(val)
 	t.Elem().Set(d)
 	m.mockValue = val
-	logger.Log2Consolefc(logger.DebugLevel, "mocker [%s] apply.", logger.Caller(5), m.String())
 }

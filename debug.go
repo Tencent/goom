@@ -9,12 +9,15 @@ import (
 )
 
 // excludeFunc 对excludeFunc不进行拦截
-const excludeFunc = "time.Now"
+const (
+	excludeFunc         = "time.Now"
+	interceptCallerSkip = 7
+)
 
 // interceptDebugInfo 添加对apply的拦截代理，截取函数调用信息用于debug
 func interceptDebugInfo(imp interface{}, pFunc proxy.PFunc, mocker Mocker) (interface{}, proxy.PFunc) {
 	if !logger.IsDebugOpen() {
-		return imp, nil
+		return imp, pFunc
 	}
 
 	// 因为当使用了when时候,imp代理会被覆盖,pFunc会生效; 所以优先拦截有pFunc代理的mock回调
@@ -27,7 +30,7 @@ func interceptDebugInfo(imp interface{}, pFunc proxy.PFunc, mocker Mocker) (inte
 				return results
 			}
 			logger.Log2Consolefc(logger.DebugLevel, "mocker [%s] called, args [%s], results [%s]",
-				logger.Caller(4), mocker.String(), arg.SprintV(args), arg.SprintV(results))
+				logger.Caller(interceptCallerSkip), mocker.String(), arg.SprintV(args), arg.SprintV(results))
 			return results
 		}
 		return imp, pFunc
@@ -43,11 +46,11 @@ func interceptDebugInfo(imp interface{}, pFunc proxy.PFunc, mocker Mocker) (inte
 			}
 
 			logger.Log2Consolefc(logger.DebugLevel, "mocker [%s] called, args [%s], results [%s]",
-				logger.Caller(7), mocker.String(), arg.SprintV(args), arg.SprintV(results))
+				logger.Caller(interceptCallerSkip), mocker.String(), arg.SprintV(args), arg.SprintV(results))
 			return results
 		}).Interface()
 		return imp, pFunc
 	}
 
-	return nil, nil
+	return imp, pFunc
 }

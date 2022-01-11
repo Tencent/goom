@@ -207,5 +207,6 @@ func (m *DefaultInterfaceMocker) applyByIFaceMethod(ctx *proxy.IContext, iFace i
 	method string, imp interface{}, implV proxy.PFunc) {
 	imp, implV = interceptDebugInfo(imp, implV, m)
 	m.baseMocker.applyByIFaceMethod(ctx, iFace, method, imp, implV)
-	logger.Log2Consolef(logger.DebugLevel, "mocker [%s] apply.", m.String())
+
+	logger.Log2Consolefc(logger.DebugLevel, "mocker [%s] apply.", logger.Caller(6), m.String())
 }

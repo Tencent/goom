@@ -201,6 +201,7 @@ func currentPkg(skip int) string {
 }
 
 // OpenDebug 开启debug模式
+// 也可以通过添加环境变量开启debug: GOOM_DEBUG=true
 // 1.可以查看apply和reset的状态日志
 // 2.查看mock调用日志
 func OpenDebug() {

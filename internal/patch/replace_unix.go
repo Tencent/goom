@@ -2,7 +2,10 @@
 
 package patch
 
-import "syscall"
+import (
+	"git.code.oa.com/goom/mocker/internal/logger"
+	"syscall"
+)
 
 var (
 	//nolint build by build tag
@@ -12,10 +15,18 @@ var (
 	defaultFuncPrologue64 = []byte{0x65, 0x48, 0x8b, 0x0c, 0x25, 0x30, 0x00, 0x00, 0x00, 0x48}
 	// arm64 func prologue
 	armFuncPrologue64 = []byte{0x81, 0x0B, 0x40, 0xF9, 0xE2, 0x83, 0x00, 0xD1, 0x5F, 0x00, 0x01, 0xEB}
+	// accessMemGuide access mem error solution guide
+	accessMemGuide = "https://iwiki.woa.com/pages/viewpage.action?pageId=1405108952"
 )
 
 // mprotectCrossPage 获取page读写权限
 func mprotectCrossPage(addr uintptr, length int, prot int) {
+	defer func() {
+		if err := recover(); err != nil {
+			logger.Log2Consolef(logger.ErrorLevel, "access mem error:permission denied, see details at %s", accessMemGuide)
+			panic(err)
+		}
+	}()
 	pageSize := syscall.Getpagesize()
 
 	for p := pageStart(addr); p < addr+uintptr(length); p += uintptr(pageSize) {

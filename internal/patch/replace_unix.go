@@ -1,10 +1,12 @@
-//+build !windows
+//go:build !windows
+// +build !windows
 
 package patch
 
 import (
-	"git.code.oa.com/goom/mocker/internal/logger"
 	"syscall"
+
+	"git.code.oa.com/goom/mocker/internal/logger"
 )
 
 var (

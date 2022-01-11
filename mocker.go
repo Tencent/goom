@@ -233,13 +233,17 @@ func (m *MethodMocker) ExportMethod(name string) UnExportedMocker {
 // mock回调函数, 需要和mock模板函数的签名保持一致
 // 方法的参数签名写法比如: func(s *Struct, arg1, arg2 type), 其中第一个参数必须是接收体类型
 func (m *MethodMocker) Apply(imp interface{}) {
+	m.doApply(imp)
+}
+
+func (m *MethodMocker) doApply(imp interface{}) {
 	if m.method == "" {
 		panic("method is empty")
 	}
 
 	imp, _ = interceptDebugInfo(imp, nil, m)
 	m.applyByMethod(m.structDef, m.method, imp)
-	logger.Log2Consolef(logger.DebugLevel, "mocker [%s] apply.", m.String())
+	logger.Log2Consolefc(logger.DebugLevel, "mocker [%s] apply.", logger.Caller(6), m.String())
 }
 
 // When 指定条件匹配
@@ -271,7 +275,7 @@ func (m *MethodMocker) When(args ...interface{}) *When {
 		panic(err)
 	}
 
-	m.Apply(m.imp)
+	m.doApply(m.imp)
 
 	return when
 }
@@ -299,7 +303,7 @@ func (m *MethodMocker) Return(ret ...interface{}) *When {
 		panic(err)
 	}
 
-	m.Apply(m.imp)
+	m.doApply(m.imp)
 
 	return when
 }
@@ -328,7 +332,7 @@ func (m *MethodMocker) Returns(rets ...interface{}) *When {
 	}
 
 	m.when.Returns(rets...)
-	m.Apply(m.imp)
+	m.doApply(m.imp)
 
 	return when
 }
@@ -388,7 +392,7 @@ func (m *UnexportedMethodMocker) Apply(imp interface{}) {
 
 	imp, _ = interceptDebugInfo(imp, nil, m)
 	m.applyByName(name, imp)
-	logger.Log2Consolef(logger.DebugLevel, "mocker [%s] apply.", m.String())
+	logger.Log2Consolefc(logger.DebugLevel, "mocker [%s] apply.", logger.Caller(5), m.String())
 }
 
 // Origin 调用原函数
@@ -458,7 +462,7 @@ func (m *UnexportedFuncMocker) Apply(imp interface{}) {
 
 	imp, _ = interceptDebugInfo(imp, nil, m)
 	m.applyByName(name, imp)
-	logger.Log2Consolef(logger.DebugLevel, "mocker [%s] apply.", m.String())
+	logger.Log2Consolefc(logger.DebugLevel, "mocker [%s] apply.", logger.Caller(5), m.String())
 }
 
 // Origin 调用原函数
@@ -508,6 +512,10 @@ func NewDefMocker(pkgName string, funcDef interface{}) *DefMocker {
 
 // Apply 代理方法实现
 func (m *DefMocker) Apply(imp interface{}) {
+	m.doApply(imp)
+}
+
+func (m *DefMocker) doApply(imp interface{}) {
 	if m.funcDef == nil {
 		panic("funcDef is empty")
 	}
@@ -520,7 +528,7 @@ func (m *DefMocker) Apply(imp interface{}) {
 	} else {
 		m.applyByFunc(m.funcDef, imp)
 	}
-	logger.Log2Consolef(logger.DebugLevel, "mocker [%s] apply.", m.String())
+	logger.Log2Consolefc(logger.DebugLevel, "mocker [%s] apply.", logger.Caller(6), m.String())
 }
 
 // When 指定条件匹配
@@ -542,7 +550,7 @@ func (m *DefMocker) When(args ...interface{}) *When {
 		panic(err)
 	}
 
-	m.Apply(m.imp)
+	m.doApply(m.imp)
 
 	return when
 }
@@ -566,7 +574,7 @@ func (m *DefMocker) Return(returns ...interface{}) *When {
 		panic(err)
 	}
 
-	m.Apply(m.imp)
+	m.doApply(m.imp)
 
 	return when
 }
@@ -591,7 +599,7 @@ func (m *DefMocker) Returns(rets ...interface{}) *When {
 	}
 
 	m.when.Returns(rets...)
-	m.Apply(m.imp)
+	m.doApply(m.imp)
 
 	return when
 }

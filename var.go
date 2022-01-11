@@ -54,7 +54,7 @@ func (m *defaultVarMocker) Apply(valueCallback interface{}) {
 	}
 
 	m.Set(ret[0].Interface())
-	logger.Log2Consolef(logger.DebugLevel, "mocker [%s] apply.", m.String())
+	logger.Log2Consolefc(logger.DebugLevel, "mocker [%s] apply.", logger.Caller(5), m.String())
 }
 
 // Cancel 取消mock
@@ -77,5 +77,5 @@ func (m *defaultVarMocker) Set(val interface{}) {
 	d := reflect.ValueOf(val)
 	t.Elem().Set(d)
 	m.mockValue = val
-	logger.Log2Consolef(logger.DebugLevel, "mocker [%s] apply.", m.String())
+	logger.Log2Consolefc(logger.DebugLevel, "mocker [%s] apply.", logger.Caller(5), m.String())
 }

@@ -26,8 +26,8 @@ func interceptDebugInfo(imp interface{}, pFunc proxy.PFunc, mocker Mocker) (inte
 			if mocker.String() == excludeFunc {
 				return results
 			}
-			logger.Log2Consolef(logger.DebugLevel, "mocker [%s] called, args [%s], results [%s]",
-				mocker.String(), arg.SprintV(args), arg.SprintV(results))
+			logger.Log2Consolefc(logger.DebugLevel, "mocker [%s] called, args [%s], results [%s]",
+				logger.Caller(4), mocker.String(), arg.SprintV(args), arg.SprintV(results))
 			return results
 		}
 		return imp, pFunc
@@ -42,8 +42,8 @@ func interceptDebugInfo(imp interface{}, pFunc proxy.PFunc, mocker Mocker) (inte
 				return results
 			}
 
-			logger.Log2Consolef(logger.DebugLevel, "mocker [%s] called, args [%s], results [%s]",
-				mocker.String(), arg.SprintV(args), arg.SprintV(results))
+			logger.Log2Consolefc(logger.DebugLevel, "mocker [%s] called, args [%s], results [%s]",
+				logger.Caller(7), mocker.String(), arg.SprintV(args), arg.SprintV(results))
 			return results
 		}).Interface()
 		return imp, pFunc

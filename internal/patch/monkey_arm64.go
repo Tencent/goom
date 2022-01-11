@@ -5,6 +5,8 @@ import (
 )
 
 func init() {
+	logger.LogWarningf("not support arm cpu yet! " +
+		"please use go-amd64(open with rosetta) instead on MACOS.")
 	logger.Log2Consolef(logger.ErrorLevel, "not support arm cpu yet! "+
 		"please use go-amd64(open with rosetta) instead on MACOS.")
 }

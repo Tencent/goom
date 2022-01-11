@@ -9,6 +9,9 @@ import (
 	_ "unsafe" // 匿名引入
 )
 
+// InterceptCallerSkip 拦截器callerskip
+const InterceptCallerSkip = 5
+
 // Firstmoduledata TODO 兼容不同go版本
 //go:linkname Firstmoduledata runtime.firstmoduledata
 var Firstmoduledata Moduledata

@@ -4,14 +4,14 @@ import (
 	"reflect"
 
 	"git.code.oa.com/goom/mocker/arg"
+	"git.code.oa.com/goom/mocker/internal/hack"
 	"git.code.oa.com/goom/mocker/internal/logger"
 	"git.code.oa.com/goom/mocker/internal/proxy"
 )
 
 // excludeFunc 对excludeFunc不进行拦截
 const (
-	excludeFunc         = "time.Now"
-	interceptCallerSkip = 7
+	excludeFunc = "time.Now"
 )
 
 // interceptDebugInfo 添加对apply的拦截代理，截取函数调用信息用于debug
@@ -30,7 +30,7 @@ func interceptDebugInfo(imp interface{}, pFunc proxy.PFunc, mocker Mocker) (inte
 				return results
 			}
 			logger.Log2Consolefc(logger.DebugLevel, "mocker [%s] called, args [%s], results [%s]",
-				logger.Caller(interceptCallerSkip), mocker.String(), arg.SprintV(args), arg.SprintV(results))
+				logger.Caller(hack.InterceptCallerSkip), mocker.String(), arg.SprintV(args), arg.SprintV(results))
 			return results
 		}
 		return imp, pFunc
@@ -46,7 +46,7 @@ func interceptDebugInfo(imp interface{}, pFunc proxy.PFunc, mocker Mocker) (inte
 			}
 
 			logger.Log2Consolefc(logger.DebugLevel, "mocker [%s] called, args [%s], results [%s]",
-				logger.Caller(interceptCallerSkip), mocker.String(), arg.SprintV(args), arg.SprintV(results))
+				logger.Caller(hack.InterceptCallerSkip), mocker.String(), arg.SprintV(args), arg.SprintV(results))
 			return results
 		}).Interface()
 		return imp, pFunc

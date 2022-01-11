@@ -291,6 +291,17 @@ s.Equal(101, foo1(1), "call origin result check")
 ```shell
 GOARCH=amd64
 ```
+2. 如果遇到mock未生效的问题,可以打开debug日志进行自助排查
+```go
+// TestUnitTestSuite 测试入口
+func TestUnitTestSuite(t *testing.T) {
+	// 开启debug模式, 在控制台可以
+	// 1.查看apply和reset的状态日志
+	// 2.查看mock调用日志
+	mocker.OpenDebug()
+	suite.Run(t, new(mockerTestSuite))
+}
+```
 
 ## Contributor
 @yongfuchen、@adrewchen、@ivyyi、@miliao

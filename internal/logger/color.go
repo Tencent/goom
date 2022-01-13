@@ -4,8 +4,8 @@ import "fmt"
 
 // Foreground colors.
 const (
-	None  Color = 0
-	Black Color = iota + 30
+	None Color = iota + 29
+	Black
 	Red
 	Green
 	Yellow

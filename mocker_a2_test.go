@@ -34,20 +34,19 @@ func TestCompatibility(t *testing.T) {
 	for _, v := range versions {
 		fmt.Printf("> [%s] start testing..\n", v)
 		if err := hack.Run(v, nil, "version"); err != nil {
-			t.Fatalf("[%s] env prepare fail: %v", v, err)
+			t.Errorf("[%s] env prepare fail: %v", v, err)
 		}
 
-		fail := false
 		logHandler := func(log string) {
 			if strings.Contains(log, "--- FAIL:") {
-				fail = true
+				t.Errorf("[%s] run fail: see details in the log above.", v)
 			}
 		}
 		if err := hack.Run(v, logHandler, "test", "-v", "-gcflags=all=-l", "."); err != nil {
-			t.Fatalf("[%s] run error: %v, see details in the log above.", v, err)
+			t.Errorf("[%s] run error: %v, see details in the log above.", v, err)
 		}
-		if fail {
-			t.Fatalf("[%s] run fail: see details in the log above.", v)
+		if t.Failed() {
+			break
 		}
 		t.Logf("[%s] testing success.", v)
 	}

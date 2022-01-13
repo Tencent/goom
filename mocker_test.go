@@ -178,13 +178,13 @@ func (s *mockerTestSuite) TestUnitUnExportStruct() {
 	s.Run("success", func() {
 		// 指定包名
 		mock := mocker.Create()
-		s.Equal(mock.PkgName(), "git.code.oa.com/goom/mocker_test")
+		s.Equal("git.code.oa.com/goom/mocker_test", mock.PkgName())
 
 		mock.Pkg("git.code.oa.com/goom/mocker/testdata").ExportStruct("*Fake").
 			Method("call").Apply(func(_ *fake, i int) int {
 			return i * 2
 		})
-		s.Equal(mock.PkgName(), "git.code.oa.com/goom/mocker_test")
+		s.Equal("git.code.oa.com/goom/mocker_test", mock.PkgName())
 
 		f := &testdata.Fake{}
 

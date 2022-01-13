@@ -3,6 +3,7 @@
 package mocker_test
 
 import (
+	"fmt"
 	"os"
 	"strings"
 	"testing"
@@ -31,6 +32,7 @@ func TestCompatibility(t *testing.T) {
 	os.Setenv(testEnv, "true")
 
 	for _, v := range versions {
+		fmt.Printf("> [%s] start testing..\n", v)
 		if err := hack.Run(v, nil, "version"); err != nil {
 			t.Fatalf("[%s] env prepare fail: %v", v, err)
 		}
@@ -47,5 +49,6 @@ func TestCompatibility(t *testing.T) {
 		if fail {
 			t.Fatalf("[%s] run fail: see details in the log above.", v)
 		}
+		t.Logf("[%s] testing success.", v)
 	}
 }

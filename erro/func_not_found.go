@@ -1,6 +1,9 @@
 package erro
 
-import "strings"
+import (
+	"git.code.oa.com/goom/mocker/internal/logger"
+	"strings"
+)
 
 const prefix = "func not found: "
 
@@ -28,11 +31,9 @@ func (e *FuncNotFound) Error() string {
 		return msg
 	}
 
-	msg = prefix + "\n  " + e.funcName
-	msg += ", do you mean? \n* "
-	msg += strings.Join(noEmptyStrings, "\n* ")
-	msg += "\n （〃＾∇＾）oo"
-	return msg
+	tips := "\ndo you mean: (?) \n* "
+	tips += strings.Join(noEmptyStrings, "\n* ")
+	return msg + logger.Magenta.AddAll(tips)
 }
 
 // NewFuncNotFoundError 函数未找到

@@ -28,6 +28,8 @@ import (
 	"time"
 )
 
+const osWindows = "windows"
+
 func init() {
 	http.DefaultTransport = &userAgentTransport{http.DefaultTransport}
 }
@@ -118,17 +120,17 @@ func install(targetDir, version string) error {
 	}
 	base := path.Base(goURL)
 	archiveFile := filepath.Join(targetDir, base)
-	if fi, err := os.Stat(archiveFile); err != nil || fi.Size() != res.ContentLength {
-		if err != nil && !os.IsNotExist(err) {
+	if fi, err2 := os.Stat(archiveFile); err2 != nil || fi.Size() != res.ContentLength {
+		if err2 != nil && !os.IsNotExist(err2) {
 			// Something weird. Don't try to download.
-			return err
+			return err2
 		}
-		if err := copyFromURL(archiveFile, goURL); err != nil {
-			return fmt.Errorf("error downloading %v: %v", goURL, err)
+		if err3 := copyFromURL(archiveFile, goURL); err3 != nil {
+			return fmt.Errorf("error downloading %v: %v", goURL, err3)
 		}
-		fi, err = os.Stat(archiveFile)
-		if err != nil {
-			return err
+		fi, err2 = os.Stat(archiveFile)
+		if err2 != nil {
+			return err2
 		}
 		if fi.Size() != res.ContentLength {
 			return fmt.Errorf("downloaded file %s size %v doesn't match server size %v",
@@ -269,8 +271,8 @@ func unpackZip(targetDir, archiveFile string) error {
 		}
 
 		// File
-		if err := os.MkdirAll(filepath.Dir(outpath), 0755); err != nil {
-			return err
+		if err2 := os.MkdirAll(filepath.Dir(outpath), 0755); err2 != nil {
+			return err2
 		}
 		out, err := os.OpenFile(outpath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
 		if err != nil {
@@ -308,18 +310,18 @@ func verifySHA256(file, wantHex string) error {
 }
 
 // slurpURLToString downloads the given URL and returns it as a string.
-func slurpURLToString(url_ string) (string, error) {
-	res, err := http.Get(url_)
+func slurpURLToString(URL string) (string, error) {
+	res, err := http.Get(URL)
 	if err != nil {
 		return "", err
 	}
 	defer res.Body.Close()
 	if res.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("%s: %v", url_, res.Status)
+		return "", fmt.Errorf("%s: %v", URL, res.Status)
 	}
 	slurp, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return "", fmt.Errorf("reading %s: %v", url_, err)
+		return "", fmt.Errorf("reading %s: %v", URL, err)
 	}
 	return string(slurp), nil
 }
@@ -411,7 +413,7 @@ func versionArchiveURL(version string) string {
 	goos := getOS()
 
 	ext := ".tar.gz"
-	if goos == "windows" {
+	if goos == osWindows {
 		ext = ".zip"
 	}
 	arch := runtime.GOARCH
@@ -421,14 +423,14 @@ func versionArchiveURL(version string) string {
 	return "https://dl.google.com/go/" + version + "." + goos + "-" + arch + ext
 }
 
-const caseInsensitiveEnv = runtime.GOOS == "windows"
+const caseInsensitiveEnv = runtime.GOOS == osWindows
 
 // unpackedOkay is a sentinel zero-byte file to indicate that the Go
 // version was downloaded and unpacked successfully.
 const unpackedOkay = ".unpacked-success"
 
 func exe() string {
-	if runtime.GOOS == "windows" {
+	if runtime.GOOS == osWindows {
 		return ".exe"
 	}
 	return ""
@@ -450,7 +452,7 @@ func homedir() (string, error) {
 	switch getOS() {
 	case "plan9":
 		return "", fmt.Errorf("%q not yet supported", runtime.GOOS)
-	case "windows":
+	case osWindows:
 		if dir := os.Getenv("USERPROFILE"); dir != "" {
 			return dir, nil
 		}

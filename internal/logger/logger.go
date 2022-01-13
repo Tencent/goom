@@ -56,9 +56,9 @@ var (
 		CriticalLevel: "critical",
 	}
 	levelColor = map[int]Color{ // levelColor 日志级别-颜色映射
-		TraceLevel:    Black,
-		DebugLevel:    Black,
-		InfoLevel:     Black,
+		TraceLevel:    None,
+		DebugLevel:    None,
+		InfoLevel:     None,
 		WarningLevel:  Yellow,
 		ErrorLevel:    Red,
 		CriticalLevel: Red,

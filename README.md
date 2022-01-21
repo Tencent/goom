@@ -109,7 +109,7 @@ func (f *Struct1) Call(i int) int {
 mock := mocker.Create()
 
 // mock 结构体Struct1的方法Call并设置其回调函数
-// 注意: 当使用Apply方法时，如果被mock对象为结构体方法, 那么Apply的第一个参数必须为接收体(即结构体类型)
+// 注意: 当使用Apply方法时，如果被mock对象为结构体方法, 那么Apply参数func()的第一个参数必须为接收体(即结构体/指针类型)
 // 其中, func (f *Struct1) Call(i int) int 和 &Struct1{} 与 _ *Struct1同时都是带指针的接受体类型, 需要保持一致
 mock.Struct(&Struct1{}).Method("Call").Apply(func(_ *Struct1, i int) int {
     return i * 2

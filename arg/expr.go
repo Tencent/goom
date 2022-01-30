@@ -5,11 +5,11 @@ import (
 	"reflect"
 )
 
-// Expr 表达式接口, 实现了equals、any、in、field(x)等表达式匹配
-// 一般类型参数默认使用equals表达式, 实现了Expr接口的参数表达式将使用对于的表达式进行匹配参数
+// Expr 表达式接口, 实现了 equals、any、in、field(x)等表达式匹配
+// 一般类型参数默认使用 equals 表达式, 实现了 Expr 接口的参数表达式将使用对于的表达式进行匹配参数
 type Expr interface {
 	// Eval 执行一个表达式,
-	// 一般地, 如果执行结果是true, 则参数Match成功
+	// 一般地, 如果执行结果是 true, 则参数 Match 成功
 	// input 表达式执行时的入参
 	Eval(input []reflect.Value) (bool, error)
 	// Resolve 解析参数类型
@@ -25,7 +25,7 @@ func (a *AnyExpr) Resolve(types []reflect.Type) error {
 	return nil
 }
 
-// Eval 执行AnyExpr表达式
+// Eval 执行 AnyExpr 表达式
 func (a *AnyExpr) Eval(_ []reflect.Value) (bool, error) {
 	return true, nil
 }
@@ -46,7 +46,7 @@ func (e *EqualsExpr) Resolve(types []reflect.Type) error {
 	return nil
 }
 
-// Eval 执行EqualsExpr表达式
+// Eval 执行 EqualsExpr 表达式
 func (e *EqualsExpr) Eval(input []reflect.Value) (bool, error) {
 	// input 只会有一个元素
 	if len(input) != 1 {

@@ -1,4 +1,4 @@
-// Package proxy_test 对proxy包的测试
+// Package proxy_test 对 proxy 包的测试
 package proxy_test
 
 import (
@@ -382,7 +382,7 @@ func TestStaticProxyConcurrent(t *testing.T) {
 	}
 }
 
-// TestConcurrent 测试运行中patch并发支持
+// TestConcurrent 测试运行中 patch 并发支持
 func TestStaticProxyConcurrent1(t *testing.T) {
 	logger.LogLevel = logger.WarningLevel
 	logger.SetLog2Console(true)
@@ -432,7 +432,7 @@ func TestStaticProxyConcurrent1(t *testing.T) {
 	}
 }
 
-// TestConcurrent 测试运行中patch并发支持
+// TestConcurrent 测试运行中 patch 并发支持
 // TODO fix nil pointer
 func TestStaticProxyConcurrentOnce(t *testing.T) {
 	logger.LogLevel = logger.InfoLevel

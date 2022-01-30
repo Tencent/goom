@@ -1,5 +1,5 @@
-// Package mocker_test 对mocker包的测试
-// 当前文件实现了对mocker_test.go,iface_test.go,debug_test.go的单测对于不同go版本的兼容性测试
+// Package mocker_test 对 mocker 包的测试
+// 当前文件实现了对 mocker_test.go,iface_test.go,debug_test.go 的单测对于不同 go 版本的兼容性测试
 package mocker_test
 
 import (
@@ -24,7 +24,7 @@ var versions = []string{
 
 const testEnv = "MOCKER_COMPATIBILITY_TEST"
 
-// TestCompatibility 测试针对不同go版本的兼容情况
+// TestCompatibility 测试针对不同 go 版本的兼容情况
 func TestCompatibility(t *testing.T) {
 	if os.Getenv(testEnv) == "true" {
 		return

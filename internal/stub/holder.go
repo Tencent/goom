@@ -17,7 +17,7 @@ var placeHolderIns *PlaceHolder
 
 // PlaceHolder 占位对象
 type PlaceHolder struct {
-	// count hook次数统计
+	// count hook 次数统计
 	count int
 	// off 当前占位函数使用的偏移量
 	off uintptr
@@ -33,7 +33,7 @@ func Placeholder()
 func init() {
 	offset := reflect.ValueOf(Placeholder).Pointer()
 
-	// 兼容go 1.17(1.17以上会对assembler函数进行wrap, 需要找到其内部的调用)
+	// 兼容 go 1.17(1.17以上会对 assembler 函数进行 wrap, 需要找到其内部的调用)
 	innerOffset, err := patch.GetInnerFunc(64, offset)
 	if innerOffset > 0 && err == nil {
 		offset = innerOffset

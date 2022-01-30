@@ -25,12 +25,12 @@ const (
 
 const (
 	defaultPrefix = "[goom-mocker]" // defaultPrefix 默认日志前缀
-	openDebugEnv  = "GOOM_DEBUG"    // openDebugEnv 开启debug日志
+	openDebugEnv  = "GOOM_DEBUG"    // openDebugEnv 开启 debug 日志
 )
 
 var (
 	// LogLevel 日志级别
-	// level总共分5个级别：debug < info< warning< error< critical
+	// level 总共分5个级别：debug < info< warning< error< critical
 	LogLevel = InfoLevel
 	// ConsoleLevel 控制台打印级别
 	ConsoleLevel = WarningLevel
@@ -40,7 +40,7 @@ var (
 	Logger io.Writer = os.Stdout
 	// EnableLogTrack 开启并发日志染色
 	EnableLogTrack = false
-	// trackGetter 日志染色器, 用于并发测试区分协程ID
+	// trackGetter 日志染色器, 用于并发测试区分协程 ID
 	trackGetter func() string
 	// logFile 日志路径
 	logFile *os.File
@@ -87,17 +87,17 @@ func init() {
 	Logger = logFile
 }
 
-// OpenDebug 开启debug模式
+// OpenDebug 开启 debug 模式
 func OpenDebug() {
 	ConsoleLevel = DebugLevel
 }
 
-// CloseDebug 关闭debug模式
+// CloseDebug 关闭 debug 模式
 func CloseDebug() {
 	ConsoleLevel = WarningLevel
 }
 
-// IsDebugOpen 是否开启debug模式
+// IsDebugOpen 是否开启 debug 模式
 func IsDebugOpen() bool {
 	return ConsoleLevel >= DebugLevel
 }
@@ -135,59 +135,59 @@ func SetLogTrack(enable bool, getter func() string) {
 	}
 }
 
-// LogTraceEnable 是否开启trace
+// LogTraceEnable 是否开启 trace
 func LogTraceEnable() bool {
 	return LogLevel >= TraceLevel
 }
 
-// LogTrace 打印trace日志
+// LogTrace 打印 trace 日志
 func LogTrace(v ...interface{}) {
 	if LogLevel >= TraceLevel {
 		_, _ = Logger.Write(layout(TraceLevel, v))
 	}
 }
 
-// LogTracef 打印trace日志
+// LogTracef 打印 trace 日志
 func LogTracef(format string, a ...interface{}) {
 	if LogLevel >= TraceLevel {
 		_, _ = Logger.Write(layoutf(TraceLevel, format, nil, a...))
 	}
 }
 
-// LogDebugEnable 是否开启debug
+// LogDebugEnable 是否开启 debug
 func LogDebugEnable() bool {
 	return LogLevel >= DebugLevel
 }
 
-// LogDebug 打印debug日志
+// LogDebug 打印 debug 日志
 func LogDebug(v ...interface{}) {
 	if LogLevel >= DebugLevel {
 		_, _ = Logger.Write(layout(DebugLevel, v))
 	}
 }
 
-// LogDebugf 打印debug日志
+// LogDebugf 打印 debug 日志
 func LogDebugf(format string, a ...interface{}) {
 	if LogLevel >= DebugLevel {
 		_, _ = Logger.Write(layoutf(DebugLevel, format, nil, a...))
 	}
 }
 
-// LogInfo 打印info日志
+// LogInfo 打印 info 日志
 func LogInfo(v ...interface{}) {
 	if LogLevel >= InfoLevel {
 		_, _ = Logger.Write(layout(InfoLevel, v))
 	}
 }
 
-// LogInfof 打印info日志
+// LogInfof 打印 info 日志
 func LogInfof(format string, a ...interface{}) {
 	if LogLevel >= InfoLevel {
 		_, _ = Logger.Write(layoutf(InfoLevel, format, nil, a...))
 	}
 }
 
-// LogWarning 打印warning日志
+// LogWarning 打印 warning 日志
 func LogWarning(v ...interface{}) {
 	if LogLevel >= WarningLevel {
 		line := layout(WarningLevel, v)
@@ -198,7 +198,7 @@ func LogWarning(v ...interface{}) {
 	}
 }
 
-// LogWarningf 打印warning日志
+// LogWarningf 打印 warning 日志
 func LogWarningf(format string, a ...interface{}) {
 	if LogLevel >= WarningLevel {
 		line := layoutf(WarningLevel, format, nil, a...)
@@ -224,7 +224,7 @@ func LogImportantf(format string, a ...interface{}) {
 	write2Console(line)
 }
 
-// LogError 打印error日志
+// LogError 打印 error 日志
 func LogError(v ...interface{}) {
 	if LogLevel >= ErrorLevel {
 		line := layout(ErrorLevel, v)
@@ -234,7 +234,7 @@ func LogError(v ...interface{}) {
 	}
 }
 
-// LogErrorf 打印error日志
+// LogErrorf 打印 error 日志
 func LogErrorf(format string, a ...interface{}) {
 	if LogLevel >= ErrorLevel {
 		line := layoutf(ErrorLevel, format, nil, a...)
@@ -267,7 +267,7 @@ func Log2Consolefc(level int, format string, callerFn CallerFn, a ...interface{}
 	}
 }
 
-// write2Console 输出到控制台，如果ShowError2Console==true时
+// write2Console 输出到控制台，如果 ShowError2Console==true 时
 func write2Console(line []byte) {
 	if ShowError2Console {
 		os.Stdout.Write(line)
@@ -339,10 +339,10 @@ func loggerPath() (string, error) {
 	return logFileLocation, err
 }
 
-// CallerFn 获取Caller行号的回调函数类型
+// CallerFn 获取 Caller 行号的回调函数类型
 type CallerFn func() string
 
-// Caller 默认的CallerFn, 用于debug日志获取调用者的行号
+// Caller 默认的 CallerFn, 用于 debug 日志获取调用者的行号
 func Caller(skip int) func() string {
 	return func() string {
 		return caller(skip)

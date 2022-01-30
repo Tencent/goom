@@ -32,7 +32,7 @@ func toValue(r interface{}, out reflect.Type) reflect.Value {
 		if v.Type().Size() != out.Size() {
 			panic(fmt.Sprintf("type mismatch,must: %s, actual: %v", v.Type(), out))
 		}
-		// 类型强制转换,适用于结构体fake场景
+		// 类型强制转换,适用于结构体 fake 场景
 		v = cast(v, out)
 	}
 
@@ -108,7 +108,7 @@ func ToExpr(args []interface{}, types []reflect.Type) ([]Expr, error) {
 		if expr, ok := a.(Expr); ok {
 			exprs[i] = expr
 		} else {
-			// 默认使用equals表达式
+			// 默认使用 equals 表达式
 			exprs[i] = Equals(a)
 		}
 		err := exprs[i].Resolve([]reflect.Type{types[i]})

@@ -1,4 +1,4 @@
-// Package proxy_test 对proxy包的测试
+// Package proxy_test 对 proxy 包的测试
 package proxy_test
 
 import (

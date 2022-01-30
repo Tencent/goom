@@ -14,7 +14,7 @@ func init() {
 	checkInlineDisable()
 }
 
-// checkInlineDisable 检测是否关闭inline
+// checkInlineDisable 检测是否关闭 inline
 func checkInlineDisable() {
 	addr := reflect.ValueOf(callFakeFunc).Pointer()
 	bytes := rawMemoryRead(addr, 100)
@@ -48,7 +48,7 @@ func callFakeFunc() int {
 	return checkTarget(1)
 }
 
-// target 测试目标mock函数
+// target 测试目标 mock 函数
 func checkTarget(i int) int {
 	// example short code
 	return i + 1

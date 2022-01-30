@@ -18,7 +18,7 @@ import (
 var (
 	// funcSizeCache 函数长度缓存
 	funcSizeCache = make(map[uintptr]int)
-	// funcSizeReadLock 并发读写funcSizeCache锁
+	// funcSizeReadLock 并发读写 funcSizeCache 锁
 	funcSizeReadLock sync.Mutex
 )
 
@@ -118,7 +118,7 @@ func getPtr(v reflect.Value) unsafe.Pointer {
 	return (*value)(unsafe.Pointer(&v)).ptr
 }
 
-// isNil 判断interface{}是否为空
+// isNil 判断 interface{}是否为空
 func isNil(i interface{}) bool {
 	if i == nil {
 		return true
@@ -151,7 +151,7 @@ func getTrampolinePtr(trampoline interface{}) (uintptr, error) {
 	return trampolinePtr, nil
 }
 
-// IsPtr 判断interface{}是否为指针类型
+// IsPtr 判断 interface{}是否为指针类型
 func IsPtr(value interface{}) bool {
 	if value == nil {
 		return false
@@ -249,7 +249,7 @@ func Debugf(title string, from uintptr, copyOrigin []byte, level int) {
 	}
 }
 
-// minSize 最小size，不超出fixOrigin长度的size大小
+// minSize 最小 size，不超出 fixOrigin 长度的 size 大小
 func minSize(showSize int, fixOrigin []byte) int {
 	if showSize > len(fixOrigin) {
 		showSize = len(fixOrigin)

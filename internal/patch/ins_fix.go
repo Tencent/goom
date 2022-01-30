@@ -11,7 +11,7 @@ import (
 	"git.code.oa.com/goom/mocker/internal/x86asm"
 )
 
-// callInsName call指令名称
+// callInsName call 指令名称
 const callInsName = "CALL"
 
 // opExpand 短地址指令 -> 长地址指令
@@ -29,7 +29,7 @@ var opExpand = map[uint32][]byte{
 // trampoline 需要移动到的目标地址
 // funcSize 函数字节码整体长度
 // leastSize 要替换的字节长度的最小限制
-// allowCopyCall 是否允许拷贝Call指令
+// allowCopyCall 是否允许拷贝 Call 指令
 func replaceRelativeAddr(from uintptr, copyOrigin []byte, trampoline uintptr, funcSize int, leastSize int,
 	allowCopyCall bool) ([]byte, int, error) {
 
@@ -56,7 +56,7 @@ func replaceRelativeAddr(from uintptr, copyOrigin []byte, trampoline uintptr, fu
 // block 被替换的目标字节区块
 // trampoline 跳板函数起始地址
 // leastSize 最少替换范围
-// blockSize 目标区块范围, 用于判断地址是否超出block范围, 超出才需要替换
+// blockSize 目标区块范围, 用于判断地址是否超出 block 范围, 超出才需要替换
 // return []byte 修复后的指令
 func replaceBlock(from uintptr, block []byte, trampoline uintptr,
 	leastSize int, blockSize int, allowCopyCall bool) ([]byte, int, error) {
@@ -76,7 +76,7 @@ func replaceBlock(from uintptr, block []byte, trampoline uintptr,
 				return nil, 0, fmt.Errorf("copy call instruction is not allowed in auto trampoline model. size: %d", leastSize)
 			}
 
-			// 拷贝一份block,防止被修改; replace之后的block是回参replacedBlock
+			// 拷贝一份 block,防止被修改; replace 之后的 block 是回参 replacedBlock
 			copyBlock := make([]byte, len(block))
 			if l := copy(copyBlock, block); l != len(block) {
 				return nil, 0, errors.New("copy block array error")

@@ -1,8 +1,9 @@
 package erro
 
 import (
-	"git.code.oa.com/goom/mocker/internal/logger"
 	"strings"
+
+	"git.code.oa.com/goom/mocker/internal/logger"
 )
 
 const prefix = "func not found: "

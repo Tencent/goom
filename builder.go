@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"git.code.oa.com/goom/mocker/internal/logger"
-
 	"git.code.oa.com/goom/mocker/internal/proxy"
 )
 

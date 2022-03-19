@@ -19,7 +19,7 @@ var versions = []string{
 	"go1.15",
 	"go1.16",
 	"go1.17",
-	"go1.18beta1",
+	"go1.18",
 }
 
 const testEnv = "MOCKER_COMPATIBILITY_TEST"

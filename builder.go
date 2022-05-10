@@ -1,6 +1,6 @@
-// Package mocker 定义了 mock 的外层用户使用 API 定义,
-// 包括函数、方法、接口、未导出函数(或方法的)的 Mocker 的实现。
-// 当前文件实现了 Mocker 接口各实现类的构造链创建，以便通过链式构造一个 Mocker 对象。
+// Package mocker 定义了mock的外层用户使用API定义,
+// 包括函数、方法、接口、未导出函数(或方法的)的Mocker的实现。
+// 当前文件实现了Mocker接口各实现类的构造链创建，以便通过链式构造一个Mocker对象。
 package mocker
 
 import (
@@ -10,52 +10,55 @@ import (
 	"strings"
 
 	"git.code.oa.com/goom/mocker/internal/logger"
+
 	"git.code.oa.com/goom/mocker/internal/proxy"
 )
 
-// Builder Mock 构建器, 负责创建一个链式构造器.
+// Builder Mock构建器, 负责创建一个链式构造器.
 type Builder struct {
 	pkgName string
-	mockers map[interface{}]Mocker
+	mockers []Mocker
+
+	mCache map[interface{}]Mocker
 }
 
 // Pkg 指定包名，当前包无需指定
-// 对于跨包目录的私有函数的 mock 通常都是因为代码设计可能有问题, 此功能会在未来版本中移除
-// 后续仅支持同包下的未导出方法的 mock
-// Deprecated: 对于跨包目录的私有函数的 mock 通常都是因为代码设计可能有问题
+// 对于跨包目录的私有函数的mock通常都是因为代码设计可能有问题, 此功能会在未来版本中移除
+// 后续仅支持同包下的未导出方法的mock
+// Deprecated: 对于跨包目录的私有函数的mock通常都是因为代码设计可能有问题
 func (b *Builder) Pkg(name string) *Builder {
 	b.pkgName = name
 	return b
 }
 
 // PkgName 返回包名
-// Deprecated: 对于跨包目录的私有函数的 mock 通常都是因为代码设计可能有问题
+// Deprecated: 对于跨包目录的私有函数的mock通常都是因为代码设计可能有问题
 func (b *Builder) PkgName() string {
 	return b.pkgName
 }
 
-// Create 创建 Mock 构建器
-// 非线程安全的,不能在多协程中并发地 mock 或 reset 同一个函数
+// Create 创建Mock构建器
+// 非线程安全的,不能在多协程中并发地mock或reset同一个函数
 func Create() *Builder {
 	const currentPackageIndex = 2
 	return &Builder{
 		pkgName: currentPkg(currentPackageIndex),
-		mockers: make(map[interface{}]Mocker, 30),
+		mCache:  make(map[interface{}]Mocker, 30),
 	}
 }
 
 // Interface 指定接口类型的变量定义
-// iFace 必须是指针类型, 比如 i 为 interface 类型变量, iFace 传递&i
+// iFace 必须是指针类型, 比如 i为interface类型变量, iFace传递&i
 func (b *Builder) Interface(iFace interface{}) *CachedInterfaceMocker {
 	mKey := reflect.TypeOf(iFace).String()
-	if mocker, ok := b.mockers[mKey]; ok && !mocker.Canceled() {
+	if mocker, ok := b.mCache[mKey]; ok && !mocker.Canceled() {
 		b.reset2CurPkg()
 
 		return mocker.(*CachedInterfaceMocker)
 	}
 
-	// 创建 InterfaceMocker
-	// context 和 interface 类型绑定
+	// 创建InterfaceMocker
+	// context和interface类型绑定
 	mocker := NewDefaultInterfaceMocker(b.pkgName, iFace, proxy.NewContext())
 	cachedMocker := NewCachedInterfaceMocker(mocker)
 
@@ -67,14 +70,15 @@ func (b *Builder) Interface(iFace interface{}) *CachedInterfaceMocker {
 
 // cache 添加到缓存
 func (b *Builder) cache(mKey interface{}, cachedMocker Mocker) {
-	b.mockers[mKey] = cachedMocker
+	b.mockers = append(b.mockers, cachedMocker)
+	b.mCache[mKey] = cachedMocker
 }
 
 // Struct 指定结构体名称
-// 比如需要 mock 结构体函数 (*conn).Write(b []byte)，则 name="conn"
+// 比如需要mock结构体函数 (*conn).Write(b []byte)，则name="conn"
 func (b *Builder) Struct(obj interface{}) *CachedMethodMocker {
 	mKey := reflect.ValueOf(obj).Type().String()
-	if mocker, ok := b.mockers[mKey]; ok && !mocker.Canceled() {
+	if mocker, ok := b.mCache[mKey]; ok && !mocker.Canceled() {
 		b.reset2CurPkg()
 		return mocker.(*CachedMethodMocker)
 	}
@@ -90,24 +94,26 @@ func (b *Builder) Struct(obj interface{}) *CachedMethodMocker {
 
 // Func 指定函数定义
 // funcDef 函数，比如 foo
-// 方法的 mock, 比如 &Struct{}.method
+// 方法的mock, 比如 &Struct{}.method
 func (b *Builder) Func(obj interface{}) *DefMocker {
-	var key = runtime.FuncForPC(reflect.ValueOf(obj).Pointer()).Name()
-	if mocker, ok := b.mockers[key]; ok && !mocker.Canceled() {
+	if mocker, ok := b.mCache[reflect.ValueOf(obj)]; ok && !mocker.Canceled() {
 		b.reset2CurPkg()
+
 		return mocker.(*DefMocker)
 	}
 
 	mocker := NewDefMocker(b.pkgName, obj)
-	b.cache(key, mocker)
+
+	b.cache(reflect.ValueOf(obj), mocker)
 	b.reset2CurPkg()
+
 	return mocker
 }
 
 // ExportStruct 导出私有结构体
-// 比如需要 mock 结构体函数 (*conn).Write(b []byte)，则 name="conn"
+// 比如需要mock结构体函数 (*conn).Write(b []byte)，则name="conn"
 func (b *Builder) ExportStruct(name string) *CachedUnexportedMethodMocker {
-	if mocker, ok := b.mockers[b.pkgName+"_"+name]; ok && !mocker.Canceled() {
+	if mocker, ok := b.mCache[b.pkgName+"_"+name]; ok && !mocker.Canceled() {
 		b.reset2CurPkg()
 		return mocker.(*CachedUnexportedMethodMocker)
 	}
@@ -127,15 +133,15 @@ func (b *Builder) ExportStruct(name string) *CachedUnexportedMethodMocker {
 }
 
 // ExportFunc 导出私有函数
-// 比如需要 mock 函数 foo()， 则 name="pkg_name.foo"
-// 比如需要 mock 方法, pkg_name.(*struct_name).method_name
-// name string foo 或者(*struct_name).method_name
+// 比如需要mock函数 foo()， 则name="pkg_name.foo"
+// 比如需要mock方法, pkg_name.(*struct_name).method_name
+// name string foo或者(*struct_name).method_name
 func (b *Builder) ExportFunc(name string) *UnexportedFuncMocker {
 	if name == "" {
 		panic("func name is empty")
 	}
 
-	if mocker, ok := b.mockers[b.pkgName+"_"+name]; ok && !mocker.Canceled() {
+	if mocker, ok := b.mCache[b.pkgName+"_"+name]; ok && !mocker.Canceled() {
 		b.reset2CurPkg()
 		return mocker.(*UnexportedFuncMocker)
 	}
@@ -148,24 +154,12 @@ func (b *Builder) ExportFunc(name string) *UnexportedFuncMocker {
 	return mocker
 }
 
-// Var 变量 mock, target 类型必须传递指针类型
-func (b *Builder) Var(target interface{}) VarMock {
-	cacheKey := fmt.Sprintf("var_%d", reflect.ValueOf(target).Pointer())
-	if mocker, ok := b.mockers[cacheKey]; ok && !mocker.Canceled() {
-		return mocker.(VarMock)
-	}
-
-	mocker := NewVarMocker(target)
-	b.cache(cacheKey, mocker)
-	return mocker
-}
-
-// Reset 取消当前 builder 的所有 Mock
+// Reset 取消当前builder的所有Mock
 func (b *Builder) Reset() *Builder {
 	for _, mocker := range b.mockers {
 		mocker.Cancel()
-		logger.Log2Consolefc(logger.DebugLevel, "mockers [%s] resets.", logger.Caller(5), mocker.String())
 	}
+
 	return b
 }
 
@@ -199,25 +193,13 @@ func currentPkg(skip int) string {
 	return callerName[:realIndex]
 }
 
-// OpenDebug 开启 debug 模式
-// 也可以通过添加环境变量开启 debug: GOOM_DEBUG=true
-// 1.可以查看 apply 和 reset 的状态日志
-// 2.查看 mock 调用日志
-func OpenDebug() {
-	logger.OpenDebug()
-}
-
-// CloseDebug 关闭 debug 模式
-func CloseDebug() {
-	logger.CloseDebug()
-}
-
-// OpenTrace 打开日志跟踪
-func OpenTrace() {
-	logger.OpenTrace()
-}
-
-// CloseTrace 关闭日志跟踪
-func CloseTrace() {
-	logger.CloseTrace()
+// DebugEnable 开启debug模式
+func DebugEnable(enable bool) {
+	if enable {
+		logger.SetLog2Console(true)
+		logger.LogLevel = logger.DebugLevel
+	} else {
+		logger.LogLevel = logger.InfoLevel
+		logger.SetLog2Console(false)
+	}
 }

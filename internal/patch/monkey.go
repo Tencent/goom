@@ -17,7 +17,7 @@ func Patch(target, replacement interface{}) (*Guard, error) {
 // Trampoline 将函数调用指定代理函数
 // target 原始函数
 // replacement 代理函数
-// trampoline 指定跳板函数(可不指定,传 nil)
+// trampoline 指定跳板函数(可不指定,传nil)
 func Trampoline(target, replacement interface{}, trampoline interface{}) (*Guard, error) {
 	patch := &patch{
 		target:      target,
@@ -33,17 +33,17 @@ func Trampoline(target, replacement interface{}, trampoline interface{}) (*Guard
 	return patch.Guard(), nil
 }
 
-// UnsafePatch 未受类型检查的 patch
+// UnsafePatch 未受类型检查的patch
 // target 原始函数
 // replacement 代理函数
 func UnsafePatch(target, replacement interface{}) (*Guard, error) {
 	return UnsafePatchTrampoline(target, replacement, nil)
 }
 
-// UnsafePatchTrampoline 未受类型检查的 patch
+// UnsafePatchTrampoline 未受类型检查的patch
 // target 原始函数
 // replacement 代理函数
-// trampoline 指定跳板函数(可不指定,传 nil)
+// trampoline 指定跳板函数(可不指定,传nil)
 func UnsafePatchTrampoline(target, replacement interface{}, trampoline interface{}) (*Guard, error) {
 	patch := &patch{
 		target:      target,
@@ -74,7 +74,7 @@ func Ptr(targetPtr uintptr, replacement interface{}) (*Guard, error) {
 // 此方式为经过函数签名检查,可能会导致栈帧无法对其导致堆栈调用异常，因此不安全请谨慎使用
 // targetPtr 原始函数地址
 // replacement 代理函数
-// trampoline 跳板函数地址(可不指定,传 nil)
+// trampoline 跳板函数地址(可不指定,传nil)
 func PtrTrampoline(targetPtr uintptr, replacement, trampoline interface{}) (*Guard, error) {
 	patch := &patch{
 		replacement: replacement,

@@ -9,7 +9,7 @@ import (
 	"git.code.oa.com/goom/mocker/internal/patch"
 )
 
-// MakeIfaceCaller 构造生成桩函数并放到.text 区
+// MakeIfaceCaller 构造生成桩函数并放到.text区
 // to 桩函数跳转到的地址
 func MakeIfaceCaller(to unsafe.Pointer) (uintptr, error) {
 	// acqure space
@@ -33,8 +33,8 @@ func MakeIfaceCaller(to unsafe.Pointer) (uintptr, error) {
 	return placehlder, nil
 }
 
-// MakeIfaceCallerWithCtx 构造生成桩函数并放到.text 区
-// ctx make Func 对象的上下文地址,即 @see reflect.makeFuncImpl
+// MakeIfaceCallerWithCtx 构造生成桩函数并放到.text区
+// ctx make Func对象的上下文地址,即 @see reflect.makeFuncImpl
 // to 桩函数最终跳转到另一个地址
 func MakeIfaceCallerWithCtx(ctx unsafe.Pointer, to uintptr) (uintptr, error) {
 	// acqure space

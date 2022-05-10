@@ -1,7 +1,7 @@
 // Package testdata 测试数据包, 包含被测函数层
 package testdata
 
-// Fake fake 结构体
+// Fake fake结构体
 type Fake struct{}
 
 //go:noinline

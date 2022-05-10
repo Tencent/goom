@@ -2,12 +2,12 @@ workspace(
     name = "mocker",
 )
 
-load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-git_repository(
+http_archive(
     name = "tencent2",
-    commit = "0c979cd9267063882a90aafcb48e4d1c19d27d1c",
-    remote = "git@git.code.oa.com:depot/tencent2.git",
+    sha256 = "1fa5633f9e95014e5179186f65044291786328f7469831366bc374f5fbcbcaca",
+    url = "http://mirrors.tencent.com/repository/generic/bazel/legacy/tencent2.tgz",
 )
 
 load("@tencent2//third_party:deps.bzl", "dependencies")

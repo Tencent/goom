@@ -1,22 +1,12 @@
 package patch
 
-import (
-	"git.code.oa.com/goom/mocker/internal/logger"
-	"unsafe"
-)
+import "unsafe"
 
 // nopOpcode 空指令插入到原函数开头第一个字节, 用于判断原函数是否已经被Patch过
-var nopOpcode = []byte{0xD5, 0x03, 0x20, 0x1F}
+var nopOpcode []byte = []byte{0xD5, 0x03, 0x20, 0x1F}
 
 // funcPrologue 函数的开头指纹,用于不同OS获取不同的默认值
 var funcPrologue = armFuncPrologue64
-
-func init() {
-	logger.LogWarningf("not support arm cpu yet! " +
-		"please use go-amd64(open with rosetta) instead on MACOS.")
-	logger.Log2Consolef(logger.ErrorLevel, "not support arm cpu yet! "+
-		"please use go-amd64(open with rosetta) instead on MACOS.")
-}
 
 // Reference instruction set:
 //
@@ -109,7 +99,7 @@ func movx(movX, regN, shift int, value uint16) []byte {
 
 // jmpToOriginFunctionValue Assembles a jump to a function value
 func jmpToOriginFunctionValue(from, to uintptr) (value []byte) {
-	panic("not support arm64 yet")
+	panic("not support yet")
 }
 
 // checkAlreadyPatch 检测是否已经patch

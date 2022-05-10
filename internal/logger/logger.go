@@ -5,10 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path"
 	"path/filepath"
-	"runtime"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -23,54 +20,27 @@ const (
 	CriticalLevel = 1 // 严重错误
 )
 
-const (
-	defaultPrefix = "[goom-mocker]" // defaultPrefix 默认日志前缀
-	openDebugEnv  = "GOOM_DEBUG"    // openDebugEnv 开启 debug 日志
-)
+// 默认日志前缀
+const defaultPrefix = "[goom-mocker]"
 
 var (
 	// LogLevel 日志级别
-	// level 总共分5个级别：debug < info< warning< error< critical
-	LogLevel = InfoLevel
-	// ConsoleLevel 控制台打印级别
-	ConsoleLevel = WarningLevel
+	// level总共分5个级别：debug < info< warning< error< critical
+	LogLevel = 6
 	// ShowError2Console 把错误同步打印到控制台
 	ShowError2Console = false
 	// Logger 独立日志文件
 	Logger io.Writer = os.Stdout
-	// EnableLogTrack 开启并发日志染色
-	EnableLogTrack = false
-	// trackGetter 日志染色器, 用于并发测试区分协程 ID
-	trackGetter func() string
+	// EnableLogColor 开启并发日志染色
+	EnableLogColor = false
+	// colorGetter 日志染色器, 用于并发测试区分协程ID
+	colorGetter func() string
 	// logFile 日志路径
 	logFile *os.File
 )
 
-var (
-	levelName = map[int]string{ // levelName 日志级别-级别名称映射
-		TraceLevel:    "trace",
-		DebugLevel:    "debug",
-		InfoLevel:     "info",
-		WarningLevel:  "warn",
-		ErrorLevel:    "error",
-		CriticalLevel: "critical",
-	}
-	levelColor = map[int]Color{ // levelColor 日志级别-颜色映射
-		TraceLevel:    None,
-		DebugLevel:    None,
-		InfoLevel:     None,
-		WarningLevel:  Yellow,
-		ErrorLevel:    Red,
-		CriticalLevel: Red,
-	}
-)
-
-// init 初始化
+// init() 初始化
 func init() {
-	if d := os.Getenv(openDebugEnv); d != "" {
-		OpenDebug()
-	}
-
 	loggerPath, err := loggerPath()
 	if err != nil {
 		fmt.Println("loggerPath error:", err)
@@ -87,33 +57,10 @@ func init() {
 	Logger = logFile
 }
 
-// OpenDebug 开启 debug 模式
-func OpenDebug() {
-	ConsoleLevel = DebugLevel
-}
-
-// CloseDebug 关闭 debug 模式
-func CloseDebug() {
-	ConsoleLevel = WarningLevel
-}
-
-// IsDebugOpen 是否开启 debug 模式
-func IsDebugOpen() bool {
-	return ConsoleLevel >= DebugLevel
-}
-
-// OpenTrace 打开日志跟踪
-func OpenTrace() {
-	OpenDebug()
-	SetLog2Console(true)
-	LogLevel = TraceLevel
-}
-
-// CloseTrace 关闭日志跟踪
-func CloseTrace() {
-	CloseDebug()
-	LogLevel = InfoLevel
-	SetLog2Console(false)
+// Log2Console 是否打印到控制台
+// Deprecated: 代码重构将此函数重命名为SetLog2Console.
+func Log2Console(b bool) {
+	SetLog2Console(b)
 }
 
 // SetLog2Console 设置是否打印到控制台
@@ -125,72 +72,72 @@ func SetLog2Console(b bool) {
 	}
 }
 
-// SetLogTrack 设置日志染色
-func SetLogTrack(enable bool, getter func() string) {
+// SetLogColor 设置日志染色
+func SetLogColor(enable bool, getter func() string) {
 	if enable && getter != nil {
-		trackGetter = getter
-		EnableLogTrack = true
+		colorGetter = getter
+		EnableLogColor = true
 	} else {
-		EnableLogTrack = false
+		EnableLogColor = false
 	}
 }
 
-// LogTraceEnable 是否开启 trace
+// LogTraceEnable 是否开启trace
 func LogTraceEnable() bool {
 	return LogLevel >= TraceLevel
 }
 
-// LogTrace 打印 trace 日志
+// LogTrace 打印trace日志
 func LogTrace(v ...interface{}) {
 	if LogLevel >= TraceLevel {
-		_, _ = Logger.Write(layout(TraceLevel, v))
+		_, _ = Logger.Write(withPrefix("trace", v))
 	}
 }
 
-// LogTracef 打印 trace 日志
+// LogTracef 打印trace日志
 func LogTracef(format string, a ...interface{}) {
 	if LogLevel >= TraceLevel {
-		_, _ = Logger.Write(layoutf(TraceLevel, format, nil, a...))
+		_, _ = Logger.Write(withPrefixStr("trace", format, a...))
 	}
 }
 
-// LogDebugEnable 是否开启 debug
+// LogDebugEnable 是否开启debug
 func LogDebugEnable() bool {
 	return LogLevel >= DebugLevel
 }
 
-// LogDebug 打印 debug 日志
+// LogDebug 打印debug日志
 func LogDebug(v ...interface{}) {
 	if LogLevel >= DebugLevel {
-		_, _ = Logger.Write(layout(DebugLevel, v))
+		_, _ = Logger.Write(withPrefix("debug", v))
 	}
 }
 
-// LogDebugf 打印 debug 日志
+// LogDebugf 打印debug日志
 func LogDebugf(format string, a ...interface{}) {
 	if LogLevel >= DebugLevel {
-		_, _ = Logger.Write(layoutf(DebugLevel, format, nil, a...))
+		_, _ = Logger.Write(withPrefixStr("debug", format, a...))
 	}
 }
 
-// LogInfo 打印 info 日志
+// LogInfo 打印info日志
 func LogInfo(v ...interface{}) {
 	if LogLevel >= InfoLevel {
-		_, _ = Logger.Write(layout(InfoLevel, v))
+		_, _ = Logger.Write(withPrefix("info", v))
 	}
 }
 
-// LogInfof 打印 info 日志
+// LogInfof 打印info日志
 func LogInfof(format string, a ...interface{}) {
 	if LogLevel >= InfoLevel {
-		_, _ = Logger.Write(layoutf(InfoLevel, format, nil, a...))
+		_, _ = Logger.Write(withPrefixStr("info", format, a...))
 	}
 }
 
-// LogWarning 打印 warning 日志
+// LogWarning 打印warning日志
 func LogWarning(v ...interface{}) {
 	if LogLevel >= WarningLevel {
-		line := layout(WarningLevel, v)
+		line := withPrefix("warning", v)
 
 		_, _ = Logger.Write(line)
 
@@ -198,10 +145,10 @@ func LogWarning(v ...interface{}) {
 	}
 }
 
-// LogWarningf 打印 warning 日志
+// LogWarningf 打印warning日志
 func LogWarningf(format string, a ...interface{}) {
 	if LogLevel >= WarningLevel {
-		line := layoutf(WarningLevel, format, nil, a...)
+		line := withPrefixStr("warning", format, a...)
 		_, _ = Logger.Write(line)
 
 		write2Console(line)
@@ -210,7 +157,7 @@ func LogWarningf(format string, a ...interface{}) {
 
 // LogImportant 打印重要的日志
 func LogImportant(v ...interface{}) {
-	line := layout(InfoLevel, v)
+	line := withPrefix("info", v)
 	_, _ = Logger.Write(line)
 
 	write2Console(line)
@@ -218,70 +165,53 @@ func LogImportant(v ...interface{}) {
 
 // LogImportantf 打印重要的日志
 func LogImportantf(format string, a ...interface{}) {
-	line := layoutf(InfoLevel, format, nil, a...)
+	line := withPrefixStr("info", format, a...)
 	_, _ = Logger.Write(line)
 
 	write2Console(line)
 }
 
-// LogError 打印 error 日志
+// LogError 打印error日志
 func LogError(v ...interface{}) {
 	if LogLevel >= ErrorLevel {
-		line := layout(ErrorLevel, v)
+		line := withPrefix("error", v)
 		_, _ = Logger.Write(line)
 
 		write2Console(line)
 	}
 }
 
-// LogErrorf 打印 error 日志
+// LogErrorf 打印error日志
 func LogErrorf(format string, a ...interface{}) {
 	if LogLevel >= ErrorLevel {
-		line := layoutf(ErrorLevel, format, nil, a...)
+		line := withPrefixStr("error", format, a...)
 		_, _ = Logger.Write(line)
 
 		write2Console(line)
-	}
-}
-
-// Log2Console 打印日志到控制台
-func Log2Console(level int, s string) {
-	if level <= ConsoleLevel {
-		os.Stdout.Write([]byte(s))
 	}
 }
 
 // Log2Consolef 打印日志到控制台
-func Log2Consolef(level int, format string, a ...interface{}) {
-	if level <= ConsoleLevel {
-		line := layoutf(level, format, nil, a...)
-		os.Stdout.Write(line)
-	}
+func Log2Consolef(format string, a ...interface{}) {
+	line := withPrefixStr("warn", format, a...)
+	os.Stdout.Write(line)
 }
 
-// Log2Consolefc 打印日志到控制台
-func Log2Consolefc(level int, format string, callerFn CallerFn, a ...interface{}) {
-	if level <= ConsoleLevel {
-		line := layoutf(level, format, callerFn, a...)
-		os.Stdout.Write(line)
-	}
-}
-
-// write2Console 输出到控制台，如果 ShowError2Console==true 时
+// write2Console 输出到控制台，如果ShowError2Console==true时
 func write2Console(line []byte) {
 	if ShowError2Console {
 		os.Stdout.Write(line)
 	}
 }
 
-// layout 给日志格式化，给日志带上[goom]前缀, 方便与业务日志区分
-func layout(level int, v []interface{}) []byte {
+// withPrefix 给日志带上[goom]前缀, 方便与业务日志区分
+func withPrefix(level string, v []interface{}) []byte {
 	arr := make([]string, 0, len(v)+1)
 	arr = append(arr, time.Now().Format("2006-01-02 15:04:05"))
-	arr = append(arr, defaultPrefix, "["+levelName[level]+"]:")
+	arr = append(arr, defaultPrefix, "["+level+"]:")
 
-	if EnableLogTrack {
-		arr = append(arr, trackGetter())
+	if EnableLogColor {
+		arr = append(arr, colorGetter())
 	}
 
 	for _, a := range v {
@@ -289,27 +219,21 @@ func layout(level int, v []interface{}) []byte {
 	}
 
 	arr = append(arr, "\n")
-	line := strings.Join(arr, " ")
-	line = levelColor[level].Add(line)
-	return []byte(line)
+
+	return []byte(strings.Join(arr, " "))
 }
 
-// layoutf 给日志格式化，带上[goom]前缀和添加颜色等
-func layoutf(level int, format string, callerFn CallerFn, a ...interface{}) []byte {
+// withPrefixStr 给日志带上[goom]前缀
+func withPrefixStr(level, format string, a ...interface{}) []byte {
 	time := time.Now().Format("2006-01-02 15:04:05")
 
-	if EnableLogTrack {
-		return []byte(time + " " + defaultPrefix + "[" + levelName[level] + "]: " +
-			trackGetter() + " " + fmt.Sprintf(format, a...) + "\n")
+	if EnableLogColor {
+		return []byte(time + " " + defaultPrefix + "[" + level + "]: " +
+			colorGetter() + " " + fmt.Sprintf(format, a...) + "\n")
 	}
 
-	line := time + " " + defaultPrefix + "[" + levelName[level] + "]: "
-	if callerFn != nil {
-		line += callerFn() + " "
-	}
-	line += fmt.Sprintf(format, a...) + "\n"
-	line = levelColor[level].Add(line)
-	return []byte(line)
+	return []byte(time + " " + defaultPrefix + "[" + level + "]: " +
+		fmt.Sprintf(format, a...) + "\n")
 }
 
 // loggerPath 获取日志存储路径
@@ -336,41 +260,6 @@ func loggerPath() (string, error) {
 	}
 
 	fmt.Println("goom-mocker logFileLocation:", logFileLocation)
+
 	return logFileLocation, err
-}
-
-// CallerFn 获取 Caller 行号的回调函数类型
-type CallerFn func() string
-
-// Caller 默认的 CallerFn, 用于 debug 日志获取调用者的行号
-func Caller(skip int) func() string {
-	return func() string {
-		return caller(skip)
-	}
-}
-
-func caller(skip int) string {
-	frame, defined := getCallerFrame(skip)
-	if !defined {
-		return ""
-	}
-	return path.Base(frame.File) + ":" + strconv.Itoa(frame.Line)
-}
-
-// getCallerFrame gets caller frame. The argument skip is the number of stack
-// frames to ascend, with 0 identifying the caller of getCallerFrame. The
-// boolean ok is false if it was not possible to recover the information.
-//
-// Note: This implementation is similar to runtime.Caller, but it returns the whole frame.
-func getCallerFrame(skip int) (frame runtime.Frame, ok bool) {
-	const skipOffset = 2 // skip getCallerFrame and Callers
-
-	pc := make([]uintptr, 1)
-	numFrames := runtime.Callers(skip+skipOffset, pc)
-	if numFrames < 1 {
-		return
-	}
-
-	frame, _ = runtime.CallersFrames(pc).Next()
-	return frame, frame.PC != 0
 }

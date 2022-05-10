@@ -1,4 +1,4 @@
-// Package proxy_test 对 proxy 包的测试
+// Package proxy_test 对proxy包的测试
 package proxy_test
 
 import (
@@ -122,12 +122,12 @@ func TestGenImpl(t *testing.T) {
 // genInterfaceImpl 生成接口实现
 func genInterfaceImpl(i interface{}, proxy interface{}) {
 	gen := hack.UnpackEFace(i).Data
-	// mock 接口方法
+	// mock接口方法
 	mockFunc := reflect.ValueOf(proxy)
 	ifc := *(*uintptr)(gen)
 	fmt.Println(ifc)
 
-	// 伪装 iface
+	// 伪装iface
 	*(*hack.Iface)(gen) = hack.Iface{
 		Tab: &hack.Itab{
 			Fun: [hack.MaxMethod]uintptr{mockFunc.Pointer(), uintptr(0), uintptr(0)},
@@ -166,7 +166,7 @@ func dynamicGenImpl(t *testing.T, i interface{}) {
 
 	gen := hack.UnpackEFace(i).Data
 
-	// mock 接口方法
+	// mock接口方法
 	methodTyp := reflect.TypeOf(func(data *Impl2, a int) int {
 		fmt.Println("proxy")
 		return 3
@@ -192,7 +192,7 @@ func dynamicGenImpl(t *testing.T, i interface{}) {
 
 	fmt.Printf("genstub: 0x%x callstub: 0x%x\n", genStub, callStub)
 
-	// 伪装 iface
+	// 伪装iface
 	*(*hack.Iface)(gen) = hack.Iface{
 		Tab: &hack.Itab{
 			Fun: [hack.MaxMethod]uintptr{genStub, uintptr(0), uintptr(0)},
@@ -256,7 +256,7 @@ func (i Impl2) call2(int32) int32 {
 	return 22
 }
 
-// TestTraceBack 测试生成任意接口实现的 traceback
+// TestTraceBack 测试生成任意接口实现的traceback
 func TestTraceBack(t *testing.T) {
 	gen := (I)(nil)
 

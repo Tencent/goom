@@ -1,5 +1,5 @@
 // Package unexports 实现了对未导出函数的获取
-// 基于 github.com/alangpierce/go-forceexport 进行了修改和扩展。
+// 基于github.com/alangpierce/go-forceexport进行了修改和扩展。
 package unexports
 
 import (
@@ -29,7 +29,7 @@ func FindFuncByName(name string) (uintptr, error) {
 	suggester := newSuggester(name)
 	for moduleData := &hack.Firstmoduledata; moduleData != nil; moduleData = moduleData.Next {
 		for _, ftab := range moduleData.Ftab {
-			if checkOverflow(ftab, moduleData) {
+			if ftab.Funcoff >= uintptr(len(moduleData.Pclntable)) {
 				break
 			}
 			f := (*runtime.Func)(unsafe.Pointer(&moduleData.Pclntable[ftab.Funcoff]))
@@ -74,7 +74,7 @@ func funcName(f *runtime.Func) string {
 func FindFuncByPtr(ptr uintptr) (*runtime.Func, string, error) {
 	for moduleData := &hack.Firstmoduledata; moduleData != nil; moduleData = moduleData.Next {
 		for _, ftab := range moduleData.Ftab {
-			if checkOverflow(ftab, moduleData) {
+			if ftab.Funcoff >= uintptr(len(moduleData.Pclntable)) {
 				break
 			}
 			f := (*runtime.Func)(unsafe.Pointer(&moduleData.Pclntable[ftab.Funcoff]))
@@ -119,7 +119,7 @@ func CreateFuncForCodePtr(outFuncPtr interface{}, codePtr uintptr) (*hack.Func, 
 	// pointer. The function value is a struct that starts with its code
 	// pointer, so we can swap out the code pointer with our desired value.
 	funcValuePtr := reflect.ValueOf(newFuncVal).FieldByName("ptr").Pointer()
-	// nolint hack 用法
+	// nolint hack用法
 	funcPtr := (*hack.Func)(unsafe.Pointer(funcValuePtr))
 	funcPtr.CodePtr = codePtr
 
@@ -128,7 +128,7 @@ func CreateFuncForCodePtr(outFuncPtr interface{}, codePtr uintptr) (*hack.Func, 
 	return funcPtr, nil
 }
 
-// NewFuncWithCodePtr 根据类型和函数地址进行构造 reflect.Value
+// NewFuncWithCodePtr 根据类型和函数地址进行构造reflect.Value
 func NewFuncWithCodePtr(typ reflect.Type, codePtr uintptr) reflect.Value {
 	var ptr2Ptr = &codePtr
 	pointer := unsafe.Pointer(ptr2Ptr)

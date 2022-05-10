@@ -1,4 +1,4 @@
-// Package proxy_test 对 proxy 包的测试
+// Package proxy_test 对proxy包的测试
 package proxy_test
 
 import (
@@ -39,7 +39,7 @@ func TestNetConnMock(t *testing.T) {
 	// 原始函数
 	var connWrite func(c *conn, b []byte) (int, error)
 
-	// 使用 gomonkey 进行切面
+	// 使用gomonkey进行切面
 	patch, err := proxy.StaticProxyByName("net.(*conn).Write", func(c *conn, b []byte) (int, error) {
 		n, _ := connWrite(c, b)
 		// 修改返回结果

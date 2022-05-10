@@ -1,5 +1,5 @@
-// Package mocker_test 对 mocker 包的测试
-// 当前文件实现了对 mocker.go 的单测
+// Package mocker_test 对mocker包的测试
+// 当前文件实现了对mocker.go的单测
 package mocker_test
 
 import (
@@ -17,10 +17,6 @@ import (
 
 // TestUnitBuilderTestSuite 测试入口
 func TestUnitBuilderTestSuite(t *testing.T) {
-	// 开启 debug
-	// 1.可以查看 apply 和 reset 的状态日志
-	// 2.查看 mock 调用日志
-	mocker.OpenDebug()
 	suite.Run(t, new(mockerTestSuite))
 }
 
@@ -33,7 +29,7 @@ func (s *mockerTestSuite) SetupTest() {
 	s.fakeErr = errors.New("fake error")
 }
 
-// TestUnitFuncApply 测试函数 mock apply
+// TestUnitFuncApply 测试函数mock apply
 func (s *mockerTestSuite) TestUnitFuncApply() {
 	s.Run("success", func() {
 		mock := mocker.Create()
@@ -50,7 +46,7 @@ func (s *mockerTestSuite) TestUnitFuncApply() {
 	})
 }
 
-// TestUnitFuncReturn 测试函数 mock return
+// TestUnitFuncReturn 测试函数mock return
 func (s *mockerTestSuite) TestUnitFuncReturn() {
 	s.Run("success", func() {
 		mock := mocker.Create()
@@ -65,7 +61,7 @@ func (s *mockerTestSuite) TestUnitFuncReturn() {
 	})
 }
 
-// TestUnitUnexportedFuncApply 测试未导出函数 mock apply
+// TestUnitUnexportedFuncApply 测试未导出函数mock apply
 func (s *mockerTestSuite) TestUnitUnexportedFuncApply() {
 	s.Run("success", func() {
 		mock := mocker.Create()
@@ -82,13 +78,13 @@ func (s *mockerTestSuite) TestUnitUnexportedFuncApply() {
 	})
 }
 
-// TestUnitUnexportedFuncReturn 测试未导出函数 mock return
+// TestUnitUnexportedFuncReturn 测试未导出函数mock return
 func (s *mockerTestSuite) TestUnitUnexportedFuncReturn() {
 	s.Run("success", func() {
 		mock := mocker.Create()
 
 		mock.Pkg("git.code.oa.com/goom/mocker_test").ExportFunc("foo").As(func(i int) int {
-			return i * 1
+			return i * 3
 		}).Return(3)
 
 		s.Equal(3, foo(1), "foo mock check")
@@ -99,7 +95,7 @@ func (s *mockerTestSuite) TestUnitUnexportedFuncReturn() {
 	})
 }
 
-// TestUnitMethodApply 测试结构体的方法 mock apply
+// TestUnitMethodApply 测试结构体的方法mock apply
 func (s *mockerTestSuite) TestUnitMethodApply() {
 	s.Run("success", func() {
 		mock := mocker.Create()
@@ -117,7 +113,7 @@ func (s *mockerTestSuite) TestUnitMethodApply() {
 	})
 }
 
-// TestUnitMethodReturn 测试结构体的方法 mock return
+// TestUnitMethodReturn 测试结构体的方法mock return
 func (s *mockerTestSuite) TestUnitMethodReturn() {
 	s.Run("success", func() {
 		mock := mocker.Create()
@@ -137,7 +133,7 @@ func (s *mockerTestSuite) TestUnitMethodReturn() {
 	})
 }
 
-// TestUnitUnExportedMethodApply 测试结构体的未导出方法 mock apply
+// TestUnitUnExportedMethodApply 测试结构体的未导出方法mock apply
 func (s *mockerTestSuite) TestUnitUnExportedMethodApply() {
 	s.Run("success", func() {
 		mock := mocker.Create()
@@ -155,7 +151,7 @@ func (s *mockerTestSuite) TestUnitUnExportedMethodApply() {
 	})
 }
 
-// TestUnitUnexportedMethodReturn 测试结构体的未导出方法 mock return
+// TestUnitUnexportedMethodReturn 测试结构体的未导出方法mock return
 func (s *mockerTestSuite) TestUnitUnexportedMethodReturn() {
 	s.Run("success", func() {
 		mock := mocker.Create()
@@ -173,18 +169,18 @@ func (s *mockerTestSuite) TestUnitUnexportedMethodReturn() {
 	})
 }
 
-// TestUnitUnExportStruct 测试未导出结构体的方法 mock apply
+// TestUnitUnExportStruct 测试未导出结构体的方法mock apply
 func (s *mockerTestSuite) TestUnitUnExportStruct() {
 	s.Run("success", func() {
 		// 指定包名
 		mock := mocker.Create()
-		s.Equal("git.code.oa.com/goom/mocker_test", mock.PkgName())
+		s.Equal(mock.PkgName(), "git.code.oa.com/goom/mocker_test")
 
 		mock.Pkg("git.code.oa.com/goom/mocker/testdata").ExportStruct("*Fake").
 			Method("call").Apply(func(_ *fake, i int) int {
 			return i * 2
 		})
-		s.Equal("git.code.oa.com/goom/mocker_test", mock.PkgName())
+		s.Equal(mock.PkgName(), "git.code.oa.com/goom/mocker_test")
 
 		f := &testdata.Fake{}
 
@@ -196,7 +192,7 @@ func (s *mockerTestSuite) TestUnitUnExportStruct() {
 	})
 }
 
-// TestCallOrigin 测试调用原函数 mock return
+// TestCallOrigin 测试调用原函数mock return
 func (s *mockerTestSuite) TestCallOrigin() {
 	s.Run("success", func() {
 		mock := mocker.Create()
@@ -270,7 +266,7 @@ func (s *mockerTestSuite) TestMultiReturns() {
 	})
 }
 
-// TestUnitFuncTwiceApply 测试函数 mock apply 多次
+// TestUnitFuncTwiceApply 测试函数mock apply多次
 func (s *mockerTestSuite) TestUnitFuncTwiceApply() {
 	s.Run("success", func() {
 		mock := mocker.Create()
@@ -287,7 +283,7 @@ func (s *mockerTestSuite) TestUnitFuncTwiceApply() {
 	})
 }
 
-// TestUnitDefaultReturn 测试函数 mock 返回默认值
+// TestUnitDefaultReturn 测试函数mock返回默认值
 func (s *mockerTestSuite) TestUnitDefaultReturn() {
 	s.Run("success", func() {
 		mock := mocker.Create()
@@ -303,7 +299,7 @@ func (s *mockerTestSuite) TestUnitDefaultReturn() {
 	})
 }
 
-// TestUnitSystemFuncApply 测试系统函数的 mock
+// TestUnitSystemFuncApply 测试系统函数的mock
 //  需要加上 -gcflags="-l"
 func (s *mockerTestSuite) TestUnitSystemFuncApply() {
 	s.Run("success", func() {
@@ -321,7 +317,7 @@ func (s *mockerTestSuite) TestUnitSystemFuncApply() {
 	})
 }
 
-// TestFakeReturn 测试返回 fake 值
+// TestFakeReturn 测试返回fake值
 func (s *mockerTestSuite) TestFakeReturn() {
 	s.Run("success", func() {
 		mock := mocker.Create()
@@ -348,7 +344,7 @@ func (s *mockerTestSuite) TestUnitEmptyMatch() {
 }
 
 func (s *mockerTestSuite) TestUnitNilReturn() {
-	s.Run("nil return", func() {
+	s.Run("nil return ", func() {
 		mocker.Create().Func(getS).Return(nil, s.fakeErr)
 
 		res, err := getS()
@@ -358,36 +354,9 @@ func (s *mockerTestSuite) TestUnitNilReturn() {
 	})
 }
 
-// TestVarMock 测试简单变量 mock
-func (s *mockerTestSuite) TestVarMock() {
-	s.Run("simple var mock", func() {
-		mock := mocker.Create()
-		mock.Var(&globalVar).Set(2)
-		s.Equal(2, globalVar)
-		mock.Reset()
-		s.Equal(1, globalVar)
-	})
-}
-
-// TestVarApply 测试变量应用 mock
-func (s *mockerTestSuite) TestVarApply() {
-	s.Run("var mock apply", func() {
-		mock := mocker.Create()
-		mock.Var(&globalVar).Apply(func() int {
-			return 2
-		})
-		s.Equal(2, globalVar)
-		mock.Reset()
-		s.Equal(1, globalVar)
-	})
-}
-
-// globalVar 用于测试全局变量 mock
-var globalVar = 1
-
 //go:noinline
 func foo(i int) int {
-	// check 对 defer 的支持
+	// check对defer的支持
 	defer func() { fmt.Printf("defer\n") }()
 	return i * 1
 }

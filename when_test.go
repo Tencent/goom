@@ -1,5 +1,5 @@
-// Package mocker_test 对 mocker 包的测试
-// 当前文件实现了对 when.go 的单测
+// Package mocker_test 对mocker包的测试
+// 当前文件实现了对when.go的单测
 package mocker_test
 
 import (
@@ -17,7 +17,7 @@ func TestUnitWhenTestSuite(t *testing.T) {
 	suite.Run(t, new(WhenTestSuite))
 }
 
-// mockerTestSuite Builder 测试套件
+// mockerTestSuite Builder测试套件
 type WhenTestSuite struct {
 	suite.Suite
 }
@@ -47,7 +47,7 @@ func complex1(Arg) *Result {
 	return &Result{0}
 }
 
-// Struct for 结构体方法 When
+// Struct for结构体方法When
 type Struct struct{}
 
 // Div 除法操作
@@ -69,7 +69,7 @@ func (s *Struct) Expand(arg []int) (int, int) {
 type StructOuter struct {
 }
 
-// Compute 中会调用 sub 运算
+// Compute 中会调用sub运算
 func (s *StructOuter) Compute(a int, b int) int {
 	diver := new(Struct)
 	res := diver.Div(a, b)
@@ -115,7 +115,7 @@ func (s *WhenTestSuite) TestReturns() {
 		s.Equal(5, when.Eval(2)[0], "when result check")
 		s.Equal(6, when.Eval(2)[0], "when result check")
 
-		// 多参 Returns
+		// 多参Returns
 		struct1 := new(Struct)
 		m := mocker.Create()
 		m.Struct(struct1).Method("Expand").Returns(
@@ -206,7 +206,7 @@ func (s *WhenTestSuite) TestMethodWhen() {
 		struct1 := new(Struct)
 		m := mocker.Create()
 
-		// 直接 mock 方法的返回值
+		// 直接mock方法的返回值
 		m.Struct(struct1).Method("Div").Return(100)
 		s.Equal(100, structOuter.Compute(2, 1), "method when check")
 
@@ -219,7 +219,7 @@ func (s *WhenTestSuite) TestMethodWhen() {
 		s.Equal(100, structOuter.Compute(3, 4), "method when check")
 		s.Equal(200, structOuter.Compute(4, 4), "method when check")
 
-		// mock 方法的替换方法
+		// mock方法的替换方法
 		m.Struct(struct1).Method("Div").Apply(func(_ *Struct, a int, b int) int {
 			return a/b + 1
 		})
@@ -227,7 +227,7 @@ func (s *WhenTestSuite) TestMethodWhen() {
 	})
 }
 
-// TestMethodAny 方法参数 Any 条件匹配
+// TestMethodAny 方法参数Any条件匹配
 func (s *WhenTestSuite) TestMethodAny() {
 	s.Run("success", func() {
 		structOuter := new(StructOuter)
@@ -241,7 +241,7 @@ func (s *WhenTestSuite) TestMethodAny() {
 	})
 }
 
-// TestMethodMultiIn 方法参数 Any 条件匹配
+// TestMethodMultiIn 方法参数Any条件匹配
 func (s *WhenTestSuite) TestMethodMultiIn() {
 	s.Run("success", func() {
 		structOuter := new(StructOuter)

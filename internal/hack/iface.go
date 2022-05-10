@@ -1,4 +1,4 @@
-// Package hack 对 go 系统包的 hack, 包含一些系统结构体的 copy，需要和不同的 go 版本保持同步
+// Package hack 对go系统包的hack, 包含一些系统结构体的copy，需要和不同的go版本保持同步
 package hack
 
 import "unsafe"
@@ -9,7 +9,7 @@ const (
 )
 
 // Iface 接口结构
-// TODO 不同 go 版本兼容
+// TODO 不同go版本兼容
 type Iface struct {
 	// Tab 为接口类型的方法表
 	Tab *Itab
@@ -18,7 +18,7 @@ type Iface struct {
 }
 
 // Itab keeps sync with runtime.itab
-// TODO 不同 go 版本兼容
+// TODO 不同go版本兼容
 // 注意: 最多兼容99个方法数量以内的接口
 type Itab struct {
 	// nolint
@@ -36,7 +36,7 @@ type Itab struct {
 type Eface struct {
 	// nolint
 	rtype unsafe.Pointer
-	// Data 为 interface{}类型变量指向的 Iface 类型变量的地址
+	// Data 为interface{}类型变量指向的Iface类型变量的地址
 	Data unsafe.Pointer
 }
 

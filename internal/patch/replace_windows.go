@@ -5,8 +5,8 @@ import (
 	"unsafe"
 )
 
-// 注意: 此版本暂时不能完整支持 windows
-// pageExecuteReadwrite page 窗口大小
+// 注意: 此版本暂时不能完整支持windows
+// pageExecuteReadwrite page窗口大小
 const pageExecuteReadwrite = 0x40
 
 var (
@@ -16,7 +16,7 @@ var (
 
 var procVirtualProtect = syscall.NewLazyDLL("kernel32.dll").NewProc("VirtualProtect")
 
-// virtualProtect 获取 page 读写权限
+// virtualProtect 获取page读写权限
 func virtualProtect(lpAddress uintptr, dwSize int, flNewProtect uint32, lpflOldProtect unsafe.Pointer) error {
 	ret, _, _ := procVirtualProtect.Call(
 		lpAddress,

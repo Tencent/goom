@@ -1,7 +1,7 @@
 package stub
 
 // jmpWithRdx Assembles a jump to a clourse function value
-// dx DX 寄存器
+// dx DX寄存器
 func jmpWithRdx(dx uintptr) (value []byte) {
 	return []byte{
 		0x48, 0xBA,
@@ -18,7 +18,7 @@ func jmpWithRdx(dx uintptr) (value []byte) {
 }
 
 // jmpWithRdxAndCtx Assembles a jump to a function value
-// ctx context 地址
+// ctx context地址
 // to 跳转目标地址
 // from 跳转来源地址
 func jmpWithRdxAndCtx(ctx, to, from uintptr) (value []byte) {

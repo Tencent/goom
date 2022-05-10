@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"reflect"
+	"strings"
 	"unsafe"
 
 	"git.code.oa.com/goom/mocker/internal/hack"
@@ -31,7 +32,7 @@ func toValue(r interface{}, out reflect.Type) reflect.Value {
 		if v.Type().Size() != out.Size() {
 			panic(fmt.Sprintf("type mismatch,must: %s, actual: %v", v.Type(), out))
 		}
-		// 类型强制转换,适用于结构体fake场景
+		// 类型强制转换,适用于结构体 fake 场景
 		v = cast(v, out)
 	}
 
@@ -80,6 +81,21 @@ func V2I(args []reflect.Value, types []reflect.Type) []interface{} {
 	return values
 }
 
+// SprintV []reflect.Value print to string
+func SprintV(args []reflect.Value) string {
+	s := make([]string, 0, len(args))
+
+	for _, a := range args {
+		if (a.Kind() == reflect.Interface || a.Kind() == reflect.Ptr) && isZero(a) {
+			s = append(s, "nil")
+		} else {
+			s = append(s, fmt.Sprintf("%v", a.Interface()))
+		}
+	}
+
+	return strings.Join(s, ",")
+}
+
 // ToExpr 将参数转换成[]Expr
 func ToExpr(args []interface{}, types []reflect.Type) ([]Expr, error) {
 	if len(args) != len(types) {
@@ -92,7 +108,7 @@ func ToExpr(args []interface{}, types []reflect.Type) ([]Expr, error) {
 		if expr, ok := a.(Expr); ok {
 			exprs[i] = expr
 		} else {
-			// 默认使用equals表达式
+			// 默认使用 equals 表达式
 			exprs[i] = Equals(a)
 		}
 		err := exprs[i].Resolve([]reflect.Type{types[i]})

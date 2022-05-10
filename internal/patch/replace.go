@@ -10,7 +10,7 @@ import (
 	"git.code.oa.com/goom/mocker/internal/logger"
 )
 
-// memoryAccessLock .text区内存操作度协作
+// memoryAccessLock .text 区内存操作度协作
 var memoryAccessLock sync.RWMutex
 
 // nolint
@@ -35,7 +35,7 @@ func rawMemoryRead(ptr uintptr, length int) []byte {
 	return duplicate
 }
 
-// replaceFunction 在函数from里面, 织入对to的调用指令，同时将from织入前的指令恢复至trampoline这个地址
+// replaceFunction 在函数 from 里面, 织入对 to 的调用指令，同时将 from 织入前的指令恢复至 trampoline 这个地址
 // from is a pointer to the actual function
 // to is a pointer to a go function value
 // trampoline 跳板函数地址, 不传递用0表示
@@ -79,7 +79,7 @@ func replaceFunction(from, to, proxy, trampoline uintptr) (original []byte, orig
 
 	// 保存原始指令
 	original = rawMemoryRead(from, len(jumpData))
-	// 判断是否已经被patch过
+	// 判断是否已经被 patch 过
 	if checkAlreadyPatch(original) {
 		err = fmt.Errorf("from:0x%x is already patched", from)
 		return

@@ -1,5 +1,5 @@
-// Package patch 生成指令跳转(到代理函数)并替换.text区内存
-// 对于trampoline模式的使用场景，本包实现了指令移动后的修复
+// Package patch 生成指令跳转(到代理函数)并替换.text 区内存
+// 对于 trampoline 模式的使用场景，本包实现了指令移动后的修复
 package patch
 
 import (
@@ -12,9 +12,9 @@ import (
 )
 
 var (
-	// lock patches map和内存指令锁
+	// lock patches map 和内存指令锁
 	lock = sync.Mutex{}
-	// patches patch缓存
+	// patches patch 缓存
 	patches = make(map[uintptr]*patch)
 )
 
@@ -39,7 +39,7 @@ type patch struct {
 	guard *Guard
 }
 
-// patchValue 对value进行应用代理
+// patchValue 对 value 进行应用代理
 func (p *patch) patch() error {
 	p.targetValue = reflect.ValueOf(p.target)
 	p.replacementValue = reflect.ValueOf(p.replacement)
@@ -47,7 +47,7 @@ func (p *patch) patch() error {
 	return p.patchValue()
 }
 
-// patchValue 对value进行应用代理
+// patchValue 对 value 进行应用代理
 func (p *patch) patchValue() error {
 	// 参数对齐校验 modified by @jake
 	checkSignature(p.targetValue.Type(), p.replacementValue.Type())
@@ -90,7 +90,7 @@ func (p *patch) unsafePatchPtr() error {
 
 // replaceFunc 替换函数
 func (p *patch) replaceFunc() error {
-	// 保证patch和Apply原子性
+	// 保证 patch 和 Apply 原子性
 	Lock()
 	defer Unlock()
 
@@ -123,7 +123,7 @@ func (p *patch) unpatch() {
 	p.Guard().Unpatch()
 }
 
-// Guard 获取PatchGuard
+// Guard 获取 PatchGuard
 func (p *patch) Guard() *Guard {
 	if p.guard != nil {
 		return p.guard
@@ -136,7 +136,7 @@ func (p *patch) Guard() *Guard {
 	return p.guard
 }
 
-// Lock 锁定patches map和内存指令读写
+// Lock 锁定 patches map 和内存指令读写
 func Lock() {
 	lock.Lock()
 }

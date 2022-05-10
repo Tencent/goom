@@ -18,58 +18,13 @@ import (
 var (
 	// funcSizeCache 函数长度缓存
 	funcSizeCache = make(map[uintptr]int)
-	// funcSizeReadLock 并发读写funcSizeCache锁
+	// funcSizeReadLock 并发读写 funcSizeCache 锁
 	funcSizeReadLock sync.Mutex
 )
 
 // pageStart page start of memory
 func pageStart(ptr uintptr) uintptr {
 	return ptr & ^(uintptr(syscall.Getpagesize() - 1))
-}
-
-// GetFuncSize get func binary size
-// not absolutely safe
-func GetFuncSize(mode int, start uintptr, minimal bool) (lenth int, err error) {
-	funcSizeReadLock.Lock()
-	defer func() {
-		funcSizeCache[start] = lenth
-		funcSizeReadLock.Unlock()
-	}()
-
-	if lenth, ok := funcSizeCache[start]; ok {
-		return lenth, nil
-	}
-
-	prologueLen := len(funcPrologue)
-	code := rawMemoryRead(start, 16) // instruction takes at most 16 bytes
-
-	int3Found := false
-	curLen := 0
-
-	for {
-		inst, err := x86asm.Decode(code, mode)
-		if err != nil || (inst.Opcode == 0 && inst.Len == 1 && inst.Prefix[0] == x86asm.Prefix(code[0])) {
-			return curLen, nil
-		}
-
-		if inst.Len == 1 && code[0] == 0xcc {
-			// 0xcc -> int3, trap to debugger, padding to function end
-			if minimal {
-				return curLen, nil
-			}
-
-			int3Found = true
-		} else if int3Found {
-			return curLen, nil
-		}
-
-		curLen = curLen + inst.Len
-		code = rawMemoryRead(start+uintptr(curLen), 16) // instruction takes at most 16 bytes
-
-		if bytes.Equal(funcPrologue, code[:prologueLen]) {
-			return curLen, nil
-		}
-	}
 }
 
 // GetInnerFunc Get the first real func location from wrapper
@@ -118,7 +73,7 @@ func getPtr(v reflect.Value) unsafe.Pointer {
 	return (*value)(unsafe.Pointer(&v)).ptr
 }
 
-// isNil 判断interface{}是否为空
+// isNil 判断 interface{}是否为空
 func isNil(i interface{}) bool {
 	if i == nil {
 		return true
@@ -151,7 +106,7 @@ func getTrampolinePtr(trampoline interface{}) (uintptr, error) {
 	return trampolinePtr, nil
 }
 
-// IsPtr 判断interface{}是否为指针类型
+// IsPtr 判断 interface{}是否为指针类型
 func IsPtr(value interface{}) bool {
 	if value == nil {
 		return false
@@ -249,7 +204,7 @@ func Debugf(title string, from uintptr, copyOrigin []byte, level int) {
 	}
 }
 
-// minSize 最小size，不超出fixOrigin长度的size大小
+// minSize 最小 size，不超出 fixOrigin 长度的 size 大小
 func minSize(showSize int, fixOrigin []byte) int {
 	if showSize > len(fixOrigin) {
 		showSize = len(fixOrigin)

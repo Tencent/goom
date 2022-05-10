@@ -31,7 +31,7 @@ func init() {
 	logger.SetLog2Console(true)
 }
 
-// TestTimePatch timePatch测试
+// TestTimePatch timePatch 测试
 func TestTimePatch(t *testing.T) {
 	before := time.Now()
 
@@ -53,7 +53,7 @@ func TestTimePatch(t *testing.T) {
 	assert.NotEqual(t, during, after)
 }
 
-// TestGC GC测试
+// TestGC GC 测试
 func TestGC(t *testing.T) {
 	value := true
 	g, _ := patch.Patch(no, func() bool {

@@ -1,5 +1,5 @@
-// Package mocker 定义了mock的外层用户使用API定义,
-// 包括函数、方法、接口、未导出函数(或方法的)的Mocker的实现。
+// Package mocker 定义了 mock 的外层用户使用 API 定义,
+// 包括函数、方法、接口、未导出函数(或方法的)的 Mocker 的实现。
 // 当前文件汇聚了公共的工具类，比如类型转换。
 package mocker
 

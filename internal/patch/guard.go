@@ -1,4 +1,4 @@
-// Package patch 生成指令跳转(到代理函数)并替换.text区内存
+// Package patch 生成指令跳转(到代理函数)并替换.text 区内存
 package patch
 
 import (
@@ -9,7 +9,7 @@ import (
 
 // Guard 代理执行控制句柄, 可通过此对象进行代理还原
 type Guard struct {
-	target        uintptr // 被patch的函数
+	target        uintptr // 被 patch 的函数
 	originFuncPtr uintptr // 修复的函数指针
 	jumpBytes     []byte  // 跳转指令字节
 	originalBytes []byte  // 原始字节码
@@ -31,7 +31,7 @@ func (g *Guard) Apply() {
 }
 
 // Unpatch 取消代理,还原指令码
-// 外部调用请使用PatchGuard.UnpatchWithLock()
+// 外部调用请使用 PatchGuard.UnpatchWithLock()
 func (g *Guard) Unpatch() {
 	if g != nil && g.applied {
 		_ = CopyToLocation(g.target, g.originalBytes)

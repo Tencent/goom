@@ -1,4 +1,4 @@
-// Package arg 负责参数表达式构造和执行, 执行结果用于When参数匹配(Matcher)
+// Package arg 负责参数表达式构造和执行, 执行结果用于 When 参数匹配(Matcher)
 package arg
 
 // AnyValues 匹配任意参数值
@@ -26,7 +26,7 @@ func Field(name string) *Builder {
 	return (&Builder{}).Field(name)
 }
 
-// Builder Expr表达式构建器, 根据规则构建Expr表达式子类对象
+// Builder Expr 表达式构建器, 根据规则构建 Expr 表达式子类对象
 // TODO 实现表达式树
 type Builder struct {
 }
@@ -36,7 +36,7 @@ func (b *Builder) Field(name string) *Builder {
 	return b
 }
 
-// In 添加In字句
+// In 添加 In 字句
 func (b *Builder) In(values ...interface{}) *Builder {
 	return b
 }

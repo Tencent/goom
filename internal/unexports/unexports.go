@@ -1,5 +1,5 @@
 // Package unexports 实现了对未导出函数的获取
-// 基于github.com/alangpierce/go-forceexport进行了修改和扩展。
+// 基于 github.com/alangpierce/go-forceexport 进行了修改和扩展。
 package unexports
 
 import (
@@ -119,7 +119,7 @@ func CreateFuncForCodePtr(outFuncPtr interface{}, codePtr uintptr) (*hack.Func, 
 	// pointer. The function value is a struct that starts with its code
 	// pointer, so we can swap out the code pointer with our desired value.
 	funcValuePtr := reflect.ValueOf(newFuncVal).FieldByName("ptr").Pointer()
-	// nolint hack用法
+	// nolint hack 用法
 	funcPtr := (*hack.Func)(unsafe.Pointer(funcValuePtr))
 	funcPtr.CodePtr = codePtr
 
@@ -128,7 +128,7 @@ func CreateFuncForCodePtr(outFuncPtr interface{}, codePtr uintptr) (*hack.Func, 
 	return funcPtr, nil
 }
 
-// NewFuncWithCodePtr 根据类型和函数地址进行构造reflect.Value
+// NewFuncWithCodePtr 根据类型和函数地址进行构造 reflect.Value
 func NewFuncWithCodePtr(typ reflect.Type, codePtr uintptr) reflect.Value {
 	var ptr2Ptr = &codePtr
 	pointer := unsafe.Pointer(ptr2Ptr)

@@ -74,8 +74,8 @@ func (c *EmptyMatch) Result() []reflect.Value {
 // DefaultMatcher 参数匹配
 // 入参个数必须和函数或方法参数个数一致,
 // 比如: When(
-//		In(3, 4), // 第一个参数是In
-//		Any()) // 第二个参数是Any
+//		In(3, 4), // 第一个参数是 In
+//		Any()) // 第二个参数是 Any
 type DefaultMatcher struct {
 	*BaseMatcher
 
@@ -120,7 +120,7 @@ func (c *DefaultMatcher) Match(args []reflect.Value) bool {
 }
 
 // ContainsMatcher 包含类型的参数匹配
-// 当参数为多个时, In的每个条件各使用一个数组表示:
+// 当参数为多个时, In 的每个条件各使用一个数组表示:
 // .In([]interface{}{3, Any()}, []interface{}{4, Any()})
 type ContainsMatcher struct {
 	*BaseMatcher

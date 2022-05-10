@@ -1,17 +1,19 @@
-// Package mocker 定义了mock的外层用户使用API定义,
-// 包括函数、方法、接口、未导出函数(或方法的)的Mocker的实现。
-// 当前文件实现了接口mock的能力。
+// Package mocker 定义了 mock 的外层用户使用 API 定义,
+// 包括函数、方法、接口、未导出函数(或方法的)的 Mocker 的实现。
+// 当前文件实现了接口 mock 的能力。
 package mocker
 
 import (
+	"fmt"
 	"reflect"
 	"unsafe"
 
+	"git.code.oa.com/goom/mocker/internal/logger"
 	"git.code.oa.com/goom/mocker/internal/proxy"
 )
 
-// IContext 接口mock的接收体
-// 和internal/proxy.IContext保持同步
+// IContext 接口 mock 的接收体
+// 和 internal/proxy.IContext 保持同步
 type IContext struct {
 	// Data 可以传递任意数据
 	Data interface{}
@@ -19,21 +21,21 @@ type IContext struct {
 	_ unsafe.Pointer
 }
 
-// InterfaceMocker 接口Mock
-// 通过生成和替代接口变量实现Mock
+// InterfaceMocker 接口 Mock
+// 通过生成和替代接口变量实现 Mock
 type InterfaceMocker interface {
 	ExportedMocker
 	// Method 指定接口方法
 	Method(name string) InterfaceMocker
 	// As 将接口方法应用为函数类型
-	// As调用之后,请使用Return或When API的方式来指定mock返回。
-	// imp函数的第一个参数必须为*mocker.IContext, 作用是指定接口实现的接收体; 后续的参数原样照抄。
+	// As 调用之后,请使用 Return 或 When API 的方式来指定 mock 返回。
+	// imp 函数的第一个参数必须为*mocker.IContext, 作用是指定接口实现的接收体; 后续的参数原样照抄。
 	As(imp interface{}) InterfaceMocker
-	// Inject 将mock设置到变量
+	// Inject 将 mock 设置到变量
 	Inject(iFace interface{}) InterfaceMocker
 }
 
-// DefaultInterfaceMocker 默认接口Mocker
+// DefaultInterfaceMocker 默认接口 Mocker
 type DefaultInterfaceMocker struct {
 	*baseMocker
 	ctx     *proxy.IContext
@@ -42,7 +44,16 @@ type DefaultInterfaceMocker struct {
 	funcDef interface{}
 }
 
-// NewDefaultInterfaceMocker 创建默认接口Mocker
+// String 接口 Mock 名称
+func (m *DefaultInterfaceMocker) String() string {
+	t := reflect.TypeOf(m.iFace)
+	if t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
+	return fmt.Sprintf("%s.%s", t.String(), m.method)
+}
+
+// NewDefaultInterfaceMocker 创建默认接口 Mocker
 // pkgName 包路径
 // iFace 接口变量定义
 func NewDefaultInterfaceMocker(pkgName string, iFace interface{}, ctx *proxy.IContext) *DefaultInterfaceMocker {
@@ -53,7 +64,7 @@ func NewDefaultInterfaceMocker(pkgName string, iFace interface{}, ctx *proxy.ICo
 	}
 }
 
-// Method 指定mock的方法名
+// Method 指定 mock 的方法名
 func (m *DefaultInterfaceMocker) Method(name string) InterfaceMocker {
 	if name == "" {
 		panic("method is empty")
@@ -75,8 +86,8 @@ func (m *DefaultInterfaceMocker) checkMethod(name string) {
 	}
 }
 
-// Apply 应用接口方法mock为实际的接收体方法
-// imp函数的第一个参数必须为*mocker.IContext, 作用是指定接口实现的接收体; 后续的参数原样照抄。
+// Apply 应用接口方法 mock 为实际的接收体方法
+// imp 函数的第一个参数必须为*mocker.IContext, 作用是指定接口实现的接收体; 后续的参数原样照抄。
 func (m *DefaultInterfaceMocker) Apply(imp interface{}) {
 	if m.method == "" {
 		panic("method is empty")
@@ -85,8 +96,8 @@ func (m *DefaultInterfaceMocker) Apply(imp interface{}) {
 	m.applyByIFaceMethod(m.ctx, m.iFace, m.method, imp, nil)
 }
 
-// As 将接口方法mock为实际的接收体方法
-// imp函数的第一个参数必须为*mocker.IContext, 作用是指定接口实现的接收体; 后续的参数原样照抄。
+// As 将接口方法 mock 为实际的接收体方法
+// imp 函数的第一个参数必须为*mocker.IContext, 作用是指定接口实现的接收体; 后续的参数原样照抄。
 func (m *DefaultInterfaceMocker) As(imp interface{}) InterfaceMocker {
 	if m.method == "" {
 		panic("method is empty")
@@ -189,4 +200,13 @@ func (m *DefaultInterfaceMocker) Origin(interface{}) ExportedMocker {
 // Inject 回调原函数(暂时不支持)
 func (m *DefaultInterfaceMocker) Inject(interface{}) InterfaceMocker {
 	panic("implement me")
+}
+
+// applyByIFaceMethod 根据接口方法应用 mock
+func (m *DefaultInterfaceMocker) applyByIFaceMethod(ctx *proxy.IContext, iFace interface{},
+	method string, imp interface{}, implV proxy.PFunc) {
+	imp, implV = interceptDebugInfo(imp, implV, m)
+	m.baseMocker.applyByIFaceMethod(ctx, iFace, method, imp, implV)
+
+	logger.Log2Consolefc(logger.DebugLevel, "mocker [%s] apply.", logger.Caller(6), m.String())
 }

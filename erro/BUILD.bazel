@@ -18,4 +18,7 @@ go_library(
     ],
     importpath = "git.code.oa.com/goom/mocker/erro",
     visibility = ["//visibility:public"],
+    deps = [
+      "//internal/logger:go_default_library"
+    ]
 )

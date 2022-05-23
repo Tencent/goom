@@ -21,9 +21,9 @@ const (
 	insSizePrintLong = 35
 )
 
-// fixOriginFuncToTrampoline 将原始函数from的指令到trampoline指向的地址(在PlaceHolder区内存区段内)
-// 此方式不需要修正pcvalue, 因此相对较安全
-// 因trampoline函数需要指定签名,因此只能用于静态代理
+// fixOriginFuncToTrampoline 将原始函数 from 的指令到 trampoline 指向的地址(在 PlaceHolder 区内存区段内)
+// 此方式不需要修正 pcvalue, 因此相对较安全
+// 因 trampoline 函数需要指定签名,因此只能用于静态代理
 // from 原始函数位置
 // trampoline 自定义占位函数位置(注意, 自定义占位函数一定要和原函数相同的函数签名,否则栈帧不一致会导致计算调用堆栈时候抛异常)
 // jumpInstSize 跳转指令长度, 用于判断需要修复的最小指令长度
@@ -47,7 +47,7 @@ func fixOriginFuncToTrampoline(from uintptr, trampoline uintptr, jumpInstSize in
 
 	logger.LogDebug("origin func size is", originFuncSize)
 
-	// 如果需要修复的指令长度大于trampoline函数指令长度,则任务是无法修复
+	// 如果需要修复的指令长度大于 trampoline 函数指令长度,则任务是无法修复
 	if jumpInstSize >= trampFuncSize {
 		Debug("origin inst > ", from, insSizePrintShort, logger.InfoLevel)
 		return 0, fmt.Errorf(

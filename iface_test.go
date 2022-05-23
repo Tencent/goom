@@ -1,5 +1,5 @@
-// Package mocker_test 对mocker包的测试
-// 当前文件实现了对iface.go的单测
+// Package mocker_test 对 mocker 包的测试
+// 当前文件实现了对 iface.go 的单测
 package mocker_test
 
 import (
@@ -11,8 +11,9 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-// TestUnitIFaceTestSuite 接口Mock测试入口
+// TestUnitIFaceTestSuite 接口 Mock 测试入口
 func TestUnitIFaceTestSuite(t *testing.T) {
+	mocker.OpenDebug()
 	suite.Run(t, new(ifaceMockerTestSuite))
 }
 
@@ -20,7 +21,7 @@ type ifaceMockerTestSuite struct {
 	suite.Suite
 }
 
-// TestUnitInterfaceApply 测试接口mock apply
+// TestUnitInterfaceApply 测试接口 mock apply
 func (s *ifaceMockerTestSuite) TestUnitInterfaceApply() {
 	s.Run("success", func() {
 		mock := mocker.Create()
@@ -28,7 +29,7 @@ func (s *ifaceMockerTestSuite) TestUnitInterfaceApply() {
 		// 接口变量
 		i := (I)(nil)
 
-		// 将Mock应用到接口变量(仅对该变量有效)
+		// 将 Mock 应用到接口变量(仅对该变量有效)
 		mock.Interface(&i).Method("Call").Apply(func(ctx *mocker.IContext, i int) int {
 			return 3
 		})
@@ -41,14 +42,14 @@ func (s *ifaceMockerTestSuite) TestUnitInterfaceApply() {
 
 		s.NotNil(i, "interface var nil check")
 
-		// Mock重置, 接口变量将恢复原来的值
+		// Mock 重置, 接口变量将恢复原来的值
 		mock.Reset()
 
 		s.Nil(i, "interface mock reset check")
 	})
 }
 
-// TestUnitInterfaceReturn 测试接口mock return
+// TestUnitInterfaceReturn 测试接口 mock return
 func (s *ifaceMockerTestSuite) TestUnitInterfaceReturn() {
 	s.Run("success", func() {
 		mock := mocker.Create()
@@ -78,7 +79,7 @@ func (s *ifaceMockerTestSuite) TestUnitInterfaceReturn() {
 	})
 }
 
-// TestUnitInterfaceTwice 测试多次接口mock return
+// TestUnitInterfaceTwice 测试多次接口 mock return
 func (s *ifaceMockerTestSuite) TestUnitInterfaceAsTwice() {
 	s.Run("success", func() {
 		mock := mocker.Create()
@@ -133,7 +134,7 @@ func (s *ifaceMockerTestSuite) TestUnitInterfaceApplyTwice() {
 	})
 }
 
-// TestUnitArgsNotMatch 测试接口mock参数不匹配情况
+// TestUnitArgsNotMatch 测试接口 mock 参数不匹配情况
 func (s *ifaceMockerTestSuite) TestUnitArgsNotMatch() {
 	s.Run("success", func() {
 
@@ -149,7 +150,7 @@ func (s *ifaceMockerTestSuite) TestUnitArgsNotMatch() {
 			// 接口变量
 			i := (I)(nil)
 
-			// 将Mock应用到接口变量(仅对该变量有效)
+			// 将 Mock 应用到接口变量(仅对该变量有效)
 			mock.Interface(&i).Method("Call").Apply(func(ctx *mocker.IContext) int {
 				return 3
 			})

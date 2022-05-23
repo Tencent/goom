@@ -5,6 +5,8 @@ go_library(
     srcs = [
         "binary_util.go",
         "func_util.go",
+        "func_util_amd64.go",
+        "func_util_arm64.go",
         "guard.go",
         "inline_chk.go",
         "ins_fix.go",

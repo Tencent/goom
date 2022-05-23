@@ -42,7 +42,7 @@ func (s *suggester) Suggestions() []string {
 	return []string{s.suggestionA, s.suggestionB, s.suggestionC}
 }
 
-// fuzzyMatch 模糊匹配,用于提供suggestion
+// fuzzyMatch 模糊匹配,用于提供 suggestion
 func fuzzyMatch(target, source, token string) bool {
 	if len(target) == 0 || len(source) == 0 || len(token) == 0 {
 		return false

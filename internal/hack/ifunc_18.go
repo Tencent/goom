@@ -1,5 +1,4 @@
-// +build go1.16
-// +build !go1.18
+// +build go1.18
 
 // Package hack 对 go 系统包的 hack, 包含一些系统结构体的 copy，需要和不同的 go 版本保持同步
 package hack
@@ -16,10 +15,9 @@ const InterceptCallerSkip = 5
 //go:linkname Firstmoduledata runtime.firstmoduledata
 var Firstmoduledata Moduledata
 
-// nolint
 // Moduledata keep async with runtime.Moduledata
 type Moduledata struct {
-	pcHeader     uintptr
+	pcHeader     *uintptr
 	funcnametab  []byte
 	cutab        []uint32
 	filetab      []byte
@@ -36,6 +34,8 @@ type Moduledata struct {
 	noptrbss, enoptrbss   uintptr
 	end, gcdata, gcbss    uintptr
 	types, etypes         uintptr
+	rodata                uintptr
+	gofunc                uintptr // go.func.*
 
 	textsectmap []textsect
 	typelinks   []int32 // offsets from types
@@ -62,8 +62,8 @@ type Moduledata struct {
 
 // Functab Functab
 type Functab struct {
-	Entry   uintptr
-	Funcoff uintptr
+	Entry   uint32
+	Funcoff uint32
 }
 
 // nolint
@@ -88,13 +88,11 @@ type typeOff int32 // offset to an *rtype
 // Func convenience struct for modifying the underlying code pointer of a function
 // value. The actual struct has other values, but always starts with a code
 // pointer.
-// keep async with runtime.Func
 type Func struct {
 	CodePtr uintptr
 }
 
 // Value reflect.Value
-// keep async with runtime.Value
 type Value struct {
 	Typ  *uintptr
 	Ptr  unsafe.Pointer

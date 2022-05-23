@@ -1,5 +1,5 @@
 // +build !go1.16
-// Package hack 对go系统包的hack, 包含一些系统结构体的copy，需要和不同的go版本保持同步
+// Package hack 对 go 系统包的 hack, 包含一些系统结构体的 copy，需要和不同的 go 版本保持同步
 
 package hack
 
@@ -9,11 +9,14 @@ import (
 	_ "unsafe"
 )
 
-// Firstmoduledata TODO 兼容不同go版本
+// InterceptCallerSkip 拦截器 callerskip
+const InterceptCallerSkip = 7
+
+// Firstmoduledata keep async with runtime.Firstmoduledata
 //go:linkname Firstmoduledata runtime.firstmoduledata
 var Firstmoduledata Moduledata
 
-// Moduledata Moduledata
+// Moduledata keep async with runtime.Moduledata
 type Moduledata struct {
 	Pclntable []byte
 	Ftab      []Functab
@@ -76,7 +79,7 @@ type Functab struct {
 // Func Convenience struct for modifying the underlying code pointer of a function
 // value. The actual struct has other values, but always starts with a code
 // pointer.
-// TODO 不同go版本兼容
+// TODO 不同 go 版本兼容
 type Func struct {
 	CodePtr uintptr
 }
@@ -101,7 +104,7 @@ type textsect struct {
 type typeOff int32 // offset to an *rtype
 
 // Value reflect.Value
-// TODO 不同go版本兼容
+// TODO 不同 go 版本兼容
 type Value struct {
 	Typ  *uintptr
 	Ptr  unsafe.Pointer

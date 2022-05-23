@@ -6,7 +6,11 @@ go_library(
         "iface.go",
         "ifunc.go",
         "ifunc_16.go",
+        "ifunc_18.go",
         "ifunc_win.go",
+        "signal_notunix.go",
+        "signal_unix.go",
+        "version.go"
     ],
     importpath = "git.code.oa.com/goom/mocker/internal/hack",
     visibility = ["//:__subpackages__"],

@@ -13,11 +13,13 @@ go_library(
     srcs = [
         "builder.go",
         "cache.go",
+        "debug.go",
         "guard.go",
         "iface.go",
         "matcher.go",
         "mocker.go",
         "reflect.go",
+        "var.go",
         "when.go",
     ],
     importpath = "git.code.oa.com/goom/mocker",
@@ -29,6 +31,7 @@ go_library(
         "//internal/patch:go_default_library",
         "//internal/proxy:go_default_library",
         "//internal/unexports:go_default_library",
+        "//internal/hack:go_default_library",
     ],
 )
 

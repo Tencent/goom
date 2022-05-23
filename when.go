@@ -1,7 +1,7 @@
-// Package mocker 定义了mock的外层用户使用API定义,
-// 包括函数、方法、接口、未导出函数(或方法的)的Mocker的实现。
-// 当前文件实现了按照参数条件进行匹配, 返回对应的mock return值,
-// 支持了mocker.When(XXX).Return(YYY)的高效匹配。
+// Package mocker 定义了 mock 的外层用户使用 API 定义,
+// 包括函数、方法、接口、未导出函数(或方法的)的 Mocker 的实现。
+// 当前文件实现了按照参数条件进行匹配, 返回对应的 mock return 值,
+// 支持了 mocker.When(XXX).Return(YYY)的高效匹配。
 package mocker
 
 import (
@@ -21,8 +21,8 @@ type Matcher interface {
 	AddResult([]interface{})
 }
 
-// When Mock条件匹配。
-// 当参数等于指定的值时,会return对应的指定值
+// When Mock 条件匹配。
+// 当参数等于指定的值时,会 return 对应的指定值
 type When struct {
 	ExportedMocker
 
@@ -96,7 +96,7 @@ func checkParams(funcDef interface{}, impTyp reflect.Type,
 	return nil
 }
 
-// NewWhen 创建默认When
+// NewWhen 创建默认 When
 func NewWhen(funTyp reflect.Type) *When {
 	return &When{
 		ExportedMocker: nil,
@@ -107,18 +107,18 @@ func NewWhen(funTyp reflect.Type) *When {
 	}
 }
 
-// When 当参数符合一定的条件, 使用DefaultMatcher
+// When 当参数符合一定的条件, 使用 DefaultMatcher
 // 入参个数必须和函数或方法参数个数一致,
 // 比如: When(
-//		In(3, 4), // 第一个参数是In
-//		Any()) // 第二个参数是Any
+//		In(3, 4), // 第一个参数是 In
+//		Any()) // 第二个参数是 Any
 func (w *When) When(args ...interface{}) *When {
 	w.curMatch = newDefaultMatch(args, nil, w.isMethod, w.funcTyp)
 	return w
 }
 
-// In 当参数包含其中之一, 使用ContainsMatcher
-// 当参数为多个时, In的每个条件各使用一个数组表示:
+// In 当参数包含其中之一, 使用 ContainsMatcher
+// 当参数为多个时, In 的每个条件各使用一个数组表示:
 // .In([]interface{}{3, Any()}, []interface{}{4, Any()})
 func (w *When) In(slices ...interface{}) *When {
 	w.curMatch = newContainsMatch(slices, nil, w.isMethod, w.funcTyp)
@@ -200,7 +200,7 @@ func (w *When) Returns(rets ...interface{}) *When {
 	return w
 }
 
-// invoke 执行When参数匹配并返回值
+// invoke 执行 When 参数匹配并返回值
 func (w *When) invoke(args1 []reflect.Value) (results []reflect.Value) {
 	if len(w.matches) != 0 {
 		for _, c := range w.matches {
@@ -213,7 +213,7 @@ func (w *When) invoke(args1 []reflect.Value) (results []reflect.Value) {
 	return w.returnDefaults()
 }
 
-// Eval 执行when子句
+// Eval 执行 when 子句
 func (w *When) Eval(args ...interface{}) []interface{} {
 	argVs := arg.I2V(args, inTypes(w.isMethod, w.funcTyp))
 	resultVs := w.invoke(argVs)

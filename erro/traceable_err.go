@@ -35,7 +35,7 @@ func NewTraceableError(err error, cause error) error {
 	}
 }
 
-// NewTraceableErrorf 通过string描述创建可跟踪的错误
+// NewTraceableErrorf 通过 string 描述创建可跟踪的错误
 func NewTraceableErrorf(errStr string, cause error) error {
 	return &TraceableError{
 		errStr: errStr,

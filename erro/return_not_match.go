@@ -12,7 +12,7 @@ type ReturnsNotMatch struct {
 	expectLen int
 }
 
-// ReturnsNotMatch 返回参数不匹配异常
+// Error 返回错误字符串
 func (i *ReturnsNotMatch) Error() string {
 	if i.funcDef != nil {
 		return "returns lenth not match of func " + reflect.ValueOf(i.funcDef).String() +

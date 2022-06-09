@@ -10,7 +10,7 @@ import (
 	"fmt"
 )
 
-// An Inst is a single instruction.
+// Inst is a single instruction.
 type Inst struct {
 	Prefix   Prefixes // Prefixes applied to the instruction.
 	Op       Op       // Opcode mnemonic
@@ -31,7 +31,7 @@ type Inst struct {
 // in the array marks the end of the prefixes.
 type Prefixes [14]Prefix
 
-// A Prefix represents an Intel instruction prefix.
+// Prefix represents an Intel instruction prefix.
 // The low 8 bits are the actual prefix byte encoding,
 // and the top 8 bits contain distinguishing bits and metadata.
 type Prefix uint16
@@ -94,6 +94,7 @@ func (p Prefix) IsVEX() bool {
 	return p&0xFF == PrefixVEX2Bytes || p&0xFF == PrefixVEX3Bytes
 }
 
+// String to string
 //noLint
 func (p Prefix) String() string {
 	p &^= PrefixImplicit | PrefixIgnored | PrefixInvalid
@@ -125,9 +126,10 @@ func (p Prefix) String() string {
 	return fmt.Sprintf("Prefix(%#x)", int(p))
 }
 
-// An Op is an x86 opcode.
+// Op is an x86 opcode.
 type Op uint32
 
+// String to string
 //noLint
 func (op Op) String() string {
 	i := int(op)
@@ -138,14 +140,15 @@ func (op Op) String() string {
 	return opNames[i]
 }
 
-// An Args holds the instruction arguments.
+// Args holds the instruction arguments.
 // If an instruction has fewer than 4 arguments,
 // the final elements in the array are nil.
 type Args [4]Arg
 
-// An Arg is a single instruction argument,
+// Arg is a single instruction argument,
 // one of these types: Reg, Mem, Imm, Rel.
 type Arg interface {
+	// String to string
 	String() string
 	isArg()
 }
@@ -154,7 +157,7 @@ type Arg interface {
 // so that on a 64-bit machine the data can be inlined in
 // the interface value instead of requiring an allocation.
 
-// A Reg is a single register.
+// Reg is a single register.
 // The zero Reg value has no name but indicates ``no register.''
 type Reg uint8
 
@@ -353,6 +356,7 @@ const regMax = TR7
 //noLint
 func (Reg) isArg() {}
 
+// String to string
 //noLint
 func (r Reg) String() string {
 	i := int(r)
@@ -363,7 +367,7 @@ func (r Reg) String() string {
 	return regNames[i]
 }
 
-// A Mem is a memory reference.
+// Mem is a memory reference.
 // The general form is Segment:[Base+Scale*Index+Disp].
 type Mem struct {
 	Segment Reg
@@ -376,6 +380,7 @@ type Mem struct {
 //noLint
 func (Mem) isArg() {}
 
+// String to string
 //noLint
 func (m Mem) String() string {
 	var base, plus, scale, index, disp string
@@ -403,28 +408,31 @@ func (m Mem) String() string {
 	return "[" + base + plus + scale + index + disp + "]"
 }
 
-// A Rel is an offset relative to the current instruction pointer.
+// Rel is an offset relative to the current instruction pointer.
 type Rel int32
 
 //noLint
 func (Rel) isArg() {}
 
+// String to string
 //noLint
 func (r Rel) String() string {
 	return fmt.Sprintf(".%+d", r)
 }
 
-// An Imm is an integer constant.
+// Imm is an integer constant.
 type Imm int64
 
 //noLint
 func (Imm) isArg() {}
 
+// String to string
 //noLint
 func (i Imm) String() string {
 	return fmt.Sprintf("%#x", int64(i))
 }
 
+// String to strings
 //noLint
 func (i Inst) String() string {
 	var buf bytes.Buffer

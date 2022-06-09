@@ -310,18 +310,18 @@ func verifySHA256(file, wantHex string) error {
 }
 
 // slurpURLToString downloads the given URL and returns it as a string.
-func slurpURLToString(URL string) (string, error) {
-	res, err := http.Get(URL)
+func slurpURLToString(uRL string) (string, error) {
+	res, err := http.Get(uRL)
 	if err != nil {
 		return "", err
 	}
 	defer res.Body.Close()
 	if res.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("%s: %v", URL, res.Status)
+		return "", fmt.Errorf("%s: %v", uRL, res.Status)
 	}
 	slurp, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return "", fmt.Errorf("reading %s: %v", URL, err)
+		return "", fmt.Errorf("reading %s: %v", uRL, err)
 	}
 	return string(slurp), nil
 }

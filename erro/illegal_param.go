@@ -8,7 +8,7 @@ type IllegalParam struct {
 	funcName   string
 }
 
-// IllegalParam 参数错误异常
+// Error 返回错误字符串
 func (i *IllegalParam) Error() (s string) {
 	defer func() {
 		if i.cause != nil {

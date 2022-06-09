@@ -4,6 +4,7 @@ package testdata
 // Fake fake 结构体
 type Fake struct{}
 
+// Call call测试方法
 //go:noinline
 func (f *Fake) Call(i int) int {
 	return f.call(i)

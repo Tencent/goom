@@ -14,7 +14,7 @@ type FuncNotFound struct {
 	suggestions []string
 }
 
-// FuncNotFound 函数未找到异常
+// Error 返回错误字符串
 func (e *FuncNotFound) Error() string {
 	msg := prefix + e.funcName
 	if e.suggestions == nil {

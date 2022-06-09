@@ -8,7 +8,7 @@ type ReturnParamNotFound struct {
 	arg      int
 }
 
-// ArgNotFound 返回值未找到异常
+// Error 返回错误字符串
 func (e *ReturnParamNotFound) Error() string {
 	return "arg not found: " + e.funcName + ":" + strconv.Itoa(e.arg)
 }

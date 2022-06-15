@@ -8,19 +8,19 @@ import (
 )
 
 // Patch 将函数调用指定代理函数
-// target 原始函数
+// origin 原始函数
 // replacement 代理函数
-func Patch(target, replacement interface{}) (*Guard, error) {
-	return Trampoline(target, replacement, nil)
+func Patch(origin, replacement interface{}) (*Guard, error) {
+	return Trampoline(origin, replacement, nil)
 }
 
 // Trampoline 将函数调用指定代理函数
-// target 原始函数
+// origin 原始函数
 // replacement 代理函数
 // trampoline 指定跳板函数(可不指定,传 nil)
-func Trampoline(target, replacement interface{}, trampoline interface{}) (*Guard, error) {
+func Trampoline(origin, replacement interface{}, trampoline interface{}) (*Guard, error) {
 	patch := &patch{
-		target:      target,
+		origin:      origin,
 		replacement: replacement,
 		trampoline:  trampoline,
 	}
@@ -34,76 +34,72 @@ func Trampoline(target, replacement interface{}, trampoline interface{}) (*Guard
 }
 
 // UnsafePatch 未受类型检查的 patch
-// target 原始函数
+// origin 原始函数
 // replacement 代理函数
-func UnsafePatch(target, replacement interface{}) (*Guard, error) {
-	return UnsafePatchTrampoline(target, replacement, nil)
+func UnsafePatch(origin, replacement interface{}) (*Guard, error) {
+	return UnsafePatchTrampoline(origin, replacement, nil)
 }
 
 // UnsafePatchTrampoline 未受类型检查的 patch
-// target 原始函数
+// origin 原始函数
 // replacement 代理函数
 // trampoline 指定跳板函数(可不指定,传 nil)
-func UnsafePatchTrampoline(target, replacement interface{}, trampoline interface{}) (*Guard, error) {
+func UnsafePatchTrampoline(origin, replacement interface{}, trampoline interface{}) (*Guard, error) {
 	patch := &patch{
-		target:      target,
-		replacement: replacement,
-		trampoline:  trampoline,
-
-		targetValue:      reflect.ValueOf(target),
+		origin:           origin,
+		replacement:      replacement,
+		trampoline:       trampoline,
+		originValue:      reflect.ValueOf(origin),
 		replacementValue: reflect.ValueOf(replacement),
 	}
 
-	err := patch.unsafePatchValue()
-	if err != nil {
+	if err := patch.unsafePatchValue(); err != nil {
 		return nil, err
 	}
-
 	return patch.Guard(), nil
 }
 
 // Ptr 直接将函数跳转的新函数
 // 此方式为经过函数签名检查,可能会导致栈帧无法对其导致堆栈调用异常，因此不安全请谨慎使用
-// targetPtr 原始函数地址
+// originPtr 原始函数地址
 // replacement 代理函数
-func Ptr(targetPtr uintptr, replacement interface{}) (*Guard, error) {
-	return PtrTrampoline(targetPtr, replacement, nil)
+func Ptr(originPtr uintptr, replacement interface{}) (*Guard, error) {
+	return PtrTrampoline(originPtr, replacement, nil)
 }
 
 // PtrTrampoline 直接将函数跳转的新函数(指定跳板函数)
 // 此方式为经过函数签名检查,可能会导致栈帧无法对其导致堆栈调用异常，因此不安全请谨慎使用
-// targetPtr 原始函数地址
+// originPtr 原始函数地址
 // replacement 代理函数
 // trampoline 跳板函数地址(可不指定,传 nil)
-func PtrTrampoline(targetPtr uintptr, replacement, trampoline interface{}) (*Guard, error) {
+func PtrTrampoline(originPtr uintptr, replacement, trampoline interface{}) (*Guard, error) {
 	patch := &patch{
 		replacement: replacement,
 		trampoline:  trampoline,
 
 		replacementValue: reflect.ValueOf(replacement),
 
-		targetPtr: targetPtr,
+		originPtr: originPtr,
 	}
 
 	err := patch.unsafePatchPtr()
 	if err != nil {
 		return nil, err
 	}
-
 	return patch.Guard(), nil
 }
 
 // InstanceMethod replaces an instance method methodName for the type target with replacementValue
 // Replacement should expect the receiver (of type target) as the first argument
-func InstanceMethod(target reflect.Type, methodName string, replacement interface{}) (*Guard, error) {
-	return InstanceMethodTrampoline(target, methodName, replacement, nil)
+func InstanceMethod(originType reflect.Type, methodName string, replacement interface{}) (*Guard, error) {
+	return InstanceMethodTrampoline(originType, methodName, replacement, nil)
 }
 
 // InstanceMethodTrampoline replaces an instance method methodName for the type target with replacementValue
 // Replacement should expect the receiver (of type target) as the first argument
-func InstanceMethodTrampoline(target reflect.Type, methodName string, replacement interface{},
+func InstanceMethodTrampoline(originType reflect.Type, methodName string, replacement interface{},
 	trampoline interface{}) (*Guard, error) {
-	m, ok := target.MethodByName(methodName)
+	m, ok := originType.MethodByName(methodName)
 	if !ok {
 		return nil, fmt.Errorf("unknown method %s", methodName)
 	}
@@ -112,7 +108,7 @@ func InstanceMethodTrampoline(target reflect.Type, methodName string, replacemen
 		replacement: replacement,
 		trampoline:  trampoline,
 
-		targetValue:      m.Func,
+		originValue:      m.Func,
 		replacementValue: reflect.ValueOf(replacement),
 	}
 
@@ -120,22 +116,21 @@ func InstanceMethodTrampoline(target reflect.Type, methodName string, replacemen
 	if err != nil {
 		return nil, err
 	}
-
 	return patch.Guard(), nil
 }
 
 // Unpatch removes any monkey patches on target
 // returns whether target was patched in the first place
-func Unpatch(target interface{}) bool {
-	return unpatchValue(reflect.ValueOf(target).Pointer())
+func Unpatch(origin interface{}) bool {
+	return unpatchValue(reflect.ValueOf(origin).Pointer())
 }
 
 // UnpatchInstanceMethod removes the patch on methodName of the target
 // returns whether it was patched in the first place
-func UnpatchInstanceMethod(target reflect.Type, methodName string) bool {
-	m, ok := target.MethodByName(methodName)
+func UnpatchInstanceMethod(originType reflect.Type, methodName string) bool {
+	m, ok := originType.MethodByName(methodName)
 	if !ok {
-		logger.LogDebugf(fmt.Sprintf("unknown method %s", methodName))
+		logger.Debugf(fmt.Sprintf("unknown method %s", methodName))
 		return false
 	}
 
@@ -152,14 +147,13 @@ func UnpatchAll() {
 
 // unpatchValue removes a monkeypatch from the specified function
 // returns whether the function was patched in the first place
-func unpatchValue(target uintptr) bool {
-	p, ok := patches[target]
+func unpatchValue(origin uintptr) bool {
+	p, ok := patches[origin]
 	if !ok {
 		return false
 	}
 
 	p.unpatch()
-	delete(patches, target)
-
+	delete(patches, origin)
 	return true
 }

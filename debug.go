@@ -3,10 +3,10 @@ package mocker
 import (
 	"reflect"
 
-	"git.code.oa.com/goom/mocker/arg"
 	"git.code.oa.com/goom/mocker/internal/hack"
+	"git.code.oa.com/goom/mocker/internal/iface"
 	"git.code.oa.com/goom/mocker/internal/logger"
-	"git.code.oa.com/goom/mocker/internal/proxy"
+	"git.code.oa.com/goom/mocker/param"
 )
 
 // excludeFunc 对 excludeFunc 不进行拦截
@@ -15,7 +15,7 @@ const (
 )
 
 // interceptDebugInfo 添加对 apply 的拦截代理，截取函数调用信息用于 debug
-func interceptDebugInfo(imp interface{}, pFunc proxy.PFunc, mocker Mocker) (interface{}, proxy.PFunc) {
+func interceptDebugInfo(imp interface{}, pFunc iface.PFunc, mocker Mocker) (interface{}, iface.PFunc) {
 	if !logger.IsDebugOpen() {
 		return imp, pFunc
 	}
@@ -29,8 +29,8 @@ func interceptDebugInfo(imp interface{}, pFunc proxy.PFunc, mocker Mocker) (inte
 			if mocker.String() == excludeFunc {
 				return results
 			}
-			logger.Log2Consolefc(logger.DebugLevel, "mocker [%s] called, args [%s], results [%s]",
-				logger.Caller(hack.InterceptCallerSkip), mocker.String(), arg.SprintV(args), arg.SprintV(results))
+			logger.Consolefc(logger.DebugLevel, "mocker [%s] called, args [%s], results [%s]",
+				logger.Caller(hack.InterceptCallerSkip), mocker.String(), param.SprintV(args), param.SprintV(results))
 			return results
 		}
 		return imp, pFunc
@@ -44,9 +44,8 @@ func interceptDebugInfo(imp interface{}, pFunc proxy.PFunc, mocker Mocker) (inte
 			if mocker.String() == excludeFunc {
 				return results
 			}
-
-			logger.Log2Consolefc(logger.DebugLevel, "mocker [%s] called, args [%s], results [%s]",
-				logger.Caller(hack.InterceptCallerSkip), mocker.String(), arg.SprintV(args), arg.SprintV(results))
+			logger.Consolefc(logger.DebugLevel, "mocker [%s] called, args [%s], results [%s]",
+				logger.Caller(hack.InterceptCallerSkip), mocker.String(), param.SprintV(args), param.SprintV(results))
 			return results
 		}).Interface()
 		return imp, pFunc

@@ -8,8 +8,8 @@ import (
 	"reflect"
 	"unsafe"
 
+	"git.code.oa.com/goom/mocker/internal/iface"
 	"git.code.oa.com/goom/mocker/internal/logger"
-	"git.code.oa.com/goom/mocker/internal/proxy"
 )
 
 // IContext 接口 mock 的接收体
@@ -38,7 +38,7 @@ type InterfaceMocker interface {
 // DefaultInterfaceMocker 默认接口 Mocker
 type DefaultInterfaceMocker struct {
 	*baseMocker
-	ctx     *proxy.IContext
+	ctx     *iface.IContext
 	iFace   interface{}
 	method  string
 	funcDef interface{}
@@ -56,7 +56,7 @@ func (m *DefaultInterfaceMocker) String() string {
 // NewDefaultInterfaceMocker 创建默认接口 Mocker
 // pkgName 包路径
 // iFace 接口变量定义
-func NewDefaultInterfaceMocker(pkgName string, iFace interface{}, ctx *proxy.IContext) *DefaultInterfaceMocker {
+func NewDefaultInterfaceMocker(pkgName string, iFace interface{}, ctx *iface.IContext) *DefaultInterfaceMocker {
 	return &DefaultInterfaceMocker{
 		baseMocker: newBaseMocker(pkgName),
 		ctx:        ctx,
@@ -69,17 +69,14 @@ func (m *DefaultInterfaceMocker) Method(name string) InterfaceMocker {
 	if name == "" {
 		panic("method is empty")
 	}
-
 	m.checkMethod(name)
 	m.method = name
-
 	return m
 }
 
 // checkMethod 检查是否能找到函数
 func (m *DefaultInterfaceMocker) checkMethod(name string) {
 	sTyp := reflect.TypeOf(m.iFace).Elem()
-
 	_, ok := sTyp.MethodByName(name)
 	if !ok {
 		panic("method " + name + " not found on " + sTyp.String())
@@ -92,7 +89,6 @@ func (m *DefaultInterfaceMocker) Apply(imp interface{}) {
 	if m.method == "" {
 		panic("method is empty")
 	}
-
 	m.applyByIFaceMethod(m.ctx, m.iFace, m.method, imp, nil)
 }
 
@@ -102,9 +98,7 @@ func (m *DefaultInterfaceMocker) As(imp interface{}) InterfaceMocker {
 	if m.method == "" {
 		panic("method is empty")
 	}
-
 	m.funcDef = imp
-
 	return m
 }
 
@@ -113,7 +107,6 @@ func (m *DefaultInterfaceMocker) When(args ...interface{}) *When {
 	if m.method == "" {
 		panic("method is empty")
 	}
-
 	if m.when != nil {
 		return m.when.When(args...)
 	}
@@ -122,14 +115,11 @@ func (m *DefaultInterfaceMocker) When(args ...interface{}) *When {
 		when *When
 		err  error
 	)
-
 	if when, err = CreateWhen(m, m.funcDef, args, nil, true); err != nil {
 		panic(err)
 	}
-
 	m.applyByIFaceMethod(m.ctx, m.iFace, m.method, m.funcDef, m.callback)
 	m.when = when
-
 	return when
 }
 
@@ -138,11 +128,9 @@ func (m *DefaultInterfaceMocker) Return(returns ...interface{}) *When {
 	if m.funcDef == nil {
 		panic("must use As() API before call Return()")
 	}
-
 	if m.method == "" {
 		panic("method is empty")
 	}
-
 	if m.when != nil {
 		return m.when.Return(returns...)
 	}
@@ -151,14 +139,11 @@ func (m *DefaultInterfaceMocker) Return(returns ...interface{}) *When {
 		when *When
 		err  error
 	)
-
 	if when, err = CreateWhen(m, m.funcDef, nil, returns, true); err != nil {
 		panic(err)
 	}
-
 	m.applyByIFaceMethod(m.ctx, m.iFace, m.method, m.funcDef, m.callback)
 	m.when = when
-
 	return when
 }
 
@@ -167,11 +152,9 @@ func (m *DefaultInterfaceMocker) Returns(returns ...interface{}) *When {
 	if m.funcDef == nil {
 		panic("must use As() API before call Return()")
 	}
-
 	if m.method == "" {
 		panic("method is empty")
 	}
-
 	if m.when != nil {
 		return m.when.Returns(returns...)
 	}
@@ -180,15 +163,12 @@ func (m *DefaultInterfaceMocker) Returns(returns ...interface{}) *When {
 		when *When
 		err  error
 	)
-
 	if when, err = CreateWhen(m, m.funcDef, nil, nil, true); err != nil {
 		panic(err)
 	}
-
 	when.Returns(returns...)
 	m.applyByIFaceMethod(m.ctx, m.iFace, m.method, m.funcDef, m.callback)
 	m.when = when
-
 	return when
 }
 
@@ -203,10 +183,9 @@ func (m *DefaultInterfaceMocker) Inject(interface{}) InterfaceMocker {
 }
 
 // applyByIFaceMethod 根据接口方法应用 mock
-func (m *DefaultInterfaceMocker) applyByIFaceMethod(ctx *proxy.IContext, iFace interface{},
-	method string, imp interface{}, implV proxy.PFunc) {
+func (m *DefaultInterfaceMocker) applyByIFaceMethod(ctx *iface.IContext, iFace interface{},
+	method string, imp interface{}, implV iface.PFunc) {
 	imp, implV = interceptDebugInfo(imp, implV, m)
 	m.baseMocker.applyByIFaceMethod(ctx, iFace, method, imp, implV)
-
-	logger.Log2Consolefc(logger.DebugLevel, "mocker [%s] apply.", logger.Caller(6), m.String())
+	logger.Consolefc(logger.DebugLevel, "mocker [%s] apply.", logger.Caller(6), m.String())
 }

@@ -1,0 +1,12 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "decode.go",
+        "inst.go",
+        "tables.go",
+    ],
+    importpath = "git.code.oa.com/goom/mocker/internal/arch/x86asm",
+    visibility = ["//:__subpackages__"],
+)

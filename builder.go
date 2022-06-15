@@ -9,8 +9,8 @@ import (
 	"runtime"
 	"strings"
 
+	"git.code.oa.com/goom/mocker/internal/iface"
 	"git.code.oa.com/goom/mocker/internal/logger"
-	"git.code.oa.com/goom/mocker/internal/proxy"
 )
 
 // Builder Mock 构建器, 负责创建一个链式构造器.
@@ -37,9 +37,10 @@ func (b *Builder) PkgName() string {
 // Create 创建 Mock 构建器
 // 非线程安全的,不能在多协程中并发地 mock 或 reset 同一个函数
 func Create() *Builder {
-	const currentPackageIndex = 2
+	// callerDeps 当前的调用栈栈层次
+	const callerDeps = 2
 	return &Builder{
-		pkgName: currentPkg(currentPackageIndex),
+		pkgName: currentPkg(callerDeps),
 		mockers: make(map[interface{}]Mocker, 30),
 	}
 }
@@ -50,18 +51,15 @@ func (b *Builder) Interface(iFace interface{}) *CachedInterfaceMocker {
 	mKey := reflect.TypeOf(iFace).String()
 	if mocker, ok := b.mockers[mKey]; ok && !mocker.Canceled() {
 		b.reset2CurPkg()
-
 		return mocker.(*CachedInterfaceMocker)
 	}
 
 	// 创建 InterfaceMocker
 	// context 和 interface 类型绑定
-	mocker := NewDefaultInterfaceMocker(b.pkgName, iFace, proxy.NewContext())
+	mocker := NewDefaultInterfaceMocker(b.pkgName, iFace, iface.NewContext())
 	cachedMocker := NewCachedInterfaceMocker(mocker)
-
 	b.cache(mKey, cachedMocker)
 	b.reset2CurPkg()
-
 	return cachedMocker
 }
 
@@ -81,10 +79,8 @@ func (b *Builder) Struct(obj interface{}) *CachedMethodMocker {
 
 	mocker := NewMethodMocker(b.pkgName, obj)
 	cachedMocker := NewCachedMethodMocker(mocker)
-
 	b.cache(mKey, cachedMocker)
 	b.reset2CurPkg()
-
 	return cachedMocker
 }
 
@@ -119,10 +115,8 @@ func (b *Builder) ExportStruct(name string) *CachedUnexportedMethodMocker {
 
 	mocker := NewUnexportedMethodMocker(b.pkgName, structName)
 	cachedMocker := NewCachedUnexportedMethodMocker(mocker)
-
 	b.cache(b.pkgName+"_"+name, cachedMocker)
 	b.reset2CurPkg()
-
 	return cachedMocker
 }
 
@@ -141,10 +135,8 @@ func (b *Builder) ExportFunc(name string) *UnexportedFuncMocker {
 	}
 
 	mocker := NewUnexportedFuncMocker(b.pkgName, name)
-
 	b.cache(b.pkgName+"_"+name, mocker)
 	b.reset2CurPkg()
-
 	return mocker
 }
 
@@ -164,7 +156,9 @@ func (b *Builder) Var(target interface{}) VarMock {
 func (b *Builder) Reset() *Builder {
 	for _, mocker := range b.mockers {
 		mocker.Cancel()
-		logger.Log2Consolefc(logger.DebugLevel, "mockers [%s] resets.", logger.Caller(5), mocker.String())
+		// callerDeps 当前的调用栈栈层次
+		const callerDeps = 5
+		logger.Consolefc(logger.DebugLevel, "mockers [%s] resets.", logger.Caller(callerDeps), mocker.String())
 	}
 	return b
 }
@@ -176,9 +170,9 @@ func (b *Builder) reset2CurPkg() {
 
 // currentPackage 获取当前调用的包路径
 func currentPackage() string {
-	// currentPackageIndex 获取当前包的堆栈层次
-	const currentPackageIndex = 4
-	return currentPkg(currentPackageIndex)
+	// callerDeps 当前的调用栈栈层次
+	const callerDeps = 4
+	return currentPkg(callerDeps)
 }
 
 // currentPkg 获取调用者的包路径

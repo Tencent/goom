@@ -5,9 +5,6 @@ import "unsafe"
 // nopOpcode 空指令插入到原函数开头第一个字节, 用于判断原函数是否已经被 Patch 过
 const nopOpcode byte = 0x90
 
-// funcPrologue 函数的开头指纹,用于不同 OS 获取不同的默认值
-var funcPrologue = defaultFuncPrologue64
-
 // jmpToFunctionValue Assembles a jump to a function value
 func jmpToFunctionValue(_, to uintptr) (value []byte) {
 	return []byte{
@@ -66,13 +63,12 @@ func relative(from uintptr, to uintptr) bool {
 	}
 
 	// 跨度大于2G 时
-	relative := (delta <= 0x7fffffff)
+	relative := delta <= 0x7fffffff
 
 	if delta < 0 {
 		delta = -delta
-		relative = (delta <= 0x80000000)
+		relative = delta <= 0x80000000
 	}
-
 	return relative
 }
 

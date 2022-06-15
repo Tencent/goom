@@ -18,7 +18,13 @@ lint: clean
 	#go vet ./...
 	#golint ./...
 	golangci-lint run -c golangci.yml
-	gocyclo .
+	gocyclo -top 5 .
+	gocyclo -top 5 internal/bytecode
+	gocyclo -top 5 internal/patch
+	gocyclo -top 5 internal/proxy
+	gocyclo -top 5 internal/iface
+	gocyclo -top 5 internal/hack
+	gocyclo -top 5 internal/bytecode/memory
 
 generate:
 	go generate ./...

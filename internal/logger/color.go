@@ -35,7 +35,6 @@ func (c Color) AddAll(s string) string {
 	if c == None {
 		return s
 	}
-
 	lines := make([]string, 0, 10)
 	scanner := bufio.NewScanner(strings.NewReader(s))
 	for scanner.Scan() {

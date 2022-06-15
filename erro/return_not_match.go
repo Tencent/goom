@@ -18,7 +18,6 @@ func (i *ReturnsNotMatch) Error() string {
 		return "returns lenth not match of func " + reflect.ValueOf(i.funcDef).String() +
 			": " + strconv.Itoa(i.argLen) + ", expect: " + strconv.Itoa(i.expectLen)
 	}
-
 	return "returns lenth not match: " + strconv.Itoa(i.argLen) + ", expect: " + strconv.Itoa(i.expectLen)
 }
 

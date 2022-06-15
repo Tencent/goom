@@ -9,16 +9,17 @@
 2. 异常注入，对函数调用支持异常注入，延迟模拟等稳定性测试
 3. 所有操作都是并发安全的
 4. 未导出(未导出)函数(或方法)的mock(不建议使用, 对于未导出函数的Mock 通常都是因为代码设计可能有问题, 此功能会在未来版本中废弃)
+5. 支持M1 mac环境运行，支持IDE debug，函数、方法mock，接口mock，未导出函数mock，等能力均可在arm64架构上使用
 
 ### 将来
 1. 支持数据驱动测试
 2. 支持Mock锚点定义
 3. 支持代码重构
 
-## 注意！！！不要过度依赖mock    
+## 注意！！！不要过度依赖mock
 
-> [1.千万不要过度依赖于mock](https://mp.weixin.qq.com/s?__biz=MzA5MTAzNjU1OQ==&mid=2454780683&idx=1&sn=aabc85f3bd2cfa21b8b806bad581f0c5)    
-> 2.对于正规的第三方库，比如mysql、gorm的库本身会提供mock能力, 可参考[sql_test.go](https://git.woa.com/goom/best_practices/blob/master/example/sql_test.go)    
+> [1.千万不要过度依赖于mock](https://mp.weixin.qq.com/s?__biz=MzA5MTAzNjU1OQ==&mid=2454780683&idx=1&sn=aabc85f3bd2cfa21b8b806bad581f0c5)
+> 2.对于正规的第三方库，比如mysql、gorm的库本身会提供mock能力, 可参考[sql_test.go](https://git.woa.com/goom/best_practices/blob/master/example/sql_test.go)
 > 3.对于自建的内部依赖库, 建议由库的提供方编写mock(1.使用方无需关心提供方的实现细节、2.由库提供方负责版本升级时mock实现逻辑的更新)
 
 ## Install
@@ -87,10 +88,10 @@ func bar(i interface{}, j int) int {
 
 // 忽略第一个参数, 当第二个参数为1、2时返回值为100
 mock.Func(bar).When(arg.Any(), arg.In(1, 2)).Return(100)
-s.Equal(100, bar(-1, 1), "any args result check")
-s.Equal(100, bar(0, 1), "any args result check")
-s.Equal(100, bar(1, 2), "any args result check")
-s.Equal(100, bar(999, 2), "any args result check")
+s.Equal(100, bar(-1, 1), "any param result check")
+s.Equal(100, bar(0, 1), "any param result check")
+s.Equal(100, bar(1, 2), "any param result check")
+s.Equal(100, bar(999, 2), "any param result check")
 ```
 
 #### 1.2. 结构体方法mock
@@ -158,7 +159,7 @@ mock := mocker.Create()
 // 任意接口变量
 i := (I)(nil)
 
-// 将Mock应用到接口变量,不支持对接口的所有实现类生效。 
+// 将Mock应用到接口变量,不支持对接口的所有实现类生效。
 // 1. interface mock只对mock.Interface(&目标接口变量) 的目标接口变量生效, 因此需要将被测逻辑结构中的I类型属性或变量替换为i,mock才可生效
 // 2. 一般建议使用struct mock即可。
 // 3. Apply调用的第一个参数必须为*mocker.IContext, 作用是指定接口实现的接收体; 后续的参数原样照抄。
@@ -285,7 +286,7 @@ s.Equal(101, foo1(1), "call origin result check")
 ```
 
 ## 问题答疑
-[问题答疑记录wiki地址](https://iwiki.woa.com/pages/viewpage.action?pageId=263748529)    
+[问题答疑记录wiki地址](https://iwiki.woa.com/pages/viewpage.action?pageId=263748529)
 常见问题:
 1. 如果是arm CPU的MAC机器, 请添加编译参数:
 ```shell

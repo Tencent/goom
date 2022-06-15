@@ -6,10 +6,10 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/stretchr/testify/suite"
-
 	"git.code.oa.com/goom/mocker"
-	"git.code.oa.com/goom/mocker/arg"
+	"git.code.oa.com/goom/mocker/param"
+
+	"github.com/stretchr/testify/suite"
 )
 
 // TestUnitWhenTestSuite 测试入口
@@ -151,7 +151,7 @@ func (s *WhenTestSuite) TestWhenContains() {
 		s.Equal(5, when.Eval(1)[0], "when result check")
 		s.Equal(-1, when.Eval(0)[0], "when result check")
 
-		when.Return(-1).When(arg.In(3, 4)).Return(6)
+		when.Return(-1).When(param.In(3, 4)).Return(6)
 		s.Equal(6, when.Eval(3)[0], "when result check")
 		s.Equal(6, when.Eval(4)[0], "when result check")
 	})
@@ -162,15 +162,15 @@ func (s *WhenTestSuite) TestMatches() {
 	s.Run("success", func() {
 		when := mocker.NewWhen(reflect.TypeOf(simple))
 		when.Return(-1).Matches(
-			arg.Pair{Args: 1, Return: 5},
-			arg.Pair{Args: 2, Return: 5},
-			arg.Pair{Args: 3, Return: 6})
+			param.Pair{Params: 1, Return: 5},
+			param.Pair{Params: 2, Return: 5},
+			param.Pair{Params: 3, Return: 6})
 
 		s.Equal(5, when.Eval(1)[0], "when result check")
 		s.Equal(5, when.Eval(2)[0], "when result check")
 		s.Equal(6, when.Eval(3)[0], "when result check")
 
-		when.Matches(arg.Pair{Args: arg.Any(), Return: 100})
+		when.Matches(param.Pair{Params: param.Any(), Return: 100})
 
 		s.Equal(100, when.Eval(4)[0], "when result check")
 	})
@@ -234,7 +234,7 @@ func (s *WhenTestSuite) TestMethodAny() {
 		struct1 := new(Struct)
 		m := mocker.Create()
 
-		m.Struct(struct1).Method("Div").When(3, arg.Any()).Return(100)
+		m.Struct(struct1).Method("Div").When(3, param.Any()).Return(100)
 		s.Equal(100, structOuter.Compute(3, 1), "method when check")
 		s.Equal(100, structOuter.Compute(3, 2), "method when check")
 		s.Equal(100, structOuter.Compute(3, -1), "method when check")
@@ -248,20 +248,20 @@ func (s *WhenTestSuite) TestMethodMultiIn() {
 		struct1 := new(Struct)
 		m := mocker.Create()
 
-		when := m.Struct(struct1).Method("Div").Return(-1).When(arg.In(3, 4), arg.Any()).Return(100)
+		when := m.Struct(struct1).Method("Div").Return(-1).When(param.In(3, 4), param.Any()).Return(100)
 		s.Equal(100, structOuter.Compute(3, 1), "method when check")
 		s.Equal(100, structOuter.Compute(3, 2), "method when check")
 		s.Equal(100, structOuter.Compute(4, 3), "method when check")
 		s.Equal(100, structOuter.Compute(3, -1), "method when check")
 
-		when.In([]interface{}{5, arg.Any()}).Return(101)
+		when.In([]interface{}{5, param.Any()}).Return(101)
 		s.Equal(101, structOuter.Compute(5, 1), "method when check")
 		s.Equal(101, structOuter.Compute(5, 2), "method when check")
 		s.Equal(101, structOuter.Compute(5, -1), "method when check")
 
 		when.Matches(
-			arg.Pair{Args: []interface{}{6, arg.Any()}, Return: []interface{}{101}},
-			arg.Pair{Args: []interface{}{7, arg.Any()}, Return: []interface{}{102}},
+			param.Pair{Params: []interface{}{6, param.Any()}, Return: []interface{}{101}},
+			param.Pair{Params: []interface{}{7, param.Any()}, Return: []interface{}{102}},
 		)
 		s.Equal(101, structOuter.Compute(6, -1), "method when check")
 		s.Equal(102, structOuter.Compute(7, -1), "method when check")

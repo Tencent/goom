@@ -10,7 +10,6 @@ go_library(
         "ifunc_win.go",
         "signal_notunix.go",
         "signal_unix.go",
-        "version.go"
     ],
     importpath = "git.code.oa.com/goom/mocker/internal/hack",
     visibility = ["//:__subpackages__"],

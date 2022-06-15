@@ -7,12 +7,11 @@ import (
 	"testing"
 	"unsafe"
 
-	"git.code.oa.com/goom/mocker/internal/proxy"
-
-	"git.code.oa.com/goom/mocker/internal/logger"
-	"git.code.oa.com/goom/mocker/internal/stub"
-
+	"git.code.oa.com/goom/mocker/internal/bytecode/stub"
 	"git.code.oa.com/goom/mocker/internal/hack"
+	"git.code.oa.com/goom/mocker/internal/iface"
+	"git.code.oa.com/goom/mocker/internal/logger"
+	"git.code.oa.com/goom/mocker/internal/proxy"
 )
 
 // I 接口测试
@@ -25,7 +24,26 @@ type I interface {
 // TestInterfaceCall 测试接口调用
 func TestInterfaceCall(t *testing.T) {
 	i := getImpl(1)
-	i.Call(0)
+	i.Call(99)
+}
+
+func foo(a int) int {
+	return a + 1
+}
+
+// TestMakeFunc 测试 MakeFunc
+func TestMakeFunc(t *testing.T) {
+	funcValue := reflect.ValueOf(foo)
+	funcType := funcValue.Type()
+	mockFunc := reflect.MakeFunc(funcType, func(args []reflect.Value) (results []reflect.Value) {
+		fmt.Println("called, args: ", args[0].Interface())
+		return funcValue.Call(args)
+	})
+	fun := mockFunc.Interface()
+	func1, _ := (fun).(func(int) int)
+	if func1(3) != 4 {
+		t.Errorf("func1 return expect %d", 4)
+	}
 }
 
 // TestAutoGen 测试生成任意接口实现
@@ -36,19 +54,19 @@ func TestAutoGen(t *testing.T) {
 
 	gen := (I)(nil)
 
-	ctx := proxy.NewContext()
+	ctx := iface.NewContext()
 
-	_ = proxy.MakeInterfaceImpl(&gen, ctx, "Call", func(ctx *proxy.IContext, a int) int {
+	_ = proxy.Interface(&gen, ctx, "Call", func(ctx *iface.IContext, a int) int {
 		t.Log("called Call")
 		return 1
 	}, nil)
 
-	_ = proxy.MakeInterfaceImpl(&gen, ctx, "Call1", func(ctx *proxy.IContext, a string) string {
+	_ = proxy.Interface(&gen, ctx, "Call1", func(ctx *iface.IContext, a string) string {
 		t.Log("called Call1")
 		return strResult
 	}, nil)
 
-	_ = proxy.MakeInterfaceImpl(&gen, ctx, "call2", func(ctx *proxy.IContext, a int32) int32 {
+	_ = proxy.Interface(&gen, ctx, "call2", func(ctx *iface.IContext, a int32) int32 {
 		t.Log("called call2")
 		return 99
 	}, nil)
@@ -68,9 +86,9 @@ func TestAutoGen(t *testing.T) {
 // TestGenCancel 测试取消接口代理
 func TestGenCancel(t *testing.T) {
 	gen := getImpl(1)
-	ctx := proxy.NewContext()
+	ctx := iface.NewContext()
 
-	_ = proxy.MakeInterfaceImpl(&gen, ctx, "Call", func(ctx *proxy.IContext, a int) int {
+	_ = proxy.Interface(&gen, ctx, "Call", func(ctx *iface.IContext, a int) int {
 		t.Log("called Call")
 		return 0
 	}, nil)
@@ -140,8 +158,8 @@ func genInterfaceImpl(i interface{}, proxy interface{}) {
 	fmt.Println(ifc)
 }
 
-// TestAutoGenImpl 测试生成任意接口实现
-func TestAutoGenImpl(t *testing.T) {
+// TestAutoProxyGenImpl 测试生成任意接口实现
+func TestAutoProxyGenImpl(t *testing.T) {
 	logger.LogLevel = logger.DebugLevel
 	logger.SetLog2Console(true)
 
@@ -173,18 +191,14 @@ func dynamicGenImpl(t *testing.T, i interface{}) {
 	})
 
 	mockFunc := reflect.MakeFunc(methodTyp, func(args []reflect.Value) (results []reflect.Value) {
-		//fmt.Println("called", args[1].Interface())
-		//debug.PrintStack()
-		//t.Log("ok")
 		return []reflect.Value{reflect.ValueOf(3)}
 	})
 	ifc := *(*uintptr)(gen)
 	fmt.Println(ifc)
 
 	callStub := reflect.ValueOf(stub.MakeFuncStub).Pointer()
-
 	mockFuncPtr := (*hack.Value)(unsafe.Pointer(&mockFunc)).Ptr
-	genStub, err := stub.MakeIfaceCallerWithCtx(mockFuncPtr, callStub)
+	genStub, err := iface.MakeMethodCallerWithCtx(mockFuncPtr, callStub)
 
 	if err != nil {
 		panic(err)
@@ -217,7 +231,6 @@ func getImpl(n int) I {
 	} else if n == 2 {
 		return &Impl2{}
 	}
-
 	return nil
 }
 
@@ -259,13 +272,11 @@ func (i Impl2) call2(int32) int32 {
 // TestTraceBack 测试生成任意接口实现的 traceback
 func TestTraceBack(t *testing.T) {
 	gen := (I)(nil)
-
 	dynamicGenImpl(t, &gen)
 
 	// 调用接口方法
 	for i := 0; i < 1000; i++ {
 		gen.Call(1)
 	}
-
 	fmt.Println("ok")
 }

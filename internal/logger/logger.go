@@ -83,7 +83,6 @@ func init() {
 		fmt.Println("init log file error:", err)
 		return
 	}
-
 	Logger = logFile
 }
 
@@ -135,132 +134,125 @@ func SetLogTrack(enable bool, getter func() string) {
 	}
 }
 
-// LogTraceEnable 是否开启 trace
-func LogTraceEnable() bool {
+// TraceEnable 是否开启 trace
+func TraceEnable() bool {
 	return LogLevel >= TraceLevel
 }
 
-// LogTrace 打印 trace 日志
-func LogTrace(v ...interface{}) {
+// Trace 打印 trace 日志
+func Trace(v ...interface{}) {
 	if LogLevel >= TraceLevel {
 		_, _ = Logger.Write(layout(TraceLevel, v))
 	}
 }
 
-// LogTracef 打印 trace 日志
-func LogTracef(format string, a ...interface{}) {
+// Tracef 打印 trace 日志
+func Tracef(format string, a ...interface{}) {
 	if LogLevel >= TraceLevel {
 		_, _ = Logger.Write(layoutf(TraceLevel, format, nil, a...))
 	}
 }
 
-// LogDebugEnable 是否开启 debug
-func LogDebugEnable() bool {
+// DebugEnable 是否开启 debug
+func DebugEnable() bool {
 	return LogLevel >= DebugLevel
 }
 
-// LogDebug 打印 debug 日志
-func LogDebug(v ...interface{}) {
+// Debug 打印 debug 日志
+func Debug(v ...interface{}) {
 	if LogLevel >= DebugLevel {
 		_, _ = Logger.Write(layout(DebugLevel, v))
 	}
 }
 
-// LogDebugf 打印 debug 日志
-func LogDebugf(format string, a ...interface{}) {
+// Debugf 打印 debug 日志
+func Debugf(format string, a ...interface{}) {
 	if LogLevel >= DebugLevel {
 		_, _ = Logger.Write(layoutf(DebugLevel, format, nil, a...))
 	}
 }
 
-// LogInfo 打印 info 日志
-func LogInfo(v ...interface{}) {
+// Info 打印 info 日志
+func Info(v ...interface{}) {
 	if LogLevel >= InfoLevel {
 		_, _ = Logger.Write(layout(InfoLevel, v))
 	}
 }
 
-// LogInfof 打印 info 日志
-func LogInfof(format string, a ...interface{}) {
+// Infof 打印 info 日志
+func Infof(format string, a ...interface{}) {
 	if LogLevel >= InfoLevel {
 		_, _ = Logger.Write(layoutf(InfoLevel, format, nil, a...))
 	}
 }
 
-// LogWarning 打印 warning 日志
-func LogWarning(v ...interface{}) {
+// Warning 打印 warning 日志
+func Warning(v ...interface{}) {
 	if LogLevel >= WarningLevel {
 		line := layout(WarningLevel, v)
-
 		_, _ = Logger.Write(line)
-
 		write2Console(line)
 	}
 }
 
-// LogWarningf 打印 warning 日志
-func LogWarningf(format string, a ...interface{}) {
+// Warningf 打印 warning 日志
+func Warningf(format string, a ...interface{}) {
 	if LogLevel >= WarningLevel {
 		line := layoutf(WarningLevel, format, nil, a...)
 		_, _ = Logger.Write(line)
-
 		write2Console(line)
 	}
 }
 
-// LogImportant 打印重要的日志
-func LogImportant(v ...interface{}) {
+// Important 打印重要的日志
+func Important(v ...interface{}) {
 	line := layout(InfoLevel, v)
 	_, _ = Logger.Write(line)
-
 	write2Console(line)
 }
 
-// LogImportantf 打印重要的日志
-func LogImportantf(format string, a ...interface{}) {
+// Importantf 打印重要的日志
+func Importantf(format string, a ...interface{}) {
 	line := layoutf(InfoLevel, format, nil, a...)
 	_, _ = Logger.Write(line)
-
 	write2Console(line)
 }
 
-// LogError 打印 error 日志
-func LogError(v ...interface{}) {
+// Error 打印 error 日志
+func Error(v ...interface{}) {
 	if LogLevel >= ErrorLevel {
 		line := layout(ErrorLevel, v)
 		_, _ = Logger.Write(line)
-
 		write2Console(line)
 	}
 }
 
-// LogErrorf 打印 error 日志
-func LogErrorf(format string, a ...interface{}) {
+// Errorf 打印 error 日志
+func Errorf(format string, a ...interface{}) {
 	if LogLevel >= ErrorLevel {
 		line := layoutf(ErrorLevel, format, nil, a...)
 		_, _ = Logger.Write(line)
-
 		write2Console(line)
 	}
 }
 
-// Log2Console 打印日志到控制台
-func Log2Console(level int, s string) {
+// Console 打印日志到控制台
+func Console(level int, s string) {
 	if level <= ConsoleLevel {
 		os.Stdout.Write([]byte(s))
 	}
 }
 
-// Log2Consolef 打印日志到控制台
-func Log2Consolef(level int, format string, a ...interface{}) {
+// Consolef 打印日志到控制台
+func Consolef(level int, format string, a ...interface{}) {
 	if level <= ConsoleLevel {
 		line := layoutf(level, format, nil, a...)
 		os.Stdout.Write(line)
 	}
 }
 
-// Log2Consolefc 打印日志到控制台
-func Log2Consolefc(level int, format string, callerFn CallerFn, a ...interface{}) {
+// Consolefc 打印日志到控制台
+func Consolefc(level int, format string, callerFn CallerFn, a ...interface{}) {
 	if level <= ConsoleLevel {
 		line := layoutf(level, format, callerFn, a...)
 		os.Stdout.Write(line)
@@ -297,7 +289,6 @@ func layout(level int, v []interface{}) []byte {
 // layoutf 给日志格式化，带上[goom]前缀和添加颜色等
 func layoutf(level int, format string, callerFn CallerFn, a ...interface{}) []byte {
 	time := time.Now().Format("2006-01-02 15:04:05")
-
 	if EnableLogTrack {
 		return []byte(time + " " + defaultPrefix + "[" + levelName[level] + "]: " +
 			trackGetter() + " " + fmt.Sprintf(format, a...) + "\n")
@@ -334,7 +325,6 @@ func loggerPath() (string, error) {
 			return ".", err
 		}
 	}
-
 	fmt.Println("goom-mocker logFileLocation:", logFileLocation)
 	return logFileLocation, err
 }
@@ -364,13 +354,11 @@ func caller(skip int) string {
 // Note: This implementation is similar to runtime.Caller, but it returns the whole frame.
 func getCallerFrame(skip int) (frame runtime.Frame, ok bool) {
 	const skipOffset = 2 // skip getCallerFrame and Callers
-
 	pc := make([]uintptr, 1)
 	numFrames := runtime.Callers(skip+skipOffset, pc)
 	if numFrames < 1 {
 		return
 	}
-
 	frame, _ = runtime.CallersFrames(pc).Next()
 	return frame, frame.PC != 0
 }

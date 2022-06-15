@@ -1,0 +1,18 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "builder.go",
+        "equals.go",
+        "expr.go",
+        "params.go",
+        "value.go",
+    ],
+    importpath = "git.code.oa.com/goom/mocker/param",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//internal/hack:go_default_library",
+        "//internal/iface:go_default_library",
+    ],
+)

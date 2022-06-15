@@ -7,7 +7,7 @@ package mocker
 import (
 	"strings"
 
-	"git.code.oa.com/goom/mocker/internal/proxy"
+	"git.code.oa.com/goom/mocker/internal/iface"
 )
 
 // CachedMethodMocker 带缓存的方法 Mocker,将同一个函数或方法的 Mocker 进行 cache
@@ -32,7 +32,6 @@ func (m *CachedMethodMocker) String() string {
 	for _, v := range m.mCache {
 		s = append(s, v.String())
 	}
-
 	for _, v := range m.umCache {
 		s = append(s, v.String())
 	}
@@ -44,11 +43,9 @@ func (m *CachedMethodMocker) Method(name string) ExportedMocker {
 	if mocker, ok := m.mCache[name]; ok && !mocker.Canceled() {
 		return mocker
 	}
-
 	mocker := NewMethodMocker(m.pkgName, m.MethodMocker.structDef)
 	mocker.Method(name)
 	m.mCache[name] = mocker
-
 	return mocker
 }
 
@@ -57,11 +54,9 @@ func (m *CachedMethodMocker) ExportMethod(name string) UnExportedMocker {
 	if mocker, ok := m.umCache[name]; ok && !mocker.Canceled() {
 		return mocker
 	}
-
 	mocker := NewMethodMocker(m.pkgName, m.MethodMocker.structDef)
 	exportedMocker := mocker.ExportMethod(name)
 	m.umCache[name] = exportedMocker
-
 	return exportedMocker
 }
 
@@ -70,7 +65,6 @@ func (m *CachedMethodMocker) Cancel() {
 	for _, v := range m.mCache {
 		v.Cancel()
 	}
-
 	for _, v := range m.umCache {
 		v.Cancel()
 	}
@@ -104,11 +98,9 @@ func (m *CachedUnexportedMethodMocker) Method(name string) UnExportedMocker {
 	if mocker, ok := m.mockers[name]; ok && !mocker.Canceled() {
 		return mocker
 	}
-
 	mocker := NewUnexportedMethodMocker(m.pkgName, m.UnexportedMethodMocker.structName)
 	mocker.Method(name)
 	m.mockers[name] = mocker
-
 	return mocker
 }
 
@@ -123,7 +115,7 @@ func (m *CachedUnexportedMethodMocker) Cancel() {
 type CachedInterfaceMocker struct {
 	*DefaultInterfaceMocker
 	mockers map[string]InterfaceMocker
-	ctx     *proxy.IContext
+	ctx     *iface.IContext
 }
 
 // NewCachedInterfaceMocker 创建新的带缓存的 Interface Mocker
@@ -149,11 +141,9 @@ func (m *CachedInterfaceMocker) Method(name string) InterfaceMocker {
 	if mocker, ok := m.mockers[name]; ok && !mocker.Canceled() {
 		return mocker
 	}
-
 	mocker := NewDefaultInterfaceMocker(m.pkgName, m.iFace, m.ctx)
 	mocker.Method(name)
 	m.mockers[name] = mocker
-
 	return mocker
 }
 

@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"git.code.oa.com/goom/mocker/erro"
+	"git.code.oa.com/goom/mocker/internal/iface"
 	"git.code.oa.com/goom/mocker/internal/logger"
 	"git.code.oa.com/goom/mocker/internal/proxy"
 	"git.code.oa.com/goom/mocker/internal/unexports"
@@ -57,6 +58,7 @@ type baseMocker struct {
 	pkgName string
 	origin  interface{}
 	guard   MockGuard
+	funcDef interface{}
 	imp     interface{}
 
 	when *When
@@ -73,55 +75,57 @@ func newBaseMocker(pkgName string) *baseMocker {
 
 // applyByName 根据函数名称应用 mock
 func (m *baseMocker) applyByName(funcName string, imp interface{}) {
-	guard, err := proxy.StaticProxyByName(funcName, imp, m.origin)
+	guard, err := proxy.FuncName(funcName, imp, m.origin)
 	if err != nil {
 		panic(fmt.Sprintf("proxy func name error: %v", err))
 	}
 
-	m.guard = NewPatchMockGuard(guard)
+	m.guard = newPatchMockGuard(guard)
 	m.guard.Apply()
 	m.imp = imp
 }
 
 // applyByFunc 根据函数应用 mock
 func (m *baseMocker) applyByFunc(funcDef interface{}, imp interface{}) {
-	guard, err := proxy.StaticProxyByFunc(funcDef, imp, m.origin)
+	guard, err := proxy.Func(funcDef, imp, m.origin)
 	if err != nil {
 		panic(fmt.Sprintf("proxy func definition error: %v", err))
 	}
 
-	m.guard = NewPatchMockGuard(guard)
+	m.guard = newPatchMockGuard(guard)
 	m.guard.Apply()
 	m.imp = imp
+	m.funcDef = funcDef
 }
 
 // applyByMethod 根据函数名应用 mock
 func (m *baseMocker) applyByMethod(structDef interface{}, method string, imp interface{}) {
-	guard, err := proxy.StaticProxyByMethod(reflect.TypeOf(structDef), method, imp, m.origin)
+	guard, err := proxy.Method(reflect.TypeOf(structDef), method, imp, m.origin)
 	if err != nil {
 		panic(fmt.Sprintf("proxy method error: %v", err))
 	}
 
-	m.guard = NewPatchMockGuard(guard)
+	m.guard = newPatchMockGuard(guard)
 	m.guard.Apply()
 	m.imp = imp
+	m.funcDef = reflect.ValueOf(structDef).MethodByName(method).Interface()
 }
 
 // applyByIFaceMethod 根据接口方法应用 mock
-func (m *baseMocker) applyByIFaceMethod(ctx *proxy.IContext, iFace interface{}, method string, imp interface{},
-	implV proxy.PFunc) {
+func (m *baseMocker) applyByIFaceMethod(ctx *iface.IContext, iFace interface{}, method string, imp interface{},
+	implV iface.PFunc) {
 
 	impV := reflect.TypeOf(imp)
 	if impV.In(0) != reflect.TypeOf(&IContext{}) {
 		panic(erro.NewIllegalParamTypeError("<first arg>", impV.In(0).Name(), "*IContext"))
 	}
 
-	err := proxy.MakeInterfaceImpl(iFace, ctx, method, imp, implV)
+	err := proxy.Interface(iFace, ctx, method, imp, implV)
 	if err != nil {
 		panic(erro.NewTraceableErrorf("interface mock apply error", err))
 	}
 
-	m.guard = NewIFaceMockGuard(ctx)
+	m.guard = newIFaceMockGuard(ctx)
 	m.guard.Apply()
 	m.imp = imp
 }
@@ -130,20 +134,20 @@ func (m *baseMocker) applyByIFaceMethod(ctx *proxy.IContext, iFace interface{}, 
 func (m *baseMocker) whens(when *When) error {
 	m.imp = reflect.MakeFunc(when.funcTyp, m.callback).Interface()
 	m.when = when
-
 	return nil
 }
 
 // callback 通用的 MakeFunc callback
 func (m *baseMocker) callback(args []reflect.Value) (results []reflect.Value) {
+	if m.canceled && m.funcDef != nil {
+		return reflect.ValueOf(m.funcDef).Call(args)
+	}
 	if m.when != nil {
 		results = m.when.invoke(args)
-
 		if results != nil {
 			return results
 		}
 	}
-
 	panic("there is no suitable condition matched, or set default return with: mocker.Return(...)")
 }
 
@@ -152,7 +156,6 @@ func (m *baseMocker) Cancel() {
 	if m.guard != nil {
 		m.guard.Cancel()
 	}
-
 	m.when = nil
 	m.origin = nil
 	m.canceled = true
@@ -196,17 +199,14 @@ func (m *MethodMocker) Method(name string) ExportedMocker {
 	if name == "" {
 		panic("method is empty")
 	}
-
 	m.method = name
-	sTyp := reflect.TypeOf(m.structDef)
 
+	sTyp := reflect.TypeOf(m.structDef)
 	method, ok := sTyp.MethodByName(m.method)
 	if !ok {
 		panic("method " + m.method + " not found on " + sTyp.String())
 	}
-
 	m.methodIns = method.Func.Interface()
-
 	return m
 }
 
@@ -221,6 +221,9 @@ func (m *MethodMocker) ExportMethod(name string) UnExportedMocker {
 	if strings.Contains(structName, "*") {
 		structName = fmt.Sprintf("(%s)", structName)
 	}
+
+	packageName := packageName(m.structDef)
+	m.baseMocker.pkgName = packageName
 
 	return (&UnexportedMethodMocker{
 		baseMocker: m.baseMocker,
@@ -240,10 +243,9 @@ func (m *MethodMocker) doApply(imp interface{}) {
 	if m.method == "" {
 		panic("method is empty")
 	}
-
 	imp, _ = interceptDebugInfo(imp, nil, m)
 	m.applyByMethod(m.structDef, m.method, imp)
-	logger.Log2Consolefc(logger.DebugLevel, "mocker [%s] apply.", logger.Caller(6), m.String())
+	logger.Consolefc(logger.DebugLevel, "mocker [%s] apply.", logger.Caller(6), m.String())
 }
 
 // When 指定条件匹配
@@ -251,7 +253,6 @@ func (m *MethodMocker) When(args ...interface{}) *When {
 	if m.method == "" {
 		panic("method is empty")
 	}
-
 	if m.when != nil {
 		return m.when.When(args...)
 	}
@@ -266,17 +267,14 @@ func (m *MethodMocker) When(args ...interface{}) *When {
 		when *When
 		err  error
 	)
-
 	if when, err = CreateWhen(m, methodIns.Func.Interface(), args, nil, true); err != nil {
 		panic(err)
 	}
-
 	if err := m.whens(when); err != nil {
 		panic(err)
 	}
 
 	m.doApply(m.imp)
-
 	return when
 }
 
@@ -285,7 +283,6 @@ func (m *MethodMocker) Return(ret ...interface{}) *When {
 	if m.method == "" {
 		panic("method is empty")
 	}
-
 	if m.when != nil {
 		return m.when.Return(ret...)
 	}
@@ -294,17 +291,13 @@ func (m *MethodMocker) Return(ret ...interface{}) *When {
 		when *When
 		err  error
 	)
-
 	if when, err = CreateWhen(m, m.methodIns, nil, ret, true); err != nil {
 		panic(err)
 	}
-
 	if err := m.whens(when); err != nil {
 		panic(err)
 	}
-
 	m.doApply(m.imp)
-
 	return when
 }
 
@@ -313,7 +306,6 @@ func (m *MethodMocker) Returns(rets ...interface{}) *When {
 	if m.method == "" {
 		panic("method is empty")
 	}
-
 	if m.when != nil {
 		return m.when.Returns(rets...)
 	}
@@ -322,18 +314,14 @@ func (m *MethodMocker) Returns(rets ...interface{}) *When {
 		when *When
 		err  error
 	)
-
 	if when, err = CreateWhen(m, m.methodIns, nil, nil, true); err != nil {
 		panic(err)
 	}
-
 	if err := m.whens(when); err != nil {
 		panic(err)
 	}
-
 	m.when.Returns(rets...)
 	m.doApply(m.imp)
-
 	return when
 }
 
@@ -392,13 +380,12 @@ func (m *UnexportedMethodMocker) Apply(imp interface{}) {
 
 	imp, _ = interceptDebugInfo(imp, nil, m)
 	m.applyByName(name, imp)
-	logger.Log2Consolefc(logger.DebugLevel, "mocker [%s] apply.", logger.Caller(5), m.String())
+	logger.Consolefc(logger.DebugLevel, "mocker [%s] apply.", logger.Caller(5), m.String())
 }
 
 // Origin 调用原函数
 func (m *UnexportedMethodMocker) Origin(origin interface{}) UnExportedMocker {
 	m.origin = origin
-
 	return m
 }
 
@@ -413,14 +400,11 @@ func (m *UnexportedMethodMocker) As(funcDef interface{}) ExportedMocker {
 		err           error
 		originFuncPtr uintptr
 	)
-
 	originFuncPtr, err = unexports.FindFuncByName(name)
 	if err != nil {
 		panic(err)
 	}
-
 	newFunc := unexports.NewFuncWithCodePtr(reflect.TypeOf(funcDef), originFuncPtr)
-
 	return &DefMocker{
 		baseMocker: m.baseMocker,
 		funcDef:    newFunc.Interface(),
@@ -458,31 +442,25 @@ func (m *UnexportedFuncMocker) objName() string {
 // mock 回调函数, 需要和 mock 模板函数的签名保持一致
 // 方法的参数签名写法比如: func(s *Struct, arg1, arg2 type), 其中第一个参数必须是接收体类型
 func (m *UnexportedFuncMocker) Apply(imp interface{}) {
-	name := m.objName()
-
 	imp, _ = interceptDebugInfo(imp, nil, m)
-	m.applyByName(name, imp)
-	logger.Log2Consolefc(logger.DebugLevel, "mocker [%s] apply.", logger.Caller(5), m.String())
+	m.applyByName(m.objName(), imp)
+	logger.Consolefc(logger.DebugLevel, "mocker [%s] apply.", logger.Caller(5), m.String())
 }
 
 // Origin 调用原函数
 func (m *UnexportedFuncMocker) Origin(origin interface{}) UnExportedMocker {
 	m.origin = origin
-
 	return m
 }
 
 // As 将未导出函数(或方法)转换为导出函数(或方法)
 func (m *UnexportedFuncMocker) As(funcDef interface{}) ExportedMocker {
-	name := m.objName()
-
-	originFuncPtr, err := unexports.FindFuncByName(name)
+	originFuncPtr, err := unexports.FindFuncByName(m.objName())
 	if err != nil {
 		panic(err)
 	}
 
 	newFunc := unexports.NewFuncWithCodePtr(reflect.TypeOf(funcDef), originFuncPtr)
-
 	return &DefMocker{
 		baseMocker: m.baseMocker,
 		funcDef:    newFunc.Interface(),
@@ -522,13 +500,12 @@ func (m *DefMocker) doApply(imp interface{}) {
 
 	funcName := functionName(m.funcDef)
 	imp, _ = interceptDebugInfo(imp, nil, m)
-
 	if strings.HasSuffix(funcName, "-fm") {
 		m.applyByName(strings.TrimRight(funcName, "-fm"), imp)
 	} else {
 		m.applyByFunc(m.funcDef, imp)
 	}
-	logger.Log2Consolefc(logger.DebugLevel, "mocker [%s] apply.", logger.Caller(6), m.String())
+	logger.Consolefc(logger.DebugLevel, "mocker [%s] apply.", logger.Caller(6), m.String())
 }
 
 // When 指定条件匹配
@@ -536,22 +513,17 @@ func (m *DefMocker) When(args ...interface{}) *When {
 	if m.when != nil {
 		return m.when.When(args...)
 	}
-
 	var (
 		when *When
 		err  error
 	)
-
 	if when, err = CreateWhen(m, m.funcDef, args, nil, false); err != nil {
 		panic(err)
 	}
-
 	if err := m.whens(when); err != nil {
 		panic(err)
 	}
-
 	m.doApply(m.imp)
-
 	return when
 }
 
@@ -560,22 +532,17 @@ func (m *DefMocker) Return(returns ...interface{}) *When {
 	if m.when != nil {
 		return m.when.Return(returns...)
 	}
-
 	var (
 		when *When
 		err  error
 	)
-
 	if when, err = CreateWhen(m, m.funcDef, nil, returns, false); err != nil {
 		panic(err)
 	}
-
 	if err := m.whens(when); err != nil {
 		panic(err)
 	}
-
 	m.doApply(m.imp)
-
 	return when
 }
 
@@ -584,23 +551,18 @@ func (m *DefMocker) Returns(rets ...interface{}) *When {
 	if m.when != nil {
 		return m.when.Returns(rets...)
 	}
-
 	var (
 		when *When
 		err  error
 	)
-
 	if when, err = CreateWhen(m, m.funcDef, nil, nil, false); err != nil {
 		panic(err)
 	}
-
 	if err := m.whens(when); err != nil {
 		panic(err)
 	}
-
 	m.when.Returns(rets...)
 	m.doApply(m.imp)
-
 	return when
 }
 

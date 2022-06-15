@@ -7,6 +7,7 @@ package unexports
 
 import "git.code.oa.com/goom/mocker/internal/hack"
 
+// checkOverflow 检查 hack ftab 数据的是否正确, 一般溢出则不正确
 func checkOverflow(ftab hack.Functab, moduleData *hack.Moduledata) bool {
 	return ftab.Funcoff >= uint32(len(moduleData.Pclntable))
 }

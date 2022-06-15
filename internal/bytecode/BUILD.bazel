@@ -1,0 +1,30 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    gc_goopts = ["-l"],
+    srcs = [
+        "addr.go",
+        "binary.go",
+        "func.go",
+        "func_amd64.go",
+        "func_arm64.go",
+        "func_unix.go",
+        "func_windows.go",
+        "inline_check_amd64.go",
+        "ins_amd64.go",
+    ],
+    importpath = "git.code.oa.com/goom/mocker/internal/bytecode",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "//internal/arch/x86asm:go_default_library",
+        "//internal/bytecode/memory:go_default_library",
+        "//internal/logger:go_default_library",
+        "//internal/unexports:go_default_library",
+    ] + select({
+        "@io_bazel_rules_go//go/platform:arm64": [
+            "//internal/arch/arm64asm:go_default_library",
+        ],
+        "//conditions:default": [],
+    }),
+)

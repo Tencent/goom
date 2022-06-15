@@ -1,0 +1,20 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "jmp_amd64.go",
+        "jmp_arm64.go",
+        "make_interface.go",
+        "make_method.go",
+    ],
+    importpath = "git.code.oa.com/goom/mocker/internal/iface",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "//internal/bytecode:go_default_library",
+        "//internal/bytecode/memory:go_default_library",
+        "//internal/bytecode/stub:go_default_library",
+        "//internal/hack:go_default_library",
+        "//internal/logger:go_default_library",
+    ],
+)

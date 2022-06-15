@@ -16,7 +16,7 @@ import (
 
 const ptrMax uintptr = (1<<31 - 1) * 100
 
-// FindFuncByName searches through the moduledata table created by the linker
+// FindFuncByName searches through the 'moduledata' table created by the linker
 // and returns the function's code pointer. If the function was not found, it
 // returns an error. Since the data structures here are not exported, we copy
 // them below (and they need to stay in sync or else things will fail
@@ -49,8 +49,7 @@ func FindFuncByName(name string) (uintptr, error) {
 			suggester.AddItem(fName)
 		}
 	}
-	logger.LogDebugf("FindFuncByName not found %s", name)
-
+	logger.Debugf("FindFuncByName not found %s", name)
 	return 0, erro.NewFuncNotFoundErrorWithSuggestion(name, suggester.Suggestions())
 }
 
@@ -61,10 +60,9 @@ func funcName(f *runtime.Func) string {
 			var buf = make([]byte, 1024)
 
 			runtime.Stack(buf, true)
-			logger.LogErrorf("get funcName error:[%+v]\n%s", err, buf)
+			logger.Errorf("get funcName error:[%+v]\n%s", err, buf)
 		}
 	}()
-
 	return f.Name()
 }
 
@@ -93,7 +91,6 @@ func FindFuncByPtr(ptr uintptr) (*runtime.Func, string, error) {
 			}
 		}
 	}
-
 	return nil, "", fmt.Errorf("invalid function ptr: %d", ptr)
 }
 
@@ -124,16 +121,13 @@ func CreateFuncForCodePtr(outFuncPtr interface{}, codePtr uintptr) (*hack.Func, 
 	funcPtr.CodePtr = codePtr
 
 	outFuncVal.Set(newFuncVal)
-
 	return funcPtr, nil
 }
 
 // NewFuncWithCodePtr 根据类型和函数地址进行构造 reflect.Value
 func NewFuncWithCodePtr(typ reflect.Type, codePtr uintptr) reflect.Value {
-	var ptr2Ptr = &codePtr
-	pointer := unsafe.Pointer(ptr2Ptr)
+	pointer := unsafe.Pointer(&codePtr)
 	funcVal := reflect.NewAt(typ, pointer).Elem()
 	(*hack.Value)(unsafe.Pointer(&funcVal)).Flag = uintptr(reflect.Func)
-
 	return funcVal
 }

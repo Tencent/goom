@@ -54,7 +54,7 @@ func (m *defaultVarMocker) Apply(valueCallback interface{}) {
 	}
 
 	m.doSet(ret[0].Interface())
-	logger.Log2Consolefc(logger.DebugLevel, "mocker [%s] apply.", logger.Caller(5), m.String())
+	logger.Consolefc(logger.DebugLevel, "mocker [%s] apply.", logger.Caller(5), m.String())
 }
 
 // Cancel 取消 mock
@@ -73,7 +73,7 @@ func (m *defaultVarMocker) Canceled() bool {
 // 注意: Set 会覆盖之前设定 Apply 的值
 func (m *defaultVarMocker) Set(val interface{}) {
 	m.doSet(val)
-	logger.Log2Consolefc(logger.DebugLevel, "mocker [%s] apply.", logger.Caller(5), m.String())
+	logger.Consolefc(logger.DebugLevel, "mocker [%s] apply.", logger.Caller(5), m.String())
 }
 
 func (m *defaultVarMocker) doSet(val interface{}) {

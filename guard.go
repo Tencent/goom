@@ -5,8 +5,8 @@
 package mocker
 
 import (
+	"git.code.oa.com/goom/mocker/internal/iface"
 	"git.code.oa.com/goom/mocker/internal/patch"
-	"git.code.oa.com/goom/mocker/internal/proxy"
 )
 
 // MockGuard Mock 守卫
@@ -18,42 +18,42 @@ type MockGuard interface {
 	Cancel()
 }
 
-// IFaceMockGuard 接口 Mock 守卫
-type IFaceMockGuard struct {
-	ctx *proxy.IContext
+// iFaceMockGuard 接口 Mock 守卫
+type iFaceMockGuard struct {
+	ctx *iface.IContext
 }
 
-// NewIFaceMockGuard 创建 IFaceMockGuard
-func NewIFaceMockGuard(ctx *proxy.IContext) *IFaceMockGuard {
-	return &IFaceMockGuard{ctx: ctx}
+// newIFaceMockGuard 创建 iFaceMockGuard
+func newIFaceMockGuard(ctx *iface.IContext) *iFaceMockGuard {
+	return &iFaceMockGuard{ctx: ctx}
 }
 
 // Apply 应用 mock
-func (i *IFaceMockGuard) Apply() {
+func (i *iFaceMockGuard) Apply() {
 	// 无需操作
 }
 
 // Cancel 取消 mock
-func (i *IFaceMockGuard) Cancel() {
+func (i *iFaceMockGuard) Cancel() {
 	i.ctx.Cancel()
 }
 
-// PatchMockGuard Patch 类型的 Mock 守卫
-type PatchMockGuard struct {
+// patchMockGuard Patch 类型的 Mock 守卫
+type patchMockGuard struct {
 	patchGuard *patch.Guard
 }
 
-// NewPatchMockGuard 创建 PatchMockGuard
-func NewPatchMockGuard(patchGuard *patch.Guard) *PatchMockGuard {
-	return &PatchMockGuard{patchGuard: patchGuard}
+// newPatchMockGuard 创建 patchMockGuard
+func newPatchMockGuard(patchGuard *patch.Guard) *patchMockGuard {
+	return &patchMockGuard{patchGuard: patchGuard}
 }
 
 // Apply 应用 mock
-func (p *PatchMockGuard) Apply() {
+func (p *patchMockGuard) Apply() {
 	p.patchGuard.Apply()
 }
 
 // Cancel 取消 mock
-func (p *PatchMockGuard) Cancel() {
+func (p *patchMockGuard) Cancel() {
 	p.patchGuard.UnpatchWithLock()
 }

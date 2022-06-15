@@ -7,8 +7,8 @@ package mocker
 import (
 	"reflect"
 
-	"git.code.oa.com/goom/mocker/arg"
 	"git.code.oa.com/goom/mocker/erro"
+	"git.code.oa.com/goom/mocker/param"
 )
 
 // Matcher 参数匹配接口
@@ -25,7 +25,6 @@ type Matcher interface {
 // 当参数等于指定的值时,会 return 对应的指定值
 type When struct {
 	ExportedMocker
-
 	funcTyp        reflect.Type
 	funcDef        interface{}
 	isMethod       bool
@@ -36,13 +35,12 @@ type When struct {
 }
 
 // CreateWhen 构造条件判断
-// args 参数条件
+// param 参数条件
 // defaultReturns 默认返回值
 // isMethod 是否为方法类型
 func CreateWhen(m ExportedMocker, funcDef interface{}, args []interface{},
 	defaultReturns []interface{}, isMethod bool) (*When, error) {
 	impTyp := reflect.TypeOf(funcDef)
-
 	err := checkParams(funcDef, impTyp, args, defaultReturns, isMethod)
 	if err != nil {
 		return nil, err
@@ -52,7 +50,6 @@ func CreateWhen(m ExportedMocker, funcDef interface{}, args []interface{},
 		curMatch     Matcher
 		defaultMatch Matcher
 	)
-
 	if defaultReturns != nil {
 		curMatch = newAlwaysMatch(defaultReturns, impTyp)
 	} else if len(outTypes(impTyp)) == 0 {
@@ -60,11 +57,9 @@ func CreateWhen(m ExportedMocker, funcDef interface{}, args []interface{},
 	}
 
 	defaultMatch = curMatch
-
 	if args != nil {
 		curMatch = newDefaultMatch(args, nil, isMethod, impTyp)
 	}
-
 	return &When{
 		ExportedMocker: m,
 		defaultReturns: defaultMatch,
@@ -82,7 +77,6 @@ func checkParams(funcDef interface{}, impTyp reflect.Type,
 	if returns != nil && len(returns) < impTyp.NumOut() {
 		return erro.NewReturnsNotMatchError(funcDef, len(returns), impTyp.NumOut())
 	}
-
 	if isMethod {
 		if args != nil && len(args)+1 < impTyp.NumIn() {
 			return erro.NewArgsNotMatchError(funcDef, len(args), impTyp.NumIn()-1)
@@ -92,7 +86,6 @@ func checkParams(funcDef interface{}, impTyp reflect.Type,
 			return erro.NewArgsNotMatchError(funcDef, len(args), impTyp.NumIn())
 		}
 	}
-
 	return nil
 }
 
@@ -130,7 +123,6 @@ func (w *When) Return(results ...interface{}) *When {
 	if w.curMatch != nil {
 		w.curMatch.AddResult(results)
 		w.matches = append(w.matches, w.curMatch)
-
 		return w
 	}
 
@@ -147,22 +139,19 @@ func (w *When) AndReturn(results ...interface{}) *When {
 	if w.curMatch == nil {
 		return w.Return(results...)
 	}
-
 	w.curMatch.AddResult(results)
-
 	return w
 }
 
 // Matches 多个条件匹配
-func (w *When) Matches(matches ...arg.Pair) *When {
+func (w *When) Matches(matches ...param.Pair) *When {
 	if len(matches) == 0 {
 		return w
 	}
-
 	for _, v := range matches {
-		args, ok := v.Args.([]interface{})
+		args, ok := v.Params.([]interface{})
 		if !ok {
-			args = []interface{}{v.Args}
+			args = []interface{}{v.Params}
 		}
 
 		results, ok := v.Return.([]interface{})
@@ -174,7 +163,6 @@ func (w *When) Matches(matches ...arg.Pair) *When {
 		matcher := newDefaultMatch(args, results, w.isMethod, w.funcTyp)
 		w.matches = append(w.matches, matcher)
 	}
-
 	return w
 }
 
@@ -189,14 +177,12 @@ func (w *When) Returns(rets ...interface{}) *When {
 		if !ok {
 			ret = []interface{}{v}
 		}
-
 		if i == 0 {
 			w.Return(ret...)
 		} else {
 			w.AndReturn(ret...)
 		}
 	}
-
 	return w
 }
 
@@ -209,16 +195,14 @@ func (w *When) invoke(args1 []reflect.Value) (results []reflect.Value) {
 			}
 		}
 	}
-
 	return w.returnDefaults()
 }
 
 // Eval 执行 when 子句
 func (w *When) Eval(args ...interface{}) []interface{} {
-	argVs := arg.I2V(args, inTypes(w.isMethod, w.funcTyp))
+	argVs := param.I2V(args, inTypes(w.isMethod, w.funcTyp))
 	resultVs := w.invoke(argVs)
-
-	return arg.V2I(resultVs, outTypes(w.funcTyp))
+	return param.V2I(resultVs, outTypes(w.funcTyp))
 }
 
 // returnDefaults 返回默认值
@@ -226,6 +210,5 @@ func (w *When) returnDefaults() []reflect.Value {
 	if w.defaultReturns == nil && w.funcTyp.NumOut() != 0 {
 		panic("there is no suitable condition matched, or set default return with: mocker.Return(...)")
 	}
-
 	return w.defaultReturns.Result()
 }

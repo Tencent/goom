@@ -25,10 +25,8 @@ type ifaceMockerTestSuite struct {
 func (s *ifaceMockerTestSuite) TestUnitInterfaceApply() {
 	s.Run("success", func() {
 		mock := mocker.Create()
-
 		// 接口变量
 		i := (I)(nil)
-
 		// 将 Mock 应用到接口变量(仅对该变量有效)
 		mock.Interface(&i).Method("Call").Apply(func(ctx *mocker.IContext, i int) int {
 			return 3
@@ -39,12 +37,10 @@ func (s *ifaceMockerTestSuite) TestUnitInterfaceApply() {
 
 		s.Equal(3, i.Call(1), "interface mock check")
 		s.Equal("ok", i.Call1(""), "interface mock check")
-
 		s.NotNil(i, "interface var nil check")
 
 		// Mock 重置, 接口变量将恢复原来的值
 		mock.Reset()
-
 		s.Nil(i, "interface mock reset check")
 	})
 }
@@ -55,7 +51,6 @@ func (s *ifaceMockerTestSuite) TestUnitInterfaceReturn() {
 		mock := mocker.Create()
 
 		i := (I)(nil)
-
 		mock.Interface(&i).Method("Call").As(func(ctx *mocker.IContext, i int) int {
 			return 0
 		}).When(1).Return(3)
@@ -70,11 +65,9 @@ func (s *ifaceMockerTestSuite) TestUnitInterfaceReturn() {
 		s.Equal("ok", i.Call1(""), "interface mock check")
 		s.Equal(int32(5), i.call2(0), "interface mock check")
 		s.Equal(int32(6), i.call2(0), "interface mock check")
-
 		s.NotNil(i, "interface var nil check")
 
 		mock.Reset()
-
 		s.Nil(i, "interface mock reset check")
 	})
 }
@@ -97,8 +90,8 @@ func (s *ifaceMockerTestSuite) TestUnitInterfaceAsTwice() {
 		}).When(1).Return(4)
 		s.NotNil(i, "interface var nil check")
 		s.Equal(4, i.Call(1), "interface mock check")
-		mock.Reset()
 
+		mock.Reset()
 		s.Nil(i, "interface mock reset check")
 	})
 }
@@ -128,8 +121,8 @@ func (s *ifaceMockerTestSuite) TestUnitInterfaceApplyTwice() {
 		s.NotNil(i, "interface var nil check")
 		s.Equal(2, i.Call(0), "interface mock check")
 		s.Equal("2", i.Call1("0"), "interface mock check")
-		mock.Reset()
 
+		mock.Reset()
 		s.Nil(i, "interface mock reset check")
 	})
 }
@@ -145,11 +138,10 @@ func (s *ifaceMockerTestSuite) TestUnitArgsNotMatch() {
 					expectErr, _ = err.(error)
 				}
 			}()
-			mock := mocker.Create()
 
+			mock := mocker.Create()
 			// 接口变量
 			i := (I)(nil)
-
 			// 将 Mock 应用到接口变量(仅对该变量有效)
 			mock.Interface(&i).Method("Call").Apply(func(ctx *mocker.IContext) int {
 				return 3

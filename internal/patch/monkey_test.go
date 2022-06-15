@@ -1,7 +1,7 @@
+// Package patch_test patch 功能测试
 package patch_test
 
 import (
-	"fmt"
 	"reflect"
 	"runtime"
 	"testing"
@@ -9,22 +9,10 @@ import (
 
 	"git.code.oa.com/goom/mocker/internal/logger"
 	"git.code.oa.com/goom/mocker/internal/patch"
+	"git.code.oa.com/goom/mocker/internal/patch/test"
 
 	"github.com/stretchr/testify/assert"
 )
-
-var toggle = false
-
-//go:noinline
-func no() bool {
-	if toggle {
-		fmt.Println("false")
-	}
-	return false
-}
-
-//go:noinline
-func yes() bool { return true }
 
 //init 初始化
 func init() {
@@ -56,107 +44,95 @@ func TestTimePatch(t *testing.T) {
 // TestGC GC 测试
 func TestGC(t *testing.T) {
 	value := true
-	g, _ := patch.Patch(no, func() bool {
+	g, _ := patch.Patch(test.No, func() bool {
 		return value
 	})
 	g.Apply()
 
 	defer patch.UnpatchAll()
 	runtime.GC()
-	assert.True(t, no())
+	assert.True(t, test.No())
 }
 
-// TestSimple TestSimple
+// TestSimple 测试降低函数
 func TestSimple(t *testing.T) {
-	assert.False(t, no())
-	g, _ := patch.Patch(no, yes)
+	assert.False(t, test.No())
+	g, _ := patch.Patch(test.No, test.Yes)
 	g.Apply()
-	assert.True(t, no())
-	assert.True(t, patch.Unpatch(no))
-	assert.False(t, no())
-	assert.False(t, patch.Unpatch(no))
+	assert.True(t, test.No())
+	assert.True(t, patch.Unpatch(test.No))
+	assert.False(t, test.No())
+	assert.False(t, patch.Unpatch(test.No))
 }
 
-// TestGuard TestGuard
+// TestGuard 测试 guard.Apply()
 func TestGuard(t *testing.T) {
 	var guard *patch.Guard
-	guard, _ = patch.Patch(no, func() bool {
+	guard, _ = patch.Patch(test.No, func() bool {
 		guard.Unpatch()
 		defer guard.Restore()
-		return !no()
+		return !test.No()
 	})
 	guard.Apply()
 
 	for i := 0; i < 100; i++ {
-		assert.True(t, no())
+		assert.True(t, test.No())
 	}
-	patch.Unpatch(no)
+	patch.Unpatch(test.No)
 }
 
-//TestUnpatchAll TestUnpatchAll
+//TestUnpatchAll 测试取消 patch
 func TestUnpatchAll(t *testing.T) {
-	assert.False(t, no())
-	g, _ := patch.Patch(no, yes)
+	assert.False(t, test.No())
+	g, _ := patch.Patch(test.No, test.Yes)
 	g.Apply()
-	assert.True(t, no())
+	assert.True(t, test.No())
 	patch.UnpatchAll()
-	assert.False(t, no())
+	assert.False(t, test.No())
 }
 
-//s s
-type s struct{}
-
-//yes yes
-func (s *s) yes() bool { return true }
-
-//TestWithInstanceMethod TestWithInstanceMethod
+//TestWithInstanceMethod 测试实例方法
 func TestWithInstanceMethod(t *testing.T) {
-	i := &s{}
+	i := &test.S{}
 
-	assert.False(t, no())
+	assert.False(t, test.No())
 
-	g, _ := patch.Patch(no, i.yes)
+	g, _ := patch.Patch(test.No, i.Yes)
 	g.Apply()
 
-	assert.True(t, no())
+	assert.True(t, test.No())
 
-	patch.Unpatch(no)
-	assert.False(t, no())
+	patch.Unpatch(test.No)
+	assert.False(t, test.No())
 }
 
-//f f
-type f struct{}
-
-// No No
-func (f *f) No() bool { return false }
-
-//TestOnInstanceMethod TestOnInstanceMethod
+// TestOnInstanceMethod 测试实例方法
 func TestOnInstanceMethod(t *testing.T) {
-	i := &f{}
+	i := &test.F{}
 	assert.False(t, i.No())
-	g, _ := patch.InstanceMethod(reflect.TypeOf(i), "No", func(_ *f) bool { return true })
+	g, _ := patch.InstanceMethod(reflect.TypeOf(i), "No", func(_ *test.F) bool { return true })
 	g.Apply()
 	assert.True(t, i.No())
 	assert.True(t, patch.UnpatchInstanceMethod(reflect.TypeOf(i), "No"))
 	assert.False(t, i.No())
 }
 
-//TestNotFunction TestNotFunction
+// TestNotFunction 测试 patch 到非函数类型
 func TestNotFunction(t *testing.T) {
 	assert.Panics(t, func() {
-		g, _ := patch.Patch(no, 1)
+		g, _ := patch.Patch(test.No, 1)
 		g.Apply()
 	})
 	assert.Panics(t, func() {
-		g, _ := patch.Patch(1, yes)
+		g, _ := patch.Patch(1, test.Yes)
 		g.Apply()
 	})
 }
 
-//TestNotCompatible TestNotCompatible
+// TestNotCompatible 测试 patch 到参数不一致的函数
 func TestNotCompatible(t *testing.T) {
 	assert.Panics(t, func() {
-		g, _ := patch.Patch(no, func() {})
+		g, _ := patch.Patch(test.No(), func() {})
 		g.Apply()
 	})
 }

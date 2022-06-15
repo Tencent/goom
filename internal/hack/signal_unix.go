@@ -12,4 +12,5 @@ import (
 	"syscall"
 )
 
-var signalsToIgnore = []os.Signal{os.Interrupt, syscall.SIGQUIT}
+// SignalsToIgnore ignore the quit signal
+var SignalsToIgnore = []os.Signal{os.Interrupt, syscall.SIGQUIT}

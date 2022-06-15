@@ -13,12 +13,12 @@ go_library(
         "ret_param_not_found.go",
         "return_not_match.go",
         "traceable.go",
-        "traceable_err.go",
+        "traceable_base.go",
         "type_not_found.go",
     ],
     importpath = "git.code.oa.com/goom/mocker/erro",
     visibility = ["//visibility:public"],
     deps = [
-      "//internal/logger:go_default_library"
-    ]
+        "//internal/logger:go_default_library",
+    ],
 )

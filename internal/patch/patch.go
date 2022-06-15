@@ -1,124 +1,134 @@
-// Package patch 生成指令跳转(到代理函数)并替换.text 区内存
-// 对于 trampoline 模式的使用场景，本包实现了指令移动后的修复
+// Package patch 对不同类型的函数、方法、未导出函数、进行hook
 package patch
 
 import (
 	"errors"
 	"reflect"
-	"strings"
 	"sync"
 
+	"git.code.oa.com/goom/mocker/internal/bytecode"
 	"git.code.oa.com/goom/mocker/internal/logger"
 )
 
 var (
-	// lock patches map 和内存指令锁
-	lock = sync.Mutex{}
-	// patches patch 缓存
+	// patches 缓存
 	patches = make(map[uintptr]*patch)
+	// lock patches 缓存的读写锁定
+	patchesLock = sync.Mutex{}
 )
 
-// patch is an applied patch
-// needed to undo a patch
-type patch struct {
-	target      interface{}
-	replacement interface{}
-	trampoline  interface{}
+// lock 锁定 patches map 和内存指令读写
+func lock() {
+	patchesLock.Lock()
+}
 
-	targetValue      reflect.Value
+// unlock 解锁
+func unlock() {
+	patchesLock.Unlock()
+}
+
+// patch 一个可以 Apply 的 patch
+type patch struct {
+	origin      interface{} // 原始函数,即要mock的目标函数, 相对于代理函数来说叫原始函数
+	replacement interface{} // 代理函数
+	trampoline  interface{} // 跳板函数
+
+	originValue      reflect.Value
 	replacementValue reflect.Value
 
-	targetPtr      uintptr
+	// 指针管理
+	originPtr      uintptr
 	replacementPtr uintptr
-	originFuncPtr  uintptr
 	trampolinePtr  uintptr
+	fixOriginPtr   uintptr
 
-	originalBytes []byte
-	jumpBytes     []byte
+	originBytes []byte
+	jumpBytes   []byte
 
 	guard *Guard
 }
 
 // patchValue 对 value 进行应用代理
 func (p *patch) patch() error {
-	p.targetValue = reflect.ValueOf(p.target)
+	p.originValue = reflect.ValueOf(p.origin)
 	p.replacementValue = reflect.ValueOf(p.replacement)
-
 	return p.patchValue()
 }
 
 // patchValue 对 value 进行应用代理
 func (p *patch) patchValue() error {
-	// 参数对齐校验 modified by @jake
-	checkSignature(p.targetValue.Type(), p.replacementValue.Type())
-
+	SignatureEquals(p.originValue.Type(), p.replacementValue.Type())
 	return p.unsafePatchValue()
 }
 
 // unsafePatchValue 不做类型检查
 func (p *patch) unsafePatchValue() error {
-	if p.targetValue.Kind() != reflect.Func {
+	if p.originValue.Kind() != reflect.Func {
 		return errors.New("target has to be a ExportFunc")
 	}
-
 	if p.replacementValue.Kind() != reflect.Func {
 		return errors.New("replacementValue has to be a ExportFunc")
 	}
-
-	targetPointer := p.targetValue.Pointer()
-	p.targetPtr = targetPointer
-
+	targetPointer := p.originValue.Pointer()
+	p.originPtr = targetPointer
 	return p.unsafePatchPtr()
 }
 
 // unsafePatchPtr 不做类型检查
 func (p *patch) unsafePatchPtr() error {
-
 	replacementPointer := p.replacementValue.Pointer()
 	p.replacementPtr = replacementPointer
-
 	if p.trampoline != nil {
-		trampolinePtr, err := getTrampolinePtr(p.trampoline)
+		trampolinePtr, err := bytecode.GetTrampolinePtr(p.trampoline)
 		if err != nil {
 			return err
 		}
 		p.trampolinePtr = trampolinePtr
 	}
-
 	return p.replaceFunc()
 }
 
 // replaceFunc 替换函数
 func (p *patch) replaceFunc() error {
-	// 保证 patch 和 Apply 原子性
-	Lock()
-	defer Unlock()
+	lock()
+	defer unlock()
 
-	if _, ok := patches[p.targetPtr]; ok {
-		unpatchValue(p.targetPtr)
+	if _, ok := patches[p.originPtr]; ok {
+		unpatchValue(p.originPtr)
 	}
+	patches[p.originPtr] = p
 
-	patches[p.targetPtr] = p
-
-	bytes, originFunc, jumpData, err :=
-		replaceFunction(p.targetPtr, (uintptr)(getPtr(p.replacementValue)), p.replacementPtr, p.trampolinePtr)
+	replacementInAddr := (uintptr)(bytecode.GetPtr(p.replacementValue))
+	jumpData, err := genJumpData(p.originPtr, replacementInAddr, p.replacementPtr)
 	if err != nil {
-		if strings.Contains(err.Error(), "already patched") {
-			if pc, ok := patches[p.targetPtr]; ok {
-				Debugf("origin bytes", pc.targetPtr, pc.originalBytes, logger.WarningLevel)
+		if errors.Unwrap(err) == errAlreadyPatch {
+			if pc, ok := patches[p.originPtr]; ok {
+				bytecode.PrintInstf("origin bytes", pc.originPtr, pc.originBytes, logger.WarningLevel)
 			}
 		}
-
 		return err
 	}
-
-	p.originalBytes = bytes
-	p.originFuncPtr = originFunc
 	p.jumpBytes = jumpData
+
+	originBytes, err := checkAndReadOriginBytes(p.originPtr, len(jumpData))
+	if err != nil {
+		return err
+	}
+	p.originBytes = originBytes
+
+	// 是否修复指令
+	if p.trampolinePtr > 0 {
+		fixOriginPtr, err := fixOrigin(p.originPtr, p.trampolinePtr, len(jumpData))
+		if err != nil {
+			return err
+		}
+		p.fixOriginPtr = fixOriginPtr
+	}
+
 	return nil
 }
 
-// unpatch do unpatch by uintptr
+// unpatch do unpatch by uint ptr
 func (p *patch) unpatch() {
 	p.Guard().Unpatch()
 }
@@ -128,20 +138,12 @@ func (p *patch) Guard() *Guard {
 	if p.guard != nil {
 		return p.guard
 	}
-	p.guard = &Guard{p.targetPtr,
-		p.originFuncPtr,
-		p.jumpBytes,
-		p.originalBytes,
-		false}
+	p.guard = &Guard{
+		origin:       p.originPtr,
+		originBytes:  p.originBytes,
+		jumpBytes:    p.jumpBytes,
+		fixOriginPtr: p.fixOriginPtr,
+		applied:      false,
+	}
 	return p.guard
-}
-
-// Lock 锁定 patches map 和内存指令读写
-func Lock() {
-	lock.Lock()
-}
-
-// Unlock 解锁
-func Unlock() {
-	lock.Unlock()
 }

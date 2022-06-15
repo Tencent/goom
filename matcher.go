@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"sync/atomic"
 
-	"git.code.oa.com/goom/mocker/arg"
+	"git.code.oa.com/goom/mocker/param"
 )
 
 // BaseMatcher 参数匹配基类
@@ -13,8 +13,7 @@ type BaseMatcher struct {
 	results [][]reflect.Value
 	curNum  int32
 	funTyp  reflect.Type
-
-	// 持有参数指针, 防止被回收
+	// resultsPtr 持有参数指针, 防止被回收
 	resultsPtr []interface{}
 }
 
@@ -23,9 +22,8 @@ func newBaseMatcher(results []interface{}, funTyp reflect.Type) *BaseMatcher {
 	resultVs := make([][]reflect.Value, 0)
 	if results != nil {
 		// TODO results check
-		resultVs = append(resultVs, arg.I2V(results, outTypes(funTyp)))
+		resultVs = append(resultVs, param.I2V(results, outTypes(funTyp)))
 	}
-
 	return &BaseMatcher{
 		results:    resultVs,
 		curNum:     0,
@@ -46,14 +44,13 @@ func (c *BaseMatcher) Result() []reflect.Value {
 	}
 
 	atomic.AddInt32(&c.curNum, 1)
-
 	return c.results[curNum]
 }
 
 // AddResult 添加结果
 func (c *BaseMatcher) AddResult(results []interface{}) {
 	// TODO results check
-	c.results = append(c.results, arg.I2V(results, outTypes(c.funTyp)))
+	c.results = append(c.results, param.I2V(results, outTypes(c.funTyp)))
 }
 
 // EmptyMatch 没有返回参数的匹配器
@@ -78,14 +75,13 @@ func (c *EmptyMatch) Result() []reflect.Value {
 //		Any()) // 第二个参数是 Any
 type DefaultMatcher struct {
 	*BaseMatcher
-
 	isMethod bool
-	exprs    []arg.Expr
+	exprs    []param.Expr
 }
 
 // newDefaultMatch 创建新参数匹配
 func newDefaultMatch(args []interface{}, results []interface{}, isMethod bool, funTyp reflect.Type) *DefaultMatcher {
-	e, err := arg.ToExpr(args, inTypes(isMethod, funTyp))
+	e, err := param.ToExpr(args, inTypes(isMethod, funTyp))
 	if err != nil {
 		panic(fmt.Sprintf("create matcher fail: %v", err))
 	}
@@ -109,13 +105,12 @@ func (c *DefaultMatcher) Match(args []reflect.Value) bool {
 		v, err := expr.Eval([]reflect.Value{args[i]})
 		if err != nil {
 			// TODO add mocker and method name to message
-			panic(fmt.Sprintf("args[%d] match fail: %v", i, err))
+			panic(fmt.Sprintf("param[%d] match fail: %v", i, err))
 		}
 		if !v {
 			return false
 		}
 	}
-
 	return true
 }
 
@@ -124,18 +119,17 @@ func (c *DefaultMatcher) Match(args []reflect.Value) bool {
 // .In([]interface{}{3, Any()}, []interface{}{4, Any()})
 type ContainsMatcher struct {
 	*BaseMatcher
-
-	expr     *arg.InExpr
+	expr     *param.InExpr
 	isMethod bool
 }
 
 // newContainsMatch 创建新的包含类型的参数匹配
 func newContainsMatch(args []interface{}, results []interface{}, isMethod bool, funTyp reflect.Type) *ContainsMatcher {
-	in := arg.In(args...)
+	in := param.In(args...)
 	err := in.Resolve(inTypes(isMethod, funTyp))
 	if err != nil {
 		// TODO add mocker and method name to message
-		panic(fmt.Sprintf("create args match fail: %v", err))
+		panic(fmt.Sprintf("create param match fail: %v", err))
 	}
 	return &ContainsMatcher{
 		expr:        in,
@@ -152,7 +146,7 @@ func (c *ContainsMatcher) Match(args []reflect.Value) bool {
 	v, err := c.expr.Eval(args)
 	if err != nil {
 		// TODO add mocker and method name to message
-		panic(fmt.Sprintf("args match fail: %v", err))
+		panic(fmt.Sprintf("param match fail: %v", err))
 	}
 	return v
 }
@@ -167,7 +161,6 @@ func newAlwaysMatch(results []interface{}, funTyp reflect.Type) *AlwaysMatcher {
 	if results == nil {
 		return nil
 	}
-
 	return &AlwaysMatcher{
 		BaseMatcher: newBaseMatcher(results, funTyp),
 	}

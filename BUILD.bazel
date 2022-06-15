@@ -10,6 +10,7 @@ gazelle(
 
 go_library(
     name = "go_default_library",
+    gc_goopts = ["-l"],
     srcs = [
         "builder.go",
         "cache.go",
@@ -25,13 +26,14 @@ go_library(
     importpath = "git.code.oa.com/goom/mocker",
     visibility = ["//visibility:public"],
     deps = [
-        "//arg:go_default_library",
         "//erro:go_default_library",
+        "//internal/hack:go_default_library",
+        "//internal/iface:go_default_library",
         "//internal/logger:go_default_library",
         "//internal/patch:go_default_library",
         "//internal/proxy:go_default_library",
         "//internal/unexports:go_default_library",
-        "//internal/hack:go_default_library",
+        "//param:go_default_library",
     ],
 )
 
@@ -40,13 +42,14 @@ go_test(
     srcs = [
         "builder_test.go",
         "iface_test.go",
+        "mocker_test.go",
         "when_test.go",
     ],
     embed = [":go_default_library"],
     deps = [
-        "//arg:go_default_library",
         "//erro:go_default_library",
-        "//testdata:go_default_library",
+        "//param:go_default_library",
+        "//test:go_default_library",
         "@com_github_stretchr_testify//suite:go_default_library",
     ],
 )

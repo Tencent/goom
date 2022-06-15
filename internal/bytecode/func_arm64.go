@@ -1,0 +1,106 @@
+package bytecode
+
+import (
+	"bytes"
+	"encoding/hex"
+
+	"git.code.oa.com/goom/mocker/internal/arch/arm64asm"
+	"git.code.oa.com/goom/mocker/internal/bytecode/memory"
+	"git.code.oa.com/goom/mocker/internal/logger"
+)
+
+// defaultLength 默认指令长度
+const defaultLength = 4
+
+// funcPrologue 函数的开头指纹,用于不同OS获取不同的默认值
+var funcPrologue = armFuncPrologue64
+
+// GetFuncSize get func binary size
+// not absolutely safe
+func GetFuncSize(_ int, start uintptr, minimal bool) (length int, err error) {
+	funcSizeReadLock.Lock()
+	defer funcSizeReadLock.Unlock()
+
+	defer func() {
+		funcSizeCache[start] = length
+	}()
+
+	if l, ok := funcSizeCache[start]; ok {
+		return l, nil
+	}
+
+	prologueLen := len(funcPrologue)
+	code := memory.RawRead(start, 16) // instruction takes at most 16 bytes
+
+	int0Found := false
+	curLen := 0
+	for {
+		inst, err := arm64asm.Decode(code)
+		if err != nil {
+			return curLen, nil
+		}
+
+		if inst.Op == 0 && code[0] == 0x00 {
+			// 0x00 -> int0, trap to debugger, padding to function end
+			if minimal {
+				return curLen, nil
+			}
+			int0Found = true
+		} else if int0Found {
+			return curLen, nil
+		}
+
+		curLen += defaultLength
+		code = memory.RawRead(start+uintptr(curLen), 16) // instruction takes at most 16 bytes
+
+		if bytes.Equal(funcPrologue, code[:prologueLen]) {
+			return curLen, nil
+		}
+	}
+}
+
+// PrintInstf 调试内存指令替换,对原指令、替换之后的指令进行输出对比
+func PrintInstf(title string, from uintptr, copyOrigin []byte, level int) {
+	if logger.LogLevel < level {
+		return
+	}
+	logger.Important(title)
+
+	startAddr := (uint64)(from)
+	for pos := 0; pos < len(copyOrigin); {
+		// read 16 bytes at most each time
+		endPos := pos + 16
+		if endPos > len(copyOrigin) {
+			endPos = len(copyOrigin)
+		}
+
+		code := copyOrigin[pos:endPos]
+		ins, err := arm64asm.Decode(code)
+		if err != nil {
+			logger.Importantf("[0] 0x%x: inst decode error:%s", startAddr+(uint64)(pos), err)
+			pos = pos + 4
+			continue
+		}
+
+		if ins.Op == 0 {
+			if code[0] == 0x00 {
+				pos = pos + 1
+			} else {
+				pos = pos + 4
+			}
+			continue
+		}
+
+		logger.Importantf("[%d] 0x%x:\t%s\t\t%-30s\t\t%s", 4,
+			startAddr+(uint64)(pos), ins.Op, ins.String(), hex.EncodeToString(code[:4]))
+
+		pos = pos + 4
+	}
+}
+
+// GetInnerFunc Get the first real func location from wrapper
+// not absolutely safe
+func GetInnerFunc(mode int, start uintptr) (uintptr, error) {
+	// nothing to do on arm
+	return 0, nil
+}

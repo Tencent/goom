@@ -1,0 +1,17 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "holder.go",
+        "makefuncstub.go",
+        "stubholder_amd64.s",
+        "stubholder_arm64.s",
+    ],
+    importpath = "git.code.oa.com/goom/mocker/internal/bytecode/stub",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "//internal/bytecode:go_default_library",
+        "//internal/logger:go_default_library",
+    ],
+)

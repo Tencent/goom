@@ -18,7 +18,6 @@ func (i *IllegalParam) Error() (s string) {
 	if len(i.funcName) > 0 {
 		return "Illegal param error when call" + i.funcName + ", param=" + i.paramName + ", value=" + i.paramValue
 	}
-
 	return "Illegal param error, param=" + i.paramName + ", value=" + i.paramValue
 }
 

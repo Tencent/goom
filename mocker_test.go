@@ -4,10 +4,8 @@ package mocker_test
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"testing"
-	"time"
 
 	"git.code.oa.com/goom/mocker"
 	"git.code.oa.com/goom/mocker/test"
@@ -201,30 +199,6 @@ func (s *mockerTestSuite) TestUnitUnExportStruct() {
 	})
 }
 
-// TestCallOrigin 测试调用原函数 mock return
-func (s *mockerTestSuite) TestCallOrigin() {
-	s.Run("success", func() {
-		// 定义原函数,用于占位,实际不会执行该函数体
-		var origin = func(i int) int {
-			// 用于占位,实际不会执行该函数体, 但是必须编写
-			fmt.Println("only for placeholder, will not call")
-			// return 任意值
-			return 0
-		}
-
-		mock := mocker.Create()
-		mock.Func(test.Foo).Origin(&origin).Apply(func(i int) int {
-			originResult := origin(i)
-			fmt.Printf("arguments are %v\n", i)
-			return originResult + 100
-		})
-		s.Equal(101, test.Foo(1), "foo mock check")
-
-		mock.Reset()
-		s.Equal(1, test.Foo(1), "foo mock reset check")
-	})
-}
-
 // TestMultiReturn 测试调用原函数多返回
 func (s *mockerTestSuite) TestMultiReturn() {
 	s.Run("success", func() {
@@ -307,13 +281,6 @@ func (s *mockerTestSuite) TestFakeReturn() {
 			Field1: "ok",
 			Field2: 2,
 		}, test.Foo1(), "foo mock check")
-	})
-}
-
-func (s *mockerTestSuite) TestUnitEmptyMatch() {
-	s.Run("empty return", func() {
-		mocker.Create().Func(time.Sleep).Return()
-		time.Sleep(time.Second)
 	})
 }
 

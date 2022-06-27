@@ -102,6 +102,7 @@ func Foo1() *S {
 }
 
 // GetS 测试返回多参返回值
+//go:noinline
 func GetS() ([]byte, error) {
 	return []byte("hello"), nil
 }

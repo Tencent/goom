@@ -3009,7 +3009,17 @@ func dummySpace() {
 func WriteTo(addr uintptr, data []byte) error {
 	memoryAccessLock.Lock()
 	defer memoryAccessLock.Unlock()
+	return writeTo(addr, data, true)
+}
 
+// WriteToNoFlush 写入 .text 区, 不刷新 icache
+func WriteToNoFlush(addr uintptr, data []byte) error {
+	memoryAccessLock.Lock()
+	defer memoryAccessLock.Unlock()
+	return writeTo(addr, data, false)
+}
+
+func writeTo(addr uintptr, data []byte, clearICache bool) error {
 	pageSize := uintptr(syscall.Getpagesize())
 	dataSize := uintptr(len(data))
 	m := rawAccess(addr, int(dataSize))
@@ -3025,6 +3035,9 @@ func WriteTo(addr uintptr, data []byte) error {
 		if errno != 0 {
 			panic(fmt.Errorf("access mem error: %w", errno))
 		}
+	}
+	if clearICache {
+		ClearICache(addr)
 	}
 	return nil
 }

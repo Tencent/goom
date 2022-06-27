@@ -14,6 +14,9 @@ import (
 // placeHolderIns 占位实例
 var placeHolderIns *PlaceHolder
 
+// errSpaceOverflow 空间使用溢出错误
+var errSpaceOverflow = errors.New("placeholder space usage overflow")
+
 // PlaceHolder 占位对象
 type PlaceHolder struct {
 	// count hook 次数统计
@@ -52,30 +55,26 @@ func init() {
 	logger.Debugf("Placeholder pointer: %d %d\n", placeHolderIns.min, offset)
 }
 
-// TryAcquire check has enough holder space
+// Acquire check has enough holder space
 //nolint
-func TryAcquire(space int) (uintptr, []byte, error) {
+func Acquire(space int) (uintptr, []byte, error) {
 	placeholder := atomic.LoadUintptr(&placeHolderIns.off)
 	if placeholder+uintptr(space) > placeHolderIns.max {
 		logger.Error("placeholder space usage overflow")
-		return 0, nil, errors.New("placeholder space usage overflow")
+		return 0, nil, errSpaceOverflow
 	}
+
+	// add up to off
+	newOffset := atomic.AddUintptr(&placeHolderIns.off, uintptr(space))
+	if newOffset > placeHolderIns.max {
+		logger.Error("placeholder space usage overflow", placeHolderIns.count, "hook functions")
+		return 0, nil, errSpaceOverflow
+	}
+
 	bytes := (*[]byte)(unsafe.Pointer(&reflect.SliceHeader{
 		Data: placeholder,
 		Len:  space,
 		Cap:  space,
 	}))
 	return placeholder, *bytes, nil
-}
-
-// CommitAcquire add mapping offset to sub func
-func CommitAcquire(space uintptr) error {
-	// add up to off
-	newOffset := atomic.AddUintptr(&placeHolderIns.off, space+16)
-	if newOffset+space > placeHolderIns.max {
-		logger.Error("placeholder space usage overflow", placeHolderIns.count, "hook functions")
-		return errors.New("placeholder space usage overflow")
-	}
-	logger.Debug("add offset map, size:", space)
-	return nil
 }

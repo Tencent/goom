@@ -4,6 +4,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "holder.go",
+        "holder_arm64.go",
         "makefuncstub.go",
         "stubholder_amd64.s",
         "stubholder_arm64.s",

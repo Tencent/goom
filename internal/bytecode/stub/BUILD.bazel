@@ -4,7 +4,10 @@ go_library(
     name = "go_default_library",
     srcs = [
         "holder.go",
-        "holder_arm64.go",
+        "space.go",
+        "space_arm64.go",
+        "mmap_unix.go",
+        "mmap_windows.go",
         "makefuncstub.go",
         "stubholder_amd64.s",
         "stubholder_arm64.s",
@@ -14,5 +17,6 @@ go_library(
     deps = [
         "//internal/bytecode:go_default_library",
         "//internal/logger:go_default_library",
+        "//internal/bytecode/memory:go_default_library",
     ],
 )

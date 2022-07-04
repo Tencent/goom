@@ -1,6 +1,7 @@
 package memory
 
 import (
+	"fmt"
 	"syscall"
 	"unsafe"
 )

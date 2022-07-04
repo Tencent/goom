@@ -3,13 +3,16 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
-        "ahead_space_arm64.s",
+        "mwrite_left_amd64.s",
+        "mwrite_left_arm64.s",
         "memory.go",
         "mwrite_amd64.go",
         "mwrite_arm64.go",
+        "mwrite_prot.go",
         "mwrite_unix.go",
         "mwrite_windows.go",
-        "space_arm64.s",
+        "mwrite_right_amd64.s",
+        "mwrite_right_arm64.s",
         "icache_arm64.go",
     ],
     importpath = "git.code.oa.com/goom/mocker/internal/bytecode/memory",

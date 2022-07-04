@@ -1,7 +1,7 @@
 #include "textflag.h"
 
-//func AheadSpace()
-TEXT ·AheadSpace(SB), $0-0
+//func PaddingLeft()
+TEXT ·PaddingLeft(SB), $0-0
 MOVD    R0, R0
 MOVD    R0, R0
 MOVD    R0, R0

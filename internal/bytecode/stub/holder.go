@@ -55,17 +55,17 @@ func init() {
 	logger.Debugf("Placeholder pointer: %d %d\n", placeHolderIns.min, offset)
 }
 
-// Acquire check has enough holder space
+// acquireFromHolder enough executable space from holder
 //nolint
-func Acquire(space int) (uintptr, []byte, error) {
+func acquireFromHolder(len int) (uintptr, *[]byte, error) {
 	placeholder := atomic.LoadUintptr(&placeHolderIns.off)
-	if placeholder+uintptr(space) > placeHolderIns.max {
+	if placeholder+uintptr(len) > placeHolderIns.max {
 		logger.Error("placeholder space usage overflow")
 		return 0, nil, errSpaceOverflow
 	}
 
 	// add up to off
-	newOffset := atomic.AddUintptr(&placeHolderIns.off, uintptr(space))
+	newOffset := atomic.AddUintptr(&placeHolderIns.off, uintptr(len))
 	if newOffset > placeHolderIns.max {
 		logger.Error("placeholder space usage overflow", placeHolderIns.count, "hook functions")
 		return 0, nil, errSpaceOverflow
@@ -73,8 +73,8 @@ func Acquire(space int) (uintptr, []byte, error) {
 
 	bytes := (*[]byte)(unsafe.Pointer(&reflect.SliceHeader{
 		Data: placeholder,
-		Len:  space,
-		Cap:  space,
+		Len:  len,
+		Cap:  len,
 	}))
-	return placeholder, *bytes, nil
+	return placeholder, bytes, nil
 }

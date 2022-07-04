@@ -5,7 +5,6 @@ import (
 	"unsafe"
 
 	"git.code.oa.com/goom/mocker/internal/bytecode"
-	"git.code.oa.com/goom/mocker/internal/bytecode/memory"
 	"git.code.oa.com/goom/mocker/internal/bytecode/stub"
 	"git.code.oa.com/goom/mocker/internal/logger"
 )
@@ -16,34 +15,34 @@ const interfaceJumpDataLen = 48
 // MakeMethodCaller 构造 interface 的方法调用并放到 stub 区
 // to 桩函数跳转到的地址
 func MakeMethodCaller(to unsafe.Pointer) (uintptr, error) {
-	placeholder, _, err := stub.Acquire(interfaceJumpDataLen)
+	space, err := stub.Acquire(interfaceJumpDataLen)
 	if err != nil {
 		return 0, err
 	}
 
 	code := jmpWithRdx(uintptr(to))
-	if err := memory.WriteTo(placeholder, code); err != nil {
+	if err := stub.Write(space, code); err != nil {
 		return 0, err
 	}
-	bytecode.PrintInst("gen stub", placeholder, bytecode.PrintMiddle, logger.DebugLevel)
-	return placeholder, nil
+	bytecode.PrintInst("gen stub", space.Addr, bytecode.PrintMiddle, logger.DebugLevel)
+	return space.Addr, nil
 }
 
 // MakeMethodCallerWithCtx 构造 interface 的方法调用并放到 stub 区
 // ctx make Func 对象的上下文地址,即 @see reflect.makeFuncImpl
 // to 桩函数最终跳转到另一个地址
 func MakeMethodCallerWithCtx(ctx unsafe.Pointer, to uintptr) (uintptr, error) {
-	placeholder, _, err := stub.Acquire(interfaceJumpDataLen)
+	space, err := stub.Acquire(interfaceJumpDataLen)
 	if err != nil {
 		return 0, err
 	}
 
-	code := jmpWithRdxAndCtx(uintptr(ctx), to, placeholder)
-	if err := memory.WriteTo(placeholder, code); err != nil {
+	code := jmpWithRdx(uintptr(ctx))
+	if err := stub.Write(space, code); err != nil {
 		return 0, err
 	}
 
-	bytecode.PrintInst("gen stub", placeholder, bytecode.PrintLong, logger.DebugLevel)
+	bytecode.PrintInst("gen stub", space.Addr, bytecode.PrintLong, logger.DebugLevel)
 	bytecode.PrintInst("jump to", to, bytecode.PrintLong, logger.DebugLevel)
-	return placeholder, nil
+	return space.Addr, nil
 }

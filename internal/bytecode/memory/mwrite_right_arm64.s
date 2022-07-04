@@ -1,7 +1,7 @@
 #include "textflag.h"
 
-//func Space()
-TEXT ·Space(SB), $0-0
+//func PaddingRight()
+TEXT ·PaddingRight(SB), $0-0
 MOVD    R0, R0
 MOVD    R0, R0
 MOVD    R0, R0

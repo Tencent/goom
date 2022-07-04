@@ -4,8 +4,14 @@
 package memory
 
 import (
+	"fmt"
 	"syscall"
+
+	"git.code.oa.com/goom/mocker/internal/logger"
 )
+
+// accessMemGuide access mem error solution guide
+const accessMemGuide = "https://iwiki.woa.com/pages/viewpage.action?pageId=1405108952"
 
 // WriteTo this function is super unsafe
 // aww yeah
@@ -15,8 +21,21 @@ func WriteTo(addr uintptr, data []byte) error {
 	defer memoryAccessLock.Unlock()
 
 	f := RawAccess(addr, len(data))
-	mProtectCrossPage(addr, len(data), syscall.PROT_READ|syscall.PROT_WRITE|syscall.PROT_EXEC)
+	if err := mProtectCrossPage(addr, len(data), syscall.PROT_READ|syscall.PROT_WRITE|syscall.PROT_EXEC); err != nil {
+		// mac 环境下使用 hack 方式绕过权限检查
+		if e := writeTo(addr, data); e == nil {
+			return nil
+		}
+		errorDetail(err)
+	}
 	copy(f, data[:])
-	mProtectCrossPage(addr, len(data), syscall.PROT_READ|syscall.PROT_EXEC)
+	if err := mProtectCrossPage(addr, len(data), syscall.PROT_READ|syscall.PROT_EXEC); err != nil {
+		errorDetail(err)
+	}
 	return nil
+}
+
+func errorDetail(err error) {
+	logger.Consolef(logger.ErrorLevel, "access mem error:permission denied, see details at %s", accessMemGuide)
+	panic(fmt.Errorf("access mem error: %w", err))
 }

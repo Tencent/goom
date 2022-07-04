@@ -10,6 +10,9 @@ import (
 	"git.code.oa.com/goom/mocker/internal/logger"
 )
 
+// defaultInsLen 默认一次解析指令的长度
+const defaultInsLen = 16
+
 // funcPrologue 函数的开头指纹,用于不同 OS 获取不同的默认值
 var funcPrologue = defaultFuncPrologue64
 
@@ -27,7 +30,7 @@ func GetFuncSize(mode int, start uintptr, minimal bool) (length int, err error) 
 	}
 
 	prologueLen := len(funcPrologue)
-	code := memory.RawRead(start, 16) // instruction takes at most 16 bytes
+	code := memory.RawRead(start, defaultInsLen)
 
 	var (
 		int3Found = false
@@ -50,7 +53,7 @@ func GetFuncSize(mode int, start uintptr, minimal bool) (length int, err error) 
 		}
 
 		curLen = curLen + inst.Len
-		code = memory.RawRead(start+uintptr(curLen), 16) // instruction takes at most 16 bytes
+		code = memory.RawRead(start+uintptr(curLen), defaultInsLen)
 		if bytes.Equal(funcPrologue, code[:prologueLen]) {
 			return curLen, nil
 		}
@@ -66,13 +69,12 @@ func PrintInstf(title string, from uintptr, copyOrigin []byte, level int) {
 
 	startAddr := (uint64)(from)
 	for pos := 0; pos < len(copyOrigin); {
-		// read 16 bytes at most each time
-		endPos := pos + 16
-		if endPos > len(copyOrigin) {
-			endPos = len(copyOrigin)
+		to := pos + defaultInsLen
+		if to > len(copyOrigin) {
+			to = len(copyOrigin)
 		}
 
-		code := copyOrigin[pos:endPos]
+		code := copyOrigin[pos:to]
 		ins, err := x86asm.Decode(code, 64)
 
 		if err != nil {
@@ -101,22 +103,9 @@ func PrintInstf(title string, from uintptr, copyOrigin []byte, level int) {
 			continue
 		}
 
-		isAdd := true
-		for i := 0; i < len(ins.Args); i++ {
-			arg := ins.Args[i]
-			if arg == nil {
-				break
-			}
-
-			addrArgs := arg.String()
-			if strings.HasPrefix(addrArgs, ".-") || strings.Contains(addrArgs, "RIP-") {
-				isAdd = false
-			}
-		}
-
 		offset := pos + ins.PCRelOff
 		relativeAddr := DecodeAddress(copyOrigin[offset:offset+ins.PCRel], ins.PCRel)
-		if !isAdd && relativeAddr > 0 {
+		if !isRelativeAdd(ins) && relativeAddr > 0 {
 			relativeAddr = -relativeAddr
 		}
 
@@ -128,11 +117,26 @@ func PrintInstf(title string, from uintptr, copyOrigin []byte, level int) {
 	}
 }
 
+func isRelativeAdd(ins x86asm.Inst) bool {
+	isAdd := true
+	for i := 0; i < len(ins.Args); i++ {
+		arg := ins.Args[i]
+		if arg == nil {
+			break
+		}
+		addrArgs := arg.String()
+		if strings.HasPrefix(addrArgs, ".-") || strings.Contains(addrArgs, "RIP-") {
+			isAdd = false
+		}
+	}
+	return isAdd
+}
+
 // GetInnerFunc Get the first real func location from wrapper
 // not absolutely safe
 func GetInnerFunc(mode int, start uintptr) (uintptr, error) {
 	prologueLen := len(funcPrologue)
-	code := memory.RawRead(start, 16) // instruction takes at most 16 bytes
+	code := memory.RawRead(start, defaultInsLen)
 
 	var (
 		int3Found = false
@@ -156,7 +160,7 @@ func GetInnerFunc(mode int, start uintptr) (uintptr, error) {
 		}
 
 		curLen = curLen + inst.Len
-		code = memory.RawRead(start+uintptr(curLen), 16) // instruction takes at most 16 bytes
+		code = memory.RawRead(start+uintptr(curLen), defaultInsLen)
 		if bytes.Equal(funcPrologue, code[:prologueLen]) {
 			return 0, nil
 		}

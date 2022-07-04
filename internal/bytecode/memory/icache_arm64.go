@@ -99,8 +99,11 @@ func makeFunc() (func(uintptr), error) {
 	code = append(code, clearICacheIns1...)
 	code = append(code, clearICacheIns2...)
 
-	addr := iCacheHolder()
-	if err := writeTo(addr, code, false); err != nil {
+	var (
+		addr uintptr
+		err  error
+	)
+	if addr, err = WriteICacheFn(code); err != nil {
 		return nil, err
 	}
 	var f func(uintptr)
@@ -108,9 +111,9 @@ func makeFunc() (func(uintptr), error) {
 	return (fn).(func(uintptr)), nil
 }
 
-// iCacheHolder icache 函数的位置
-//go:linkname ICacheHolder git.code.oa.com/goom/mocker/internal/bytecode/stub.ICacheHolder
-func iCacheHolder() uintptr
+// WriteICacheFn 写入 icache clear 函数数据
+//go:linkname WriteICacheFn git.code.oa.com/goom/mocker/internal/bytecode/stub.WriteICacheFn
+func WriteICacheFn([]byte) (uintptr, error)
 
 // movAddr 生成 mov x[?] [addr] 四个指令
 func movAddr(r uint32, addr uintptr) (value []byte) {

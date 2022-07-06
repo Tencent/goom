@@ -16,6 +16,9 @@ const defaultInsLen = 16
 // funcPrologue 函数的开头指纹,用于不同 OS 获取不同的默认值
 var funcPrologue = defaultFuncPrologue64
 
+// CallInsName call 指令名称
+const CallInsName = "CALL"
+
 // GetFuncSize get func binary size
 // not absolutely safe
 func GetFuncSize(mode int, start uintptr, minimal bool) (length int, err error) {

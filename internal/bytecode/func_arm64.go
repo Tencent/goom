@@ -3,7 +3,6 @@ package bytecode
 import (
 	"bytes"
 	"encoding/hex"
-
 	"git.code.oa.com/goom/mocker/internal/arch/arm64asm"
 	"git.code.oa.com/goom/mocker/internal/bytecode/memory"
 	"git.code.oa.com/goom/mocker/internal/logger"
@@ -14,6 +13,9 @@ const defaultLength = 4
 
 // funcPrologue 函数的开头指纹,用于不同OS获取不同的默认值
 var funcPrologue = armFuncPrologue64
+
+// CallInsName call 指令名称
+const CallInsName = "B"
 
 // GetFuncSize get func binary size
 // not absolutely safe
@@ -101,6 +103,39 @@ func PrintInstf(title string, from uintptr, copyOrigin []byte, level int) {
 // GetInnerFunc Get the first real func location from wrapper
 // not absolutely safe
 func GetInnerFunc(mode int, start uintptr) (uintptr, error) {
-	// nothing to do on arm
-	return 0, nil
+	prologueLen := len(funcPrologue)
+	code := memory.RawRead(start, 16) // instruction takes at most 16 bytes
+
+	int0Found := false
+	curLen := 0
+	for {
+		inst, err := arm64asm.Decode(code)
+		if err != nil {
+			return 0, err
+		}
+
+		if inst.Op == 0 && code[0] == 0x00 {
+			int0Found = true
+		} else if int0Found {
+			return 0, nil
+		}
+
+		if inst.Op.String() == CallInsName {
+			rAddr, ok := (inst.Args[0]).(arm64asm.PCRel)
+			if !ok {
+				return 0, nil
+			}
+			if rAddr >= 0 {
+				return start + uintptr(curLen) + uintptr(rAddr), nil
+			}
+			return start + uintptr(curLen) - uintptr(-rAddr), nil
+		}
+
+		curLen += defaultLength
+		code = memory.RawRead(start+uintptr(curLen), 16) // instruction takes at most 16 bytes
+
+		if bytes.Equal(funcPrologue, code[:prologueLen]) {
+			return 0, nil
+		}
+	}
 }

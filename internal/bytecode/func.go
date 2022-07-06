@@ -11,9 +11,6 @@ import (
 	"git.code.oa.com/goom/mocker/internal/unexports"
 )
 
-// CallInsName call 指令名称
-const CallInsName = "CALL"
-
 // 调试日志相关
 const (
 	// PrintShort 默认打印的指令数量(短)

@@ -14,6 +14,8 @@ go_library(
         "mwrite_right_amd64.s",
         "mwrite_right_arm64.s",
         "icache_arm64.go",
+        "icache_arm64_17.go",
+        "icache_arm64_18.go",
     ],
     importpath = "git.code.oa.com/goom/mocker/internal/bytecode/memory",
     visibility = ["//:__subpackages__"],

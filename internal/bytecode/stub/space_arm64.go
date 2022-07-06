@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
+	"git.code.oa.com/goom/mocker/internal/bytecode"
 	"git.code.oa.com/goom/mocker/internal/bytecode/memory"
 	"git.code.oa.com/goom/mocker/internal/logger"
 )
@@ -20,6 +21,11 @@ func ClearICache()
 
 func init() {
 	iCacheHolderAddr = reflect.ValueOf(ClearICache).Pointer()
+	// 兼容 go 1.17(1.17以上会对 assembler 函数进行 wrap, 需要找到其内部的调用)
+	innerAddr, err := bytecode.GetInnerFunc(64, iCacheHolderAddr)
+	if innerAddr > 0 && err == nil {
+		iCacheHolderAddr = innerAddr
+	}
 	offset := reflect.ValueOf(ICachePaddingLeft).Pointer()
 	logger.Debugf("icache func init success: %x", offset)
 }

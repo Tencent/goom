@@ -46,6 +46,7 @@ go_library(
         ],
         "@io_bazel_rules_go//go/platform:darwin_arm64": [
             "//internal/logger:go_default_library",
+            "//internal/unexports:go_default_library",
         ],
         "@io_bazel_rules_go//go/platform:dragonfly_amd64": [
             "//internal/logger:go_default_library",

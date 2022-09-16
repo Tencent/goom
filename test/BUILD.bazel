@@ -1,4 +1,19 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+cc_library(
+    name = "libv8",
+    srcs = select({
+        "@io_bazel_rules_go//go/platform:darwin": glob(["libv8-darwin/libv8/*.a"]),
+        "@io_bazel_rules_go//go/platform:linux": glob(["libv8-linux/libv8/*.a"]),
+        "//conditions:default": [],
+    }),
+    hdrs = select({
+       "@io_bazel_rules_go//go/platform:darwin": glob(["libv8-darwin/include/*.h", "libv8-darwin/include/libplatform/*.h"]),
+       "@io_bazel_rules_go//go/platform:linux": glob(["libv8-linux/include/*.h", "libv8-linux/include/libplatform/*.h"]),
+       "//conditions:default": [],
+   }),
+)
 
 go_library(
     name = "go_default_library",
@@ -7,7 +22,14 @@ go_library(
         "fake.go",
         "version.go",
         "data.go",
-    ],
+        "cgo.go",
+    ] + select({
+       "@io_bazel_rules_go//go/platform:darwin": glob(["libv8-darwin/include/*.h", "libv8-darwin/include/libplatform/*.h"]),
+       "@io_bazel_rules_go//go/platform:linux": glob(["libv8-linux/include/*.h", "libv8-linux/include/libplatform/*.h"]),
+       "//conditions:default": [],
+    }),
+    cdeps = [":libv8"],
+    cgo = True,
     importpath = "git.code.oa.com/goom/mocker/test",
     visibility = ["//visibility:public"],
     deps = ["//internal/hack:go_default_library"],

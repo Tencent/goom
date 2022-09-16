@@ -11,6 +11,7 @@ var GlobalVar = 1
 func Foo(i int) int {
 	// check 对 defer 的支持
 	defer func() { fmt.Printf("defer\n") }()
+	cgoFuncAny()
 	return i * 1
 }
 

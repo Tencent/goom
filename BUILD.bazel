@@ -33,7 +33,7 @@ go_library(
         "//internal/patch:go_default_library",
         "//internal/proxy:go_default_library",
         "//internal/unexports:go_default_library",
-        "//param:go_default_library",
+        "//args:go_default_library",
     ],
 )
 
@@ -48,7 +48,7 @@ go_test(
     embed = [":go_default_library"],
     deps = [
         "//erro:go_default_library",
-        "//param:go_default_library",
+        "//args:go_default_library",
         "//test:go_default_library",
         "@com_github_stretchr_testify//suite:go_default_library",
     ],

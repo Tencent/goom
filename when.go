@@ -7,8 +7,8 @@ package mocker
 import (
 	"reflect"
 
+	"git.code.oa.com/goom/mocker/args"
 	"git.code.oa.com/goom/mocker/erro"
-	"git.code.oa.com/goom/mocker/param"
 )
 
 // Matcher 参数匹配接口
@@ -103,8 +103,9 @@ func NewWhen(funTyp reflect.Type) *When {
 // When 当参数符合一定的条件, 使用 DefaultMatcher
 // 入参个数必须和函数或方法参数个数一致,
 // 比如: When(
-//		In(3, 4), // 第一个参数是 In
-//		Any()) // 第二个参数是 Any
+//
+//	In(3, 4), // 第一个参数是 In
+//	Any()) // 第二个参数是 Any
 func (w *When) When(args ...interface{}) *When {
 	w.curMatch = newDefaultMatch(args, nil, w.isMethod, w.funcTyp)
 	return w
@@ -144,7 +145,7 @@ func (w *When) AndReturn(results ...interface{}) *When {
 }
 
 // Matches 多个条件匹配
-func (w *When) Matches(matches ...param.Pair) *When {
+func (w *When) Matches(matches ...args.Pair) *When {
 	if len(matches) == 0 {
 		return w
 	}
@@ -199,10 +200,10 @@ func (w *When) invoke(args1 []reflect.Value) (results []reflect.Value) {
 }
 
 // Eval 执行 when 子句
-func (w *When) Eval(args ...interface{}) []interface{} {
-	argVs := param.I2V(args, inTypes(w.isMethod, w.funcTyp))
+func (w *When) Eval(params ...interface{}) []interface{} {
+	argVs := args.I2V(params, inTypes(w.isMethod, w.funcTyp))
 	resultVs := w.invoke(argVs)
-	return param.V2I(resultVs, outTypes(w.funcTyp))
+	return args.V2I(resultVs, outTypes(w.funcTyp))
 }
 
 // returnDefaults 返回默认值

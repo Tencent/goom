@@ -12,12 +12,10 @@ import (
 )
 
 var versions = []string{
-	"go1.13",
-	"go1.14",
-	"go1.15",
 	"go1.16",
 	"go1.17",
 	"go1.18",
+	"go1.19",
 }
 
 const testEnv = "MOCKER_COMPATIBILITY_TEST"

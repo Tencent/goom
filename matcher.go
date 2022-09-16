@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"sync/atomic"
 
-	"git.code.oa.com/goom/mocker/param"
+	"git.code.oa.com/goom/mocker/args"
 )
 
 // BaseMatcher 参数匹配基类
@@ -22,7 +22,7 @@ func newBaseMatcher(results []interface{}, funTyp reflect.Type) *BaseMatcher {
 	resultVs := make([][]reflect.Value, 0)
 	if results != nil {
 		// TODO results check
-		resultVs = append(resultVs, param.I2V(results, outTypes(funTyp)))
+		resultVs = append(resultVs, args.I2V(results, outTypes(funTyp)))
 	}
 	return &BaseMatcher{
 		results:    resultVs,
@@ -50,7 +50,7 @@ func (c *BaseMatcher) Result() []reflect.Value {
 // AddResult 添加结果
 func (c *BaseMatcher) AddResult(results []interface{}) {
 	// TODO results check
-	c.results = append(c.results, param.I2V(results, outTypes(c.funTyp)))
+	c.results = append(c.results, args.I2V(results, outTypes(c.funTyp)))
 }
 
 // EmptyMatch 没有返回参数的匹配器
@@ -71,17 +71,18 @@ func (c *EmptyMatch) Result() []reflect.Value {
 // DefaultMatcher 参数匹配
 // 入参个数必须和函数或方法参数个数一致,
 // 比如: When(
-//		In(3, 4), // 第一个参数是 In
-//		Any()) // 第二个参数是 Any
+//
+//	In(3, 4), // 第一个参数是 In
+//	Any()) // 第二个参数是 Any
 type DefaultMatcher struct {
 	*BaseMatcher
 	isMethod bool
-	exprs    []param.Expr
+	exprs    []args.Expr
 }
 
 // newDefaultMatch 创建新参数匹配
-func newDefaultMatch(args []interface{}, results []interface{}, isMethod bool, funTyp reflect.Type) *DefaultMatcher {
-	e, err := param.ToExpr(args, inTypes(isMethod, funTyp))
+func newDefaultMatch(params []interface{}, results []interface{}, isMethod bool, funTyp reflect.Type) *DefaultMatcher {
+	e, err := args.ToExpr(params, inTypes(isMethod, funTyp))
 	if err != nil {
 		panic(fmt.Sprintf("create matcher fail: %v", err))
 	}
@@ -119,13 +120,14 @@ func (c *DefaultMatcher) Match(args []reflect.Value) bool {
 // .In([]interface{}{3, Any()}, []interface{}{4, Any()})
 type ContainsMatcher struct {
 	*BaseMatcher
-	expr     *param.InExpr
+	expr     *args.InExpr
 	isMethod bool
 }
 
 // newContainsMatch 创建新的包含类型的参数匹配
-func newContainsMatch(args []interface{}, results []interface{}, isMethod bool, funTyp reflect.Type) *ContainsMatcher {
-	in := param.In(args...)
+func newContainsMatch(params []interface{}, results []interface{}, isMethod bool,
+	funTyp reflect.Type) *ContainsMatcher {
+	in := args.In(params...)
 	err := in.Resolve(inTypes(isMethod, funTyp))
 	if err != nil {
 		// TODO add mocker and method name to message

@@ -3,7 +3,7 @@ package mocker
 import (
 	"reflect"
 
-	"git.code.oa.com/goom/mocker/args"
+	"git.code.oa.com/goom/mocker/arg"
 	"git.code.oa.com/goom/mocker/internal/hack"
 	"git.code.oa.com/goom/mocker/internal/iface"
 	"git.code.oa.com/goom/mocker/internal/logger"
@@ -30,7 +30,7 @@ func interceptDebugInfo(imp interface{}, pFunc iface.PFunc, mocker Mocker) (inte
 				return results
 			}
 			logger.Consolefc(logger.DebugLevel, "mocker [%s] called, args [%s], results [%s]",
-				logger.Caller(hack.InterceptCallerSkip), mocker.String(), args.SprintV(params), args.SprintV(results))
+				logger.Caller(hack.InterceptCallerSkip), mocker.String(), arg.SprintV(params), arg.SprintV(results))
 			return results
 		}
 		return imp, pFunc
@@ -45,7 +45,7 @@ func interceptDebugInfo(imp interface{}, pFunc iface.PFunc, mocker Mocker) (inte
 				return results
 			}
 			logger.Consolefc(logger.DebugLevel, "mocker [%s] called, args [%s], results [%s]",
-				logger.Caller(hack.InterceptCallerSkip), mocker.String(), args.SprintV(params), args.SprintV(results))
+				logger.Caller(hack.InterceptCallerSkip), mocker.String(), arg.SprintV(params), arg.SprintV(results))
 			return results
 		}).Interface()
 		return imp, pFunc

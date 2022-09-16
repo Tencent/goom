@@ -7,7 +7,7 @@ package mocker
 import (
 	"reflect"
 
-	"git.code.oa.com/goom/mocker/args"
+	"git.code.oa.com/goom/mocker/arg"
 	"git.code.oa.com/goom/mocker/erro"
 )
 
@@ -145,7 +145,7 @@ func (w *When) AndReturn(results ...interface{}) *When {
 }
 
 // Matches 多个条件匹配
-func (w *When) Matches(matches ...args.Pair) *When {
+func (w *When) Matches(matches ...arg.Pair) *When {
 	if len(matches) == 0 {
 		return w
 	}
@@ -201,9 +201,9 @@ func (w *When) invoke(args1 []reflect.Value) (results []reflect.Value) {
 
 // Eval 执行 when 子句
 func (w *When) Eval(params ...interface{}) []interface{} {
-	argVs := args.I2V(params, inTypes(w.isMethod, w.funcTyp))
+	argVs := arg.I2V(params, inTypes(w.isMethod, w.funcTyp))
 	resultVs := w.invoke(argVs)
-	return args.V2I(resultVs, outTypes(w.funcTyp))
+	return arg.V2I(resultVs, outTypes(w.funcTyp))
 }
 
 // returnDefaults 返回默认值

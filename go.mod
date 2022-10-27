@@ -1,4 +1,4 @@
-module git.code.oa.com/goom/mocker
+module git.woa.com/goom/mocker
 
 go 1.13
 

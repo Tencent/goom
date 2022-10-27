@@ -7,8 +7,8 @@ package mocker
 import (
 	"reflect"
 
-	"git.code.oa.com/goom/mocker/arg"
-	"git.code.oa.com/goom/mocker/erro"
+	"git.woa.com/goom/mocker/arg"
+	"git.woa.com/goom/mocker/erro"
 )
 
 // Matcher 参数匹配接口

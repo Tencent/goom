@@ -6,9 +6,9 @@ import (
 	"reflect"
 	"unsafe"
 
-	"git.code.oa.com/goom/mocker/erro"
-	"git.code.oa.com/goom/mocker/internal/hack"
-	"git.code.oa.com/goom/mocker/internal/iface"
+	"git.woa.com/goom/mocker/erro"
+	"git.woa.com/goom/mocker/internal/hack"
+	"git.woa.com/goom/mocker/internal/iface"
 )
 
 // Interface 构造接口代理，自动生成接口实现的桩指令织入到内存中

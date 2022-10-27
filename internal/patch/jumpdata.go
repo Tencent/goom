@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"runtime/debug"
 
-	"git.code.oa.com/goom/mocker/internal/bytecode"
-	"git.code.oa.com/goom/mocker/internal/bytecode/memory"
-	"git.code.oa.com/goom/mocker/internal/logger"
+	"git.woa.com/goom/mocker/internal/bytecode"
+	"git.woa.com/goom/mocker/internal/bytecode/memory"
+	"git.woa.com/goom/mocker/internal/logger"
 )
 
 const (

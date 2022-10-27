@@ -19,13 +19,15 @@
 ## 注意！！！不要过度依赖mock
 
 > [1.千万不要过度依赖于mock](https://mp.weixin.qq.com/s?__biz=MzA5MTAzNjU1OQ==&mid=2454780683&idx=1&sn=aabc85f3bd2cfa21b8b806bad581f0c5)
+>
 > 2.对于正规的第三方库，比如mysql、gorm的库本身会提供mock能力, 可参考[sql_test.go](https://git.woa.com/goom/best_practices/blob/master/example/sql_test.go)
+>
 > 3.对于自建的内部依赖库, 建议由库的提供方编写mock(1.使用方无需关心提供方的实现细节、2.由库提供方负责版本升级时mock实现逻辑的更新)
 
 ## Install
 ```bash
 # 支持的golang版本: go1.11-go1.18
-go get git.code.oa.com/goom/mocker
+go get git.woa.com/goom/mocker
 ```
 
 ## Tips
@@ -37,7 +39,7 @@ go get git.code.oa.com/goom/mocker
 ## Getting Start
 ```golang
 // 在需要使用mock的测试文件import
-import "git.code.oa.com/goom/mocker"
+import "git.woa.com/goom/mocker"
 ```
 ### 1. 基本使用
 #### 1.1. 函数mock
@@ -187,7 +189,7 @@ s.Equal(nil, i, "interface mock reset check")
 mock := mocker.Create()
 
 // mock函数foo1并设置其回调函数
-mock.Pkg("git.code.oa.com/goom/mocker_test").ExportFunc("foo1").Apply(func(i int) int {
+mock.Pkg("git.woa.com/goom/mocker_test").ExportFunc("foo1").Apply(func(i int) int {
     return i * 3
 })
 
@@ -203,7 +205,7 @@ mock.ExportFunc("foo1").As(func(i int) int {
 // 针对其它包的mock示例
 -------
 
-package git.code.oa.com/goom/a
+package git.woa.com/goom/a
 
 // struct2 要mock的目标结构体
 type struct2 struct {
@@ -213,7 +215,7 @@ type struct2 struct {
 
 -------
 
-package git.code.oa.com/goom/b
+package git.woa.com/goom/b
 
 // fake fake一个结构体, 用于作为回调函数的Receiver
 type fake struct {
@@ -230,7 +232,7 @@ mock := mocker.Create()
 // mock其它包的未导出结构体struct2的未导出方法call，并设置其回调函数
 // 如果参数是未导出的，那么需要在当前包fake一个同等结构的struct(只需要fake结构体，方法不需要fake)，fake结构体要和原未导出结构体struct2的内存结构对齐
 // 注意: 如果方法是指针方法，那么需要给struct加上*，比如:ExportStruct("*struct2")
-mock.Pkg("git.code.oa.com/goom/a").ExportStruct("struct2").Method("call").Apply(func(_ *fake, i int) int {
+mock.Pkg("git.woa.com/goom/a").ExportStruct("struct2").Method("call").Apply(func(_ *fake, i int) int {
     return 1
 })
 s.Equal(1, struct2Wrapper.call(0), "unexported struct mock check")

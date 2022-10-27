@@ -6,6 +6,6 @@ go_library(
         "color.go",
         "logger.go",
     ],
-    importpath = "git.code.oa.com/goom/mocker/internal/logger",
+    importpath = "git.woa.com/goom/mocker/internal/logger",
     visibility = ["//:__subpackages__"],
 )

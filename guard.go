@@ -5,8 +5,8 @@
 package mocker
 
 import (
-	"git.code.oa.com/goom/mocker/internal/iface"
-	"git.code.oa.com/goom/mocker/internal/patch"
+	"git.woa.com/goom/mocker/internal/iface"
+	"git.woa.com/goom/mocker/internal/patch"
 )
 
 // MockGuard Mock 守卫

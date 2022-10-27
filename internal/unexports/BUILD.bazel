@@ -8,7 +8,7 @@ go_library(
         "suggestion.go",
         "unexports.go",
     ],
-    importpath = "git.code.oa.com/goom/mocker/internal/unexports",
+    importpath = "git.woa.com/goom/mocker/internal/unexports",
     visibility = ["//:__subpackages__"],
     deps = [
         "//erro:go_default_library",

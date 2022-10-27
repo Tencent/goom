@@ -17,7 +17,7 @@ go_library(
         "patch.go",
         "signature.go",
     ],
-    importpath = "git.code.oa.com/goom/mocker/internal/patch",
+    importpath = "git.woa.com/goom/mocker/internal/patch",
     visibility = ["//:__subpackages__"],
     deps = [
         "//internal/bytecode:go_default_library",

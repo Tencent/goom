@@ -21,7 +21,7 @@ func (s *builderTestSuite) TestBuilder_reset2CurPkg() {
 		wants string
 	}{{
 		name:  "reset to current package",
-		wants: "git.code.oa.com/goom/mocker",
+		wants: "git.woa.com/goom/mocker",
 	}}
 	s.Run("success", func() {
 		for _, tt := range tests {
@@ -92,14 +92,14 @@ func (s *builderTestSuite) Test_currentPkg() {
 			args: args{
 				skip: 1,
 			},
-			want: "git.code.oa.com/goom/mocker",
+			want: "git.woa.com/goom/mocker",
 		},
 		{
 			name: "skip 0(currentPkg define in package)",
 			args: args{
 				skip: 0,
 			},
-			want: "git.code.oa.com/goom/mocker",
+			want: "git.woa.com/goom/mocker",
 		},
 	}
 	for _, tt := range tests {

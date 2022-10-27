@@ -9,8 +9,8 @@ import (
 	"runtime"
 	"strings"
 
-	"git.code.oa.com/goom/mocker/internal/iface"
-	"git.code.oa.com/goom/mocker/internal/logger"
+	"git.woa.com/goom/mocker/internal/iface"
+	"git.woa.com/goom/mocker/internal/logger"
 )
 
 // Builder Mock 构建器, 负责创建一个链式构造器.

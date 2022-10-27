@@ -7,6 +7,6 @@ go_library(
         "inst.go",
         "tables.go",
     ],
-    importpath = "git.code.oa.com/goom/mocker/internal/arch/x86asm",
+    importpath = "git.woa.com/goom/mocker/internal/arch/x86asm",
     visibility = ["//:__subpackages__"],
 )

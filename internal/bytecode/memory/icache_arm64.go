@@ -4,8 +4,8 @@ import (
 	"reflect"
 	"unsafe"
 
-	"git.code.oa.com/goom/mocker/internal/logger"
-	"git.code.oa.com/goom/mocker/internal/unexports"
+	"git.woa.com/goom/mocker/internal/logger"
+	"git.woa.com/goom/mocker/internal/unexports"
 )
 
 // 指令生成相关
@@ -70,7 +70,7 @@ func makeFunc() (func(uintptr), error) {
 }
 
 // WriteICacheFn 写入 icache clear 函数数据
-//go:linkname WriteICacheFn git.code.oa.com/goom/mocker/internal/bytecode/stub.WriteICacheFn
+//go:linkname WriteICacheFn git.woa.com/goom/mocker/internal/bytecode/stub.WriteICacheFn
 func WriteICacheFn([]byte) (uintptr, error)
 
 // movAddr 生成 mov x[?] [addr] 四个指令

@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"git.code.oa.com/goom/mocker/internal/proxy"
+	"git.woa.com/goom/mocker/internal/proxy"
 )
 
 // TestNetConnMock 测试 mock 网络连接

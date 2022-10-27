@@ -7,8 +7,8 @@ import (
 	"sync/atomic"
 	"unsafe"
 
-	"git.code.oa.com/goom/mocker/internal/bytecode"
-	"git.code.oa.com/goom/mocker/internal/logger"
+	"git.woa.com/goom/mocker/internal/bytecode"
+	"git.woa.com/goom/mocker/internal/logger"
 )
 
 // placeHolderIns 占位实例

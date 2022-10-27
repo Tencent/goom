@@ -16,7 +16,7 @@ go_library(
         "traceable_base.go",
         "type_not_found.go",
     ],
-    importpath = "git.code.oa.com/goom/mocker/erro",
+    importpath = "git.woa.com/goom/mocker/erro",
     visibility = ["//visibility:public"],
     deps = [
         "//internal/logger:go_default_library",

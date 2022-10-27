@@ -30,7 +30,7 @@ go_library(
     }),
     cdeps = [":libv8"],
     cgo = True,
-    importpath = "git.code.oa.com/goom/mocker/test",
+    importpath = "git.woa.com/goom/mocker/test",
     visibility = ["//visibility:public"],
     deps = ["//internal/hack:go_default_library"],
 )

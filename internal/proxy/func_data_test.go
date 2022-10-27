@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"runtime/debug"
 
-	"git.code.oa.com/goom/mocker/internal/logger"
+	"git.woa.com/goom/mocker/internal/logger"
 )
 
 //go:noinline

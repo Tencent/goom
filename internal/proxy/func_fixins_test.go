@@ -6,7 +6,7 @@ import (
 	"runtime/debug"
 	"testing"
 
-	"git.code.oa.com/goom/mocker/internal/logger"
+	"git.woa.com/goom/mocker/internal/logger"
 )
 
 // Caller 测试函数
@@ -335,7 +335,7 @@ func TestProxy_fixIns(t *testing.T) {
 		trampoline := tc.trampoline()
 
 		// 静态代理函数
-		patch, err := FuncName("git.code.oa.com/goom/mocker/internal/proxy."+
+		patch, err := FuncName("git.woa.com/goom/mocker/internal/proxy."+
 			tc.funcName, tc.proxy(trampoline), trampoline)
 		if tc.wantError && err != nil {
 			continue

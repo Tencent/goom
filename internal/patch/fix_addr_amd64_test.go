@@ -3,7 +3,7 @@ package patch
 import (
 	"testing"
 
-	"git.code.oa.com/goom/mocker/internal/logger"
+	"git.woa.com/goom/mocker/internal/logger"
 )
 
 // nolint

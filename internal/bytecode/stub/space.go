@@ -3,7 +3,7 @@ package stub
 import (
 	"fmt"
 
-	"git.code.oa.com/goom/mocker/internal/bytecode/memory"
+	"git.woa.com/goom/mocker/internal/bytecode/memory"
 )
 
 const (

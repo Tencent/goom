@@ -7,7 +7,7 @@ import (
 	"math"
 	"strings"
 
-	"git.code.oa.com/goom/mocker/internal/arch/x86asm"
+	"git.woa.com/goom/mocker/internal/arch/x86asm"
 )
 
 // opExpand 短地址指令 -> 长地址指令

@@ -7,7 +7,7 @@ package mocker
 import (
 	"strings"
 
-	"git.code.oa.com/goom/mocker/internal/iface"
+	"git.woa.com/goom/mocker/internal/iface"
 )
 
 // CachedMethodMocker 带缓存的方法 Mocker,将同一个函数或方法的 Mocker 进行 cache

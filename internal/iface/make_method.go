@@ -4,9 +4,9 @@ package iface
 import (
 	"unsafe"
 
-	"git.code.oa.com/goom/mocker/internal/bytecode"
-	"git.code.oa.com/goom/mocker/internal/bytecode/stub"
-	"git.code.oa.com/goom/mocker/internal/logger"
+	"git.woa.com/goom/mocker/internal/bytecode"
+	"git.woa.com/goom/mocker/internal/bytecode/stub"
+	"git.woa.com/goom/mocker/internal/logger"
 )
 
 // interfaceJumpDataLen 默认接口跳转数据长度, 经验数值, 一般采用 icache line 长度(12)的倍数

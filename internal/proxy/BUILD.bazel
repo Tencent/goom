@@ -7,7 +7,7 @@ go_library(
         "func.go",
         "interface.go",
     ],
-    importpath = "git.code.oa.com/goom/mocker/internal/proxy",
+    importpath = "git.woa.com/goom/mocker/internal/proxy",
     visibility = ["//:__subpackages__"],
     deps = [
         "//erro:go_default_library",

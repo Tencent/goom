@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"git.code.oa.com/goom/mocker"
+	"git.woa.com/goom/mocker"
 
 	"github.com/stretchr/testify/suite"
 )

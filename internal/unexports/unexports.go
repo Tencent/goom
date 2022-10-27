@@ -9,9 +9,9 @@ import (
 	"runtime"
 	"unsafe"
 
-	"git.code.oa.com/goom/mocker/erro"
-	"git.code.oa.com/goom/mocker/internal/hack"
-	"git.code.oa.com/goom/mocker/internal/logger"
+	"git.woa.com/goom/mocker/erro"
+	"git.woa.com/goom/mocker/internal/hack"
+	"git.woa.com/goom/mocker/internal/logger"
 )
 
 const ptrMax uintptr = (1<<31 - 1) * 100

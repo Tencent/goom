@@ -3,10 +3,10 @@ package mocker
 import (
 	"reflect"
 
-	"git.code.oa.com/goom/mocker/arg"
-	"git.code.oa.com/goom/mocker/internal/hack"
-	"git.code.oa.com/goom/mocker/internal/iface"
-	"git.code.oa.com/goom/mocker/internal/logger"
+	"git.woa.com/goom/mocker/arg"
+	"git.woa.com/goom/mocker/internal/hack"
+	"git.woa.com/goom/mocker/internal/iface"
+	"git.woa.com/goom/mocker/internal/logger"
 )
 
 // excludeFunc 对 excludeFunc 不进行拦截

@@ -14,7 +14,7 @@ go_library(
         "inline_check_amd64.go",
         "ins_amd64.go",
     ],
-    importpath = "git.code.oa.com/goom/mocker/internal/bytecode",
+    importpath = "git.woa.com/goom/mocker/internal/bytecode",
     visibility = ["//:__subpackages__"],
     deps = [
         "//internal/arch/x86asm:go_default_library",

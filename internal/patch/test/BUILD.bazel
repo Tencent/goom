@@ -6,7 +6,7 @@ go_library(
     srcs = [
         "data.go",
     ],
-    importpath = "git.code.oa.com/goom/mocker/internal/patch/test",
+    importpath = "git.woa.com/goom/mocker/internal/patch/test",
     visibility = ["//visibility:public"],
     deps = [],
 )

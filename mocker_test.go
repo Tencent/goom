@@ -7,8 +7,8 @@ import (
 	"os"
 	"testing"
 
-	"git.code.oa.com/goom/mocker"
-	"git.code.oa.com/goom/mocker/test"
+	"git.woa.com/goom/mocker"
+	"git.woa.com/goom/mocker/test"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -81,7 +81,7 @@ func (s *mockerTestSuite) TestUnitFuncReturn() {
 func (s *mockerTestSuite) TestUnitUnexportedFuncApply() {
 	s.Run("success", func() {
 		mock := mocker.Create()
-		mock.Pkg("git.code.oa.com/goom/mocker/test").ExportFunc("foo").Apply(func(i int) int {
+		mock.Pkg("git.woa.com/goom/mocker/test").ExportFunc("foo").Apply(func(i int) int {
 			return i * 3
 		})
 		s.Equal(3, test.Invokefoo(1), "foo mock check")
@@ -95,7 +95,7 @@ func (s *mockerTestSuite) TestUnitUnexportedFuncApply() {
 func (s *mockerTestSuite) TestUnitUnexportedFuncReturn() {
 	s.Run("success", func() {
 		mock := mocker.Create()
-		mock.Pkg("git.code.oa.com/goom/mocker/test").ExportFunc("foo").As(func(i int) int {
+		mock.Pkg("git.woa.com/goom/mocker/test").ExportFunc("foo").As(func(i int) int {
 			return i * 1
 		}).Return(3)
 		s.Equal(3, test.Invokefoo(1), "foo mock check")
@@ -183,13 +183,13 @@ func (s *mockerTestSuite) TestUnitUnExportStruct() {
 
 		mock := mocker.Create()
 		// 指定包名
-		s.Equal("git.code.oa.com/goom/mocker_test", mock.PkgName())
+		s.Equal("git.woa.com/goom/mocker_test", mock.PkgName())
 
-		mock.Pkg("git.code.oa.com/goom/mocker/test").ExportStruct("*fake").
+		mock.Pkg("git.woa.com/goom/mocker/test").ExportStruct("*fake").
 			Method("call").Apply(func(_ *_fake, i int) int {
 			return i * 2
 		})
-		s.Equal("git.code.oa.com/goom/mocker_test", mock.PkgName())
+		s.Equal("git.woa.com/goom/mocker_test", mock.PkgName())
 
 		f := test.NewUnexportedFake()
 		s.Equal(2, f.Invokecall(1), "call mock check")

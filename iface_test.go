@@ -5,8 +5,8 @@ package mocker_test
 import (
 	"testing"
 
-	"git.code.oa.com/goom/mocker"
-	"git.code.oa.com/goom/mocker/erro"
+	"git.woa.com/goom/mocker"
+	"git.woa.com/goom/mocker/erro"
 
 	"github.com/stretchr/testify/suite"
 )

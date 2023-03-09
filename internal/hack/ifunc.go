@@ -2,7 +2,6 @@
 // +build !go1.16
 
 // Package hack 对 go 系统包的 hack, 包含一些系统结构体的 copy，需要和不同的 go 版本保持同步
-
 package hack
 
 import (
@@ -15,6 +14,7 @@ import (
 const InterceptCallerSkip = 7
 
 // Firstmoduledata keep async with runtime.Firstmoduledata
+//
 //go:linkname Firstmoduledata runtime.firstmoduledata
 var Firstmoduledata Moduledata
 
@@ -72,7 +72,7 @@ type Moduledata struct {
 	Next *Moduledata
 }
 
-//Functab Functab
+// Functab Functab
 type Functab struct {
 	Entry   uintptr
 	Funcoff uintptr

@@ -95,7 +95,7 @@ func (p Prefix) IsVEX() bool {
 }
 
 // String to string
-//noLint
+// nolint
 func (p Prefix) String() string {
 	p &^= PrefixImplicit | PrefixIgnored | PrefixInvalid
 	if s := prefixNames[p]; s != "" {
@@ -130,7 +130,7 @@ func (p Prefix) String() string {
 type Op uint32
 
 // String to string
-//noLint
+// noLint
 func (op Op) String() string {
 	i := int(op)
 	if i < 0 || i >= len(opNames) || opNames[i] == "" {
@@ -158,7 +158,7 @@ type Arg interface {
 // the interface value instead of requiring an allocation.
 
 // Reg is a single register.
-// The zero Reg value has no name but indicates ``no register.''
+// The zero Reg value has no name but indicates “no register.”
 type Reg uint8
 
 // nolint
@@ -353,11 +353,11 @@ const (
 
 const regMax = TR7
 
-//noLint
+// noLint
 func (Reg) isArg() {}
 
 // String to string
-//noLint
+// noLint
 func (r Reg) String() string {
 	i := int(r)
 	if i < 0 || i >= len(regNames) || regNames[i] == "" {
@@ -377,11 +377,11 @@ type Mem struct {
 	Disp    int64
 }
 
-//noLint
+// noLint
 func (Mem) isArg() {}
 
 // String to string
-//noLint
+// noLint
 func (m Mem) String() string {
 	var base, plus, scale, index, disp string
 
@@ -411,11 +411,11 @@ func (m Mem) String() string {
 // Rel is an offset relative to the current instruction pointer.
 type Rel int32
 
-//noLint
+// noLint
 func (Rel) isArg() {}
 
 // String to string
-//noLint
+// noLint
 func (r Rel) String() string {
 	return fmt.Sprintf(".%+d", r)
 }
@@ -423,17 +423,17 @@ func (r Rel) String() string {
 // Imm is an integer constant.
 type Imm int64
 
-//noLint
+// noLint
 func (Imm) isArg() {}
 
 // String to string
-//noLint
+// noLint
 func (i Imm) String() string {
 	return fmt.Sprintf("%#x", int64(i))
 }
 
 // String to strings
-//noLint
+// noLint
 func (i Inst) String() string {
 	var buf bytes.Buffer
 
@@ -465,7 +465,7 @@ func (i Inst) String() string {
 	return buf.String()
 }
 
-//noLint
+// noLint
 func isMem(a Arg) bool {
 	_, ok := a.(Mem)
 	return ok

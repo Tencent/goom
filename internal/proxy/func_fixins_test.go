@@ -10,6 +10,7 @@ import (
 )
 
 // Caller 测试函数
+//
 //go:noinline
 func Caller(i int) int {
 	if i <= 0 {
@@ -19,6 +20,7 @@ func Caller(i int) int {
 }
 
 // Caller1 测试函数
+//
 //go:noinline
 func Caller1(i int) int {
 	if i <= 0 {
@@ -28,6 +30,7 @@ func Caller1(i int) int {
 }
 
 // Caller2 测试函数
+//
 //go:noinline
 func Caller2(i int) int {
 	for j := 0; j < 10; j++ {
@@ -43,6 +46,7 @@ type Arg struct {
 }
 
 // Caller3 测试函数
+//
 //go:noinline
 func Caller3(arg Arg) int {
 	//if len(arg.field2) > 0 {
@@ -52,12 +56,14 @@ func Caller3(arg Arg) int {
 }
 
 // Caller4 测试函数
+//
 //go:noinline
 func Caller4(arg *Arg) int {
 	return 0
 }
 
 // Caller5 测试函数
+//
 //go:noinline
 func Caller5() int {
 	logger.Trace(string(debug.Stack()))
@@ -65,6 +71,7 @@ func Caller5() int {
 }
 
 // Caller6 测试函数
+//
 //go:noinline
 func Caller6(a int) func() int {
 	return func() int {
@@ -73,12 +80,14 @@ func Caller6(a int) func() int {
 }
 
 // Caller7 测试函数
+//
 //go:noinline
 func Caller7(i int) {
 }
 
 // Caller8 测试函数
 // nolint
+//
 //go:noinline
 func Caller8(i int) int {
 tag:

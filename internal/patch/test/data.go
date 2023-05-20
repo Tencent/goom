@@ -6,6 +6,7 @@ import "fmt"
 var toggle = false
 
 // No 返回 false 的函数
+//
 //go:noinline
 func No() bool {
 	if toggle {
@@ -15,6 +16,7 @@ func No() bool {
 }
 
 // Yes 返回 true 的函数
+//
 //go:noinline
 func Yes() bool { return true }
 

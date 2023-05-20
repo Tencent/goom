@@ -4,6 +4,7 @@ package test
 type Fake struct{}
 
 // Call 普通方法
+//
 //go:noinline
 func (f *Fake) Call(i int) int {
 	if i < -10000 {
@@ -13,6 +14,7 @@ func (f *Fake) Call(i int) int {
 }
 
 // call 未导出方法
+//
 //go:noinline
 func (f *Fake) call(i int) int {
 	if i < -10000 {
@@ -22,12 +24,14 @@ func (f *Fake) call(i int) int {
 }
 
 // Invokecall 测试调用未导出函数
+//
 //go:noinline
 func (f *Fake) Invokecall(i int) int {
 	return f.call(i)
 }
 
 // Call2 普通方法
+//
 //go:noinline
 func (f *Fake) Call2(i int) int {
 	if i < -10000 {

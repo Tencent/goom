@@ -154,27 +154,58 @@ type I interface {
   call2(int32) int32
 }
 ```
-接口变量Mock:
+
+被测接口实例代码:
+```golang
+// TestTarget 被测对象
+type TestTarget struct {
+	// field 被测属性(接口类型)
+	field I
+}
+
+func NewTestTarget(i I) *TestTarget {
+	return &TestTarget{
+		field:i,
+	}
+}
+
+func (t *TestTarget) Call(num int) int {
+	return field.Call(num)
+}
+
+func (t *TestTarget) Call1(str string) string {
+    return  field.Call1(str)
+}
+```
+
+接口属性/变量Mock示例:
 ```golang
 mock := mocker.Create()
 
-// 任意接口变量
+// 初始化接口变量
 i := (I)(nil)
 
-// 将Mock应用到接口变量,不支持对接口的所有实现类生效。
+// 将Mock应用到接口变量
 // 1. interface mock只对mock.Interface(&目标接口变量) 的目标接口变量生效, 因此需要将被测逻辑结构中的I类型属性或变量替换为i,mock才可生效
 // 2. 一般建议使用struct mock即可。
 // 3. Apply调用的第一个参数必须为*mocker.IContext, 作用是指定接口实现的接收体; 后续的参数原样照抄。
 mock.Interface(&i).Method("Call").Apply(func(ctx *mocker.IContext, i int) int {
     return 100
 })
-s.Equal(100, i.Call(1), "interface mock check")
+
+// ===============================================================================
+// !!! 如果是mock interface的话，需要将interface i变量赋值替换【被测对象】的【属性】,才能生效
+// 也就是说,不对该接口的所有实现类实例生效。
+t := NewTestTarget(i)
+
+// 断言mock生效
+s.Equal(100, t.Call(1), "interface mock check")
 
 mock.Interface(&i).Method("Call1").As(func(ctx *mocker.IContext, i string) string {
     // 随机返回值即可; 因后面已经使用了Return,此函数不会真正被调用, 主要用于指定未导出函数的参数签名
 	return ""
 }).When("").Return("ok")
-s.Equal("ok", i.Call1(""), "interface mock check")
+s.Equal("ok", t.Call1(""), "interface mock check")
 
 // Mock重置, 接口变量将恢复原来的值
 mock.Reset()
@@ -203,8 +234,6 @@ mock.ExportFunc("foo1").As(func(i int) int {
 #### 3.2. 外部package的未导出结构体的mock(一般不建议对不同包下的未导出结构体进行mock)
 ```golang
 // 针对其它包的mock示例
--------
-
 package git.woa.com/goom/a
 
 // struct2 要mock的目标结构体
@@ -213,8 +242,10 @@ type struct2 struct {
     // ...
 }
 
--------
+```
 
+Mock代码示例:
+```golang
 package git.woa.com/goom/b
 
 // fake fake一个结构体, 用于作为回调函数的Receiver
@@ -290,10 +321,19 @@ s.Equal(101, foo1(1), "call origin result check")
 ## 问题答疑
 [问题答疑记录wiki地址](https://iwiki.woa.com/pages/viewpage.action?pageId=263748529)
 常见问题:
-1. 如果是arm CPU的MAC机器, 请添加编译参数:
+1. 如果是M1-MAC(arm CPU)机型, 可以尝试以下两种方案
+
+a. 尝试使用权限修复工具,在项目根目录执行以下指令:
+```shell
+MOCKER_DIR=$(go list -m -f '{{.Dir}}' git.woa.com/goom/mocker)
+${MOCKER_DIR}/tool/permission_denied.sh
+```
+
+b: 如果a方案没有效果，则尝试切换成amd的go编译器,在环境变量中添加:
 ```shell
 GOARCH=amd64
 ```
+
 2. 如果遇到mock未生效的问题,可以打开debug日志进行自助排查
 ```go
 // TestUnitTestSuite 测试入口

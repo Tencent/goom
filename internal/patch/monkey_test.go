@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-//init 初始化
+// init 初始化
 func init() {
 	logger.SetLog2Console(true)
 }
@@ -81,7 +81,7 @@ func TestGuard(t *testing.T) {
 	patch.Unpatch(test.No)
 }
 
-//TestUnpatchAll 测试取消 patch
+// TestUnpatchAll 测试取消 patch
 func TestUnpatchAll(t *testing.T) {
 	assert.False(t, test.No())
 	g, _ := patch.Patch(test.No, test.Yes)
@@ -91,7 +91,7 @@ func TestUnpatchAll(t *testing.T) {
 	assert.False(t, test.No())
 }
 
-//TestWithInstanceMethod 测试实例方法
+// TestWithInstanceMethod 测试实例方法
 func TestWithInstanceMethod(t *testing.T) {
 	i := &test.S{}
 

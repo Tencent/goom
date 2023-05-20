@@ -42,13 +42,14 @@ Check() {
 
 Install() {
   TOOL_DIR=$(go env GOTOOLDIR)
+  WORK_DIR=$(cd $(dirname $0); pwd)
   LINE=$(head -n 1 ${TOOL_DIR}/link)
 
   if [[ "$LINE" == "#!/usr/bin/env python3" ]]; then
     echo "already installed."
   else
     mv ${TOOL_DIR}/link ${TOOL_DIR}/original_link
-    cp link ${TOOL_DIR}/link
+    cp ${WORK_DIR}/link ${TOOL_DIR}/link
     echo "replaced ${TOOL_DIR}/link."
     echo "install success."
   fi
@@ -86,7 +87,7 @@ while getopts ":hiuc" option; do
     exit
     ;;
   \?) # Invalid option
-    echo "Error: Invalid option"
+    echo "Error: Invalid option. use -h show help"
     Help
     exit
     ;;

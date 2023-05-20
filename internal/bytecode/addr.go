@@ -81,7 +81,6 @@ func EncodeAddress(ops []byte, addr []byte, addrLen int, val int, add int) []byt
 	default:
 		panic(fmt.Sprintf("address overflow check error: add len not support:%d", addrLen))
 	}
-	return nil
 }
 
 func toInst(ops []byte, addr []byte) []byte {
@@ -105,7 +104,6 @@ func DecodeAddress(bytes []byte, len int) int {
 	default:
 		panic(fmt.Sprintf("decode address error: add len not support:%d", len))
 	}
-	return 0
 }
 
 // isByteOverflow 字节是否溢出

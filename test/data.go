@@ -7,6 +7,7 @@ import "fmt"
 var GlobalVar = 1
 
 // Foo foo 测试函数
+//
 //go:noinline
 func Foo(i int) int {
 	// check 对 defer 的支持
@@ -15,8 +16,9 @@ func Foo(i int) int {
 	return i * 1
 }
 
-//go:noinline
 // foo foo 测试未导出函数
+//
+//go:noinline
 func foo(i int) int {
 	// check 对 defer 的支持
 	defer func() { fmt.Printf("defer\n") }()
@@ -24,6 +26,7 @@ func foo(i int) int {
 }
 
 // Invokefoo foo 测试调用未导出函数
+//
 //go:noinline
 func Invokefoo(i int) int {
 	return foo(i)
@@ -36,7 +39,7 @@ type fake struct {
 }
 
 // NewUnexportedFake 构建未导出fake
-//nolint
+// nolint
 func NewUnexportedFake() *fake {
 	return &fake{
 		field1: "field1",
@@ -45,6 +48,7 @@ func NewUnexportedFake() *fake {
 }
 
 // Call 普通方法
+//
 //go:noinline
 func (f *fake) Call(i int) int {
 	if i < -10000 {
@@ -54,6 +58,7 @@ func (f *fake) Call(i int) int {
 }
 
 // Call2 普通方法
+//
 //go:noinline
 func (f *fake) Call2(i int) int {
 	if i < -10000 {
@@ -63,6 +68,7 @@ func (f *fake) Call2(i int) int {
 }
 
 // call 未导出方法
+//
 //go:noinline
 func (f *fake) call(i int) int {
 	if i < -10000 {
@@ -72,6 +78,7 @@ func (f *fake) call(i int) int {
 }
 
 // Invokecall 测试调用未导出函数
+//
 //go:noinline
 func (f *fake) Invokecall(i int) int {
 	return f.call(i)
@@ -94,6 +101,7 @@ type S1 struct {
 }
 
 // Foo1 foo1 测试函数返回复杂类型
+//
 //go:noinline
 func Foo1() *S {
 	return &S{
@@ -103,6 +111,7 @@ func Foo1() *S {
 }
 
 // GetS 测试返回多参返回值
+//
 //go:noinline
 func GetS() ([]byte, error) {
 	return []byte("hello"), nil

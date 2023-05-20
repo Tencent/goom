@@ -55,11 +55,11 @@ func acquireICacheFn() (*Space, error) {
 			Space: space,
 			typ:   TypeMMap,
 		}, nil
-	} else {
-		return &Space{
-			Addr:  iCacheHolderAddr,
-			Space: nil,
-			typ:   TypeHolder,
-		}, nil
 	}
+
+	return &Space{
+		Addr:  iCacheHolderAddr,
+		Space: nil,
+		typ:   TypeHolder,
+	}, nil
 }

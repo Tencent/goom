@@ -9,6 +9,7 @@ import (
 )
 
 // 指令生成相关
+// nolint
 const (
 	_0b1      = 1  // 0b1
 	_0b10     = 2  // 0b10
@@ -70,6 +71,7 @@ func makeFunc() (func(uintptr), error) {
 }
 
 // WriteICacheFn 写入 icache clear 函数数据
+//
 //go:linkname WriteICacheFn git.woa.com/goom/mocker/internal/bytecode/stub.WriteICacheFn
 func WriteICacheFn([]byte) (uintptr, error)
 

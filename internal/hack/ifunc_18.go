@@ -13,9 +13,11 @@ import (
 const InterceptCallerSkip = 5
 
 // Firstmoduledata keep async with runtime.Firstmoduledata
+//
 //go:linkname Firstmoduledata runtime.firstmoduledata
 var Firstmoduledata Moduledata
 
+// nolint
 // Moduledata keep async with runtime.Moduledata
 type Moduledata struct {
 	pcHeader     *uintptr
@@ -54,9 +56,9 @@ type Moduledata struct {
 
 	gcdatamask, gcbssmask Bitvector
 
-	typemap map[typeOff]*interface{} // offset to *_rtype in previous module
+	_ map[typeOff]*interface{} // typemap: offset to *_rtype in previous module
 
-	bad bool // module failed to load and should be ignored
+	_ bool // bad: module failed to load and should be ignored
 
 	Next *Moduledata
 }

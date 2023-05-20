@@ -326,7 +326,7 @@ s.Equal(101, foo1(1), "call origin result check")
 a. 尝试使用权限修复工具,在项目根目录执行以下指令:
 ```shell
 MOCKER_DIR=$(go list -m -f '{{.Dir}}' git.woa.com/goom/mocker)
-${MOCKER_DIR}/tool/permission_denied.sh
+${MOCKER_DIR}/tool/permission_denied.sh -i
 ```
 
 b: 如果a方案没有效果，则尝试切换成amd的go编译器,在环境变量中添加:

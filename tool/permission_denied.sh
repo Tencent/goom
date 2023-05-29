@@ -47,11 +47,19 @@ Install() {
 
   if [[ "$LINE" == "#!/usr/bin/env python3" ]]; then
     echo "already installed."
+    return 0
+  fi
+
+  if [ -e ${WORK_DIR}/link ]
+  then
+      mv ${TOOL_DIR}/link ${TOOL_DIR}/original_link
+      cp ${WORK_DIR}/link ${TOOL_DIR}/link
+      echo "replaced ${TOOL_DIR}/link with ${WORK_DIR}/link"
+      echo "install success."
+      return 0
   else
-    mv ${TOOL_DIR}/link ${TOOL_DIR}/original_link
-    cp ${WORK_DIR}/link ${TOOL_DIR}/link
-    echo "replaced ${TOOL_DIR}/link."
-    echo "install success."
+      echo "install fail: file not exists: ${TOOL_DIR}/link"
+      return 1
   fi
 }
 

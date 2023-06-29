@@ -501,7 +501,7 @@ func (m *DefMocker) doApply(imp interface{}) {
 	funcName := functionName(m.funcDef)
 	imp, _ = interceptDebugInfo(imp, nil, m)
 	if strings.HasSuffix(funcName, "-fm") {
-		m.applyByName(strings.TrimRight(funcName, "-fm"), imp)
+		m.applyByName(strings.TrimSuffix(funcName, "-fm"), imp)
 	} else {
 		m.applyByFunc(m.funcDef, imp)
 	}

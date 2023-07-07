@@ -91,7 +91,7 @@ func (b *Builder) Struct(obj interface{}) *CachedMethodMocker {
 func (b *Builder) Func(obj interface{}) *DefMocker {
 	funcPointer := reflect.ValueOf(obj).Pointer()
 	key := runtime.FuncForPC(funcPointer).Name()
-	// 不同泛型变量类型的，的泛型函数名需要能够区分，而不是使用[...]
+	// 对于包含泛型参数的函数,可以附加函数指针作为key来区分不同泛型变量类型的函数
 	if patch.IsGenericsFunc(key) {
 		key = key + fmt.Sprintf("-%x", funcPointer)
 	}

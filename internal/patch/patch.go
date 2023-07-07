@@ -4,6 +4,7 @@ package patch
 import (
 	"errors"
 	"reflect"
+	"runtime"
 	"sync"
 
 	"git.woa.com/goom/mocker/internal/bytecode"
@@ -69,8 +70,17 @@ func (p *patch) unsafePatchValue() error {
 	if p.replacementValue.Kind() != reflect.Func {
 		return errors.New("replacementValue has to be a ExportFunc")
 	}
-	targetPointer := p.originValue.Pointer()
-	p.originPtr = targetPointer
+	originPointer := p.originValue.Pointer()
+	p.originPtr = originPointer
+
+	// fix for generics variants
+	funcName := runtime.FuncForPC(originPointer).Name()
+	if IsGenericsFunc(funcName) {
+		innerPointer, err := bytecode.GetInnerFunc(64, originPointer)
+		if err == nil && innerPointer != 0 {
+			p.originPtr = innerPointer
+		}
+	}
 	return p.unsafePatchPtr()
 }
 

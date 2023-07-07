@@ -12,6 +12,7 @@ import (
 	"git.woa.com/goom/mocker/erro"
 	"git.woa.com/goom/mocker/internal/iface"
 	"git.woa.com/goom/mocker/internal/logger"
+	"git.woa.com/goom/mocker/internal/patch"
 	"git.woa.com/goom/mocker/internal/proxy"
 	"git.woa.com/goom/mocker/internal/unexports"
 )
@@ -500,7 +501,11 @@ func (m *DefMocker) doApply(imp interface{}) {
 
 	funcName := functionName(m.funcDef)
 	imp, _ = interceptDebugInfo(imp, nil, m)
-	if strings.HasSuffix(funcName, "-fm") {
+	if patch.IsGenericsFunc(funcName) {
+		// for generic variants func
+		m.applyByFunc(m.funcDef, imp)
+	} else if strings.HasSuffix(funcName, "-fm") {
+		// TODO 理清-fm的用意
 		m.applyByName(strings.TrimSuffix(funcName, "-fm"), imp)
 	} else {
 		m.applyByFunc(m.funcDef, imp)

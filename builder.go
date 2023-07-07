@@ -11,6 +11,7 @@ import (
 
 	"git.woa.com/goom/mocker/internal/iface"
 	"git.woa.com/goom/mocker/internal/logger"
+	"git.woa.com/goom/mocker/internal/patch"
 )
 
 // Builder Mock 构建器, 负责创建一个链式构造器.
@@ -88,7 +89,12 @@ func (b *Builder) Struct(obj interface{}) *CachedMethodMocker {
 // funcDef 函数，比如 foo
 // 方法的 mock, 比如 &Struct{}.method
 func (b *Builder) Func(obj interface{}) *DefMocker {
-	var key = runtime.FuncForPC(reflect.ValueOf(obj).Pointer()).Name()
+	funcPointer := reflect.ValueOf(obj).Pointer()
+	key := runtime.FuncForPC(funcPointer).Name()
+	// 对于包含泛型参数的函数,可以附加函数指针作为key来区分不同泛型变量类型的函数
+	if patch.IsGenericsFunc(key) {
+		key = key + fmt.Sprintf("-%x", funcPointer)
+	}
 	if mocker, ok := b.mockers[key]; ok && !mocker.Canceled() {
 		b.reset2CurPkg()
 		return mocker.(*DefMocker)

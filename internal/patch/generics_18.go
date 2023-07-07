@@ -11,17 +11,15 @@ import (
 
 var (
 	nameMatch = "\\.func(\\d)*(\\.\\d+)*$"
-	nameReg   *regexp.Regexp
+	nameReg   = regexp.MustCompile(nameMatch)
 )
 
 func init() {
 	//解析正则表达式，如果成功返回解释器
-	nameReg = regexp.MustCompile(nameMatch)
 	if nameReg == nil {
 		fmt.Println("regexp err")
 		return
 	}
-
 }
 
 // IsGenericsFunc 是否为泛型函数

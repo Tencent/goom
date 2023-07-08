@@ -159,7 +159,12 @@ func GetInnerFunc(mode int, start uintptr) (uintptr, error) {
 
 		if inst.Op.String() == CallInsName {
 			relativeAddr := DecodeRelativeAddr(&inst, code, inst.PCRelOff)
-			return start + (uintptr)(relativeAddr) + uintptr(inst.Len), nil
+			if relativeAddr >= 0 {
+				return start + uintptr(curLen) + uintptr(relativeAddr) + uintptr(inst.Len), nil
+			}
+			if curLen+int(relativeAddr) < 0 {
+				return start + uintptr(curLen) - uintptr(-relativeAddr) + uintptr(inst.Len), nil
+			}
 		}
 
 		curLen = curLen + inst.Len

@@ -12,4 +12,4 @@ import (
 )
 
 // signalsToIgnore ignore the quit signal
-var signalsToIgnore = []os.Signal{os.Interrupt}
+var SignalsToIgnore = []os.Signal{os.Interrupt}

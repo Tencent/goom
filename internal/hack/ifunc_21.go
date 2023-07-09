@@ -1,7 +1,6 @@
-//go:build go1.18 && !go1.21
-// +build go1.18,!go1.21
+//go:build go1.21
+// +build go1.21
 
-// Package hack 对 go 系统包的 hack, 包含一些系统结构体的 copy，需要和不同的 go 版本保持同步
 package hack
 
 import (
@@ -20,6 +19,8 @@ var Firstmoduledata Moduledata
 // nolint
 // Moduledata keep async with runtime.Moduledata
 type Moduledata struct {
+	NotInHeap // Only in static data
+
 	pcHeader     *uintptr
 	funcnametab  []byte
 	cutab        []uint32
@@ -35,6 +36,7 @@ type Moduledata struct {
 	data, edata           uintptr
 	bss, ebss             uintptr
 	noptrbss, enoptrbss   uintptr
+	covctrs, ecovctrs     uintptr
 	end, gcdata, gcbss    uintptr
 	types, etypes         uintptr
 	rodata                uintptr
@@ -49,6 +51,10 @@ type Moduledata struct {
 	pluginpath string
 	pkghashes  []interface{}
 
+	// This slice records the initializing tasks that need to be
+	// done to start up the program. It is built by the linker.
+	inittasks []interface{}
+
 	modulename   string
 	modulehashes []interface{}
 
@@ -56,12 +62,15 @@ type Moduledata struct {
 
 	gcdatamask, gcbssmask Bitvector
 
-	_ map[typeOff]*interface{} // typemap: offset to *_rtype in previous module
+	_ map[typeOff]*interface{} // offset to *_rtype in previous module
 
-	_ bool // bad: module failed to load and should be ignored
+	_ bool // module failed to load and should be ignored
 
 	Next *Moduledata
 }
+
+type NotInHeap struct{ _ nih }
+type nih struct{}
 
 // Functab Functab
 type Functab struct {

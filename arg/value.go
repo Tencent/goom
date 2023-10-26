@@ -12,12 +12,12 @@ import (
 )
 
 // I2V []interface convert to []reflect.Value
-func I2V(params []interface{}, types []reflect.Type) []reflect.Value {
-	if len(params) != len(types) {
-		panic(fmt.Sprintf("param lenth mismatch,must: %d, actual: %d", len(types), len(params)))
+func I2V(objs []interface{}, types []reflect.Type) []reflect.Value {
+	if len(objs) != len(types) {
+		panic(fmt.Sprintf("arg lenth mismatch,must: %d, actual: %d", len(types), len(objs)))
 	}
-	values := make([]reflect.Value, len(params))
-	for i, a := range params {
+	values := make([]reflect.Value, len(objs))
+	for i, a := range objs {
 		values[i] = toValue(a, types[i])
 	}
 	return values
@@ -90,13 +90,13 @@ func SprintV(params []reflect.Value) string {
 }
 
 // ToExpr 将参数转换成[]Expr
-func ToExpr(params []interface{}, types []reflect.Type) ([]Expr, error) {
-	if len(params) != len(types) {
-		return nil, fmt.Errorf("param lenth mismatch,must: %d, actual: %d", len(types), len(params))
+func ToExpr(args []interface{}, types []reflect.Type) ([]Expr, error) {
+	if len(args) != len(types) {
+		return nil, fmt.Errorf("arg lenth mismatch,must: %d, actual: %d", len(types), len(args))
 	}
 	// TODO results check
-	expressions := make([]Expr, len(params))
-	for i, a := range params {
+	expressions := make([]Expr, len(args))
+	for i, a := range args {
 		if expr, ok := a.(Expr); ok {
 			expressions[i] = expr
 		} else {

@@ -9,14 +9,14 @@ func Any() *AnyExpr {
 }
 
 // Equals 创建参数比较表达式
-func Equals(param interface{}) *EqualsExpr {
-	return &EqualsExpr{param: param}
+func Equals(arg interface{}) *EqualsExpr {
+	return &EqualsExpr{arg: arg}
 }
 
 // In 包含表达式的参数比较
 func In(values ...interface{}) *InExpr {
 	return &InExpr{
-		params: values,
+		args: values,
 	}
 }
 

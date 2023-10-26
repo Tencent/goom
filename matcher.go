@@ -81,8 +81,8 @@ type DefaultMatcher struct {
 }
 
 // newDefaultMatch 创建新参数匹配
-func newDefaultMatch(params []interface{}, results []interface{}, isMethod bool, funTyp reflect.Type) *DefaultMatcher {
-	e, err := arg.ToExpr(params, inTypes(isMethod, funTyp))
+func newDefaultMatch(args []interface{}, results []interface{}, isMethod bool, funTyp reflect.Type) *DefaultMatcher {
+	e, err := arg.ToExpr(args, inTypes(isMethod, funTyp))
 	if err != nil {
 		panic(fmt.Sprintf("create matcher fail: %v", err))
 	}
@@ -125,9 +125,9 @@ type ContainsMatcher struct {
 }
 
 // newContainsMatch 创建新的包含类型的参数匹配
-func newContainsMatch(params []interface{}, results []interface{}, isMethod bool,
+func newContainsMatch(args []interface{}, results []interface{}, isMethod bool,
 	funTyp reflect.Type) *ContainsMatcher {
-	in := arg.In(params...)
+	in := arg.In(args...)
 	err := in.Resolve(inTypes(isMethod, funTyp))
 	if err != nil {
 		// TODO add mocker and method name to message

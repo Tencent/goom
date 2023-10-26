@@ -136,23 +136,23 @@ func (w *When) Return(value ...interface{}) *When {
 }
 
 // AndReturn 指定第二次调用返回值,之后的调用以最后一个指定的值返回
-func (w *When) AndReturn(results ...interface{}) *When {
+func (w *When) AndReturn(value ...interface{}) *When {
 	if w.curMatch == nil {
-		return w.Return(results...)
+		return w.Return(value...)
 	}
-	w.curMatch.AddResult(results)
+	w.curMatch.AddResult(value)
 	return w
 }
 
 // Matches 多个条件匹配
-func (w *When) Matches(matches ...arg.Pair) *When {
-	if len(matches) == 0 {
+func (w *When) Matches(argAndRet ...arg.Pair) *When {
+	if len(argAndRet) == 0 {
 		return w
 	}
-	for _, v := range matches {
-		args, ok := v.Params.([]interface{})
+	for _, v := range argAndRet {
+		args, ok := v.Args.([]interface{})
 		if !ok {
-			args = []interface{}{v.Params}
+			args = []interface{}{v.Args}
 		}
 
 		results, ok := v.Return.([]interface{})
@@ -200,8 +200,8 @@ func (w *When) invoke(args1 []reflect.Value) (results []reflect.Value) {
 }
 
 // Eval 执行 when 子句
-func (w *When) Eval(params ...interface{}) []interface{} {
-	argVs := arg.I2V(params, inTypes(w.isMethod, w.funcTyp))
+func (w *When) Eval(args ...interface{}) []interface{} {
+	argVs := arg.I2V(args, inTypes(w.isMethod, w.funcTyp))
 	resultVs := w.invoke(argVs)
 	return arg.V2I(resultVs, outTypes(w.funcTyp))
 }

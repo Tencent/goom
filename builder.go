@@ -69,16 +69,16 @@ func (b *Builder) cache(mKey interface{}, cachedMocker Mocker) {
 	b.mockers[mKey] = cachedMocker
 }
 
-// Struct 指定结构体名称
+// Struct 指定结构体实例
 // 比如需要 mock 结构体函数 (*conn).Write(b []byte)，则 name="conn"
-func (b *Builder) Struct(obj interface{}) *CachedMethodMocker {
-	mKey := reflect.ValueOf(obj).Type().String()
+func (b *Builder) Struct(instance interface{}) *CachedMethodMocker {
+	mKey := reflect.ValueOf(instance).Type().String()
 	if mocker, ok := b.mockers[mKey]; ok && !mocker.Canceled() {
 		b.reset2CurPkg()
 		return mocker.(*CachedMethodMocker)
 	}
 
-	mocker := NewMethodMocker(b.pkgName, obj)
+	mocker := NewMethodMocker(b.pkgName, instance)
 	cachedMocker := NewCachedMethodMocker(mocker)
 	b.cache(mKey, cachedMocker)
 	b.reset2CurPkg()
@@ -88,8 +88,8 @@ func (b *Builder) Struct(obj interface{}) *CachedMethodMocker {
 // Func 指定函数定义
 // funcDef 函数，比如 foo
 // 方法的 mock, 比如 &Struct{}.method
-func (b *Builder) Func(obj interface{}) *DefMocker {
-	funcPointer := reflect.ValueOf(obj).Pointer()
+func (b *Builder) Func(funcDef interface{}) *DefMocker {
+	funcPointer := reflect.ValueOf(funcDef).Pointer()
 	key := runtime.FuncForPC(funcPointer).Name()
 	// 对于包含泛型参数的函数,可以附加函数指针作为key来区分不同泛型变量类型的函数
 	if patch.IsGenericsFunc(key) {
@@ -100,7 +100,7 @@ func (b *Builder) Func(obj interface{}) *DefMocker {
 		return mocker.(*DefMocker)
 	}
 
-	mocker := NewDefMocker(b.pkgName, obj)
+	mocker := NewDefMocker(b.pkgName, funcDef)
 	b.cache(key, mocker)
 	b.reset2CurPkg()
 	return mocker
@@ -147,13 +147,13 @@ func (b *Builder) ExportFunc(name string) *UnexportedFuncMocker {
 }
 
 // Var 变量 mock, target 类型必须传递指针类型
-func (b *Builder) Var(target interface{}) VarMock {
-	cacheKey := fmt.Sprintf("var_%d", reflect.ValueOf(target).Pointer())
+func (b *Builder) Var(v interface{}) VarMock {
+	cacheKey := fmt.Sprintf("var_%d", reflect.ValueOf(v).Pointer())
 	if mocker, ok := b.mockers[cacheKey]; ok && !mocker.Canceled() {
 		return mocker.(VarMock)
 	}
 
-	mocker := NewVarMocker(target)
+	mocker := NewVarMocker(v)
 	b.cache(cacheKey, mocker)
 	return mocker
 }

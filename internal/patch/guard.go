@@ -4,9 +4,9 @@ package patch
 import (
 	"fmt"
 
-	"git.woa.com/goom/mocker/internal/bytecode"
-	"git.woa.com/goom/mocker/internal/bytecode/memory"
-	"git.woa.com/goom/mocker/internal/logger"
+	"github.com/Jakegogo/goom_mocker/internal/bytecode"
+	"github.com/Jakegogo/goom_mocker/internal/bytecode/memory"
+	"github.com/Jakegogo/goom_mocker/internal/logger"
 )
 
 // Guard 代理执行控制句柄, 可通过此对象进行代理还原

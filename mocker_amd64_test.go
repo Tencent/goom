@@ -9,8 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"git.woa.com/goom/mocker"
-	"git.woa.com/goom/mocker/test"
+	"github.com/Jakegogo/goom_mocker/test"
 	"github.com/stretchr/testify/suite"
 )
 

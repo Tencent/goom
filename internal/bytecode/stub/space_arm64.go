@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"reflect"
 
-	"git.woa.com/goom/mocker/internal/bytecode"
-	"git.woa.com/goom/mocker/internal/bytecode/memory"
-	"git.woa.com/goom/mocker/internal/logger"
+	"github.com/Jakegogo/goom_mocker/internal/bytecode"
+	"github.com/Jakegogo/goom_mocker/internal/bytecode/memory"
+	"github.com/Jakegogo/goom_mocker/internal/logger"
 )
 
 const spaceLen = 128

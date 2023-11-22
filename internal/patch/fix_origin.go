@@ -1,7 +1,7 @@
 package patch
 
 import (
-	"git.woa.com/goom/mocker/internal/logger"
+	"github.com/Jakegogo/goom_mocker/internal/logger"
 )
 
 // fixOrigin 将原函数拷贝到另外一个内存区段,并且修复

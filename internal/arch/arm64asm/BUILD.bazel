@@ -11,6 +11,6 @@ go_library(
         "inst.go",
         "tables.go",
     ],
-    importpath = "git.woa.com/goom/mocker/internal/arch/arm64asm",
+    importpath = "github.com/Jakegogo/goom_mocker/internal/arch/arm64asm",
     visibility = ["//:__subpackages__"],
 )

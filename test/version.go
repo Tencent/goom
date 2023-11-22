@@ -26,7 +26,7 @@ import (
 	"strings"
 	"time"
 
-	"git.woa.com/goom/mocker/internal/hack"
+	"github.com/Jakegogo/goom_mocker/internal/hack"
 )
 
 const osWindows = "windows"

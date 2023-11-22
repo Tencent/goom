@@ -2,7 +2,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 load("@bazel_gazelle//:def.bzl", "gazelle")
 
 # gazelle:go_naming_convention go_default_library
-# gazelle:prefix git.woa.com/goom/mocker
+# gazelle:prefix github.com/Jakegogo/goom_mocker
 # gazelle:proto disable
 gazelle(
     name = "gazelle",
@@ -23,7 +23,7 @@ go_library(
         "var.go",
         "when.go",
     ],
-    importpath = "git.woa.com/goom/mocker",
+    importpath = "github.com/Jakegogo/goom_mocker",
     visibility = ["//visibility:public"],
     deps = [
         "//erro:go_default_library",

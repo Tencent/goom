@@ -27,7 +27,7 @@
 ## Install
 ```bash
 # 支持的golang版本: go1.11-go1.18
-go get git.woa.com/goom/mocker
+go get github.com/Jakegogo/goom_mocker
 ```
 
 ## Tips
@@ -39,7 +39,7 @@ go get git.woa.com/goom/mocker
 ## Getting Start
 ```golang
 // 在需要使用mock的测试文件import
-import "git.woa.com/goom/mocker"
+import "github.com/Jakegogo/goom_mocker"
 ```
 ### 1. 基本使用
 #### 1.1. 函数mock
@@ -220,7 +220,7 @@ s.Equal(nil, i, "interface mock reset check")
 mock := mocker.Create()
 
 // mock函数foo1并设置其回调函数
-mock.Pkg("git.woa.com/goom/mocker_test").ExportFunc("foo1").Apply(func(i int) int {
+mock.Pkg("github.com/Jakegogo/goom_mocker_test").ExportFunc("foo1").Apply(func(i int) int {
     return i * 3
 })
 
@@ -325,7 +325,7 @@ s.Equal(101, foo1(1), "call origin result check")
 
 a. 尝试使用权限修复工具,在项目根目录执行以下指令:
 ```shell
-MOCKER_DIR=$(go list -m -f '{{.Dir}}' git.woa.com/goom/mocker)
+MOCKER_DIR=$(go list -m -f '{{.Dir}}' github.com/Jakegogo/goom_mocker)
 ${MOCKER_DIR}/tool/permission_denied.sh -i
 ```
 

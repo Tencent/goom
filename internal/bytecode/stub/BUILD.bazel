@@ -12,7 +12,7 @@ go_library(
         "stubholder_amd64.s",
         "stubholder_arm64.s",
     ],
-    importpath = "git.woa.com/goom/mocker/internal/bytecode/stub",
+    importpath = "github.com/Jakegogo/goom_mocker/internal/bytecode/stub",
     visibility = ["//:__subpackages__"],
     deps = [
         "//internal/bytecode:go_default_library",

@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"syscall"
 
-	"git.woa.com/goom/mocker/internal/logger"
+	"github.com/Jakegogo/goom_mocker/internal/logger"
 )
 
 // accessMemGuide access mem error solution guide

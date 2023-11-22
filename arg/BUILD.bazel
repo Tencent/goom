@@ -9,7 +9,7 @@ go_library(
         "params.go",
         "value.go",
     ],
-    importpath = "git.woa.com/goom/mocker/arg",
+    importpath = "github.com/Jakegogo/goom_mocker/arg",
     visibility = ["//visibility:public"],
     deps = [
         "//internal/hack:go_default_library",

@@ -7,8 +7,8 @@ import (
 	"strings"
 	"unsafe"
 
-	"git.woa.com/goom/mocker/internal/hack"
-	"git.woa.com/goom/mocker/internal/iface"
+	"github.com/Jakegogo/goom_mocker/internal/hack"
+	"github.com/Jakegogo/goom_mocker/internal/iface"
 )
 
 // I2V []interface convert to []reflect.Value

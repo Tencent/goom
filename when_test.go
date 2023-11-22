@@ -6,9 +6,8 @@ import (
 	"reflect"
 	"testing"
 
-	"git.woa.com/goom/mocker"
-	"git.woa.com/goom/mocker/arg"
-
+	mocker "github.com/Jakegogo/goom_mocker"
+	"github.com/Jakegogo/goom_mocker/arg"
 	"github.com/stretchr/testify/suite"
 )
 

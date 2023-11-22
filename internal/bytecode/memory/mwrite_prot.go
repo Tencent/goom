@@ -9,7 +9,7 @@ import (
 	"syscall"
 	"unsafe"
 
-	"git.woa.com/goom/mocker/internal/logger"
+	"github.com/Jakegogo/goom_mocker/internal/logger"
 )
 
 // PaddingLeft 汇编函数声明: 占位函数

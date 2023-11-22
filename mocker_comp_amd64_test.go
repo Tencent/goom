@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"git.woa.com/goom/mocker/test"
+	"github.com/Jakegogo/goom_mocker/test"
 )
 
 var versions = []string{

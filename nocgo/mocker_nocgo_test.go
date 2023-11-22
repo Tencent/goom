@@ -5,8 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"git.woa.com/goom/mocker"
-
+	mocker "github.com/Jakegogo/goom_mocker"
 	"github.com/stretchr/testify/suite"
 )
 

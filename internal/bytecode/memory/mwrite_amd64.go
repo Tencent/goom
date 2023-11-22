@@ -11,7 +11,7 @@ import (
 )
 
 // accessMemGuide access mem error solution guide
-const accessMemGuide = "https://iwiki.woa.com/pages/viewpage.action?pageId=1405108952"
+const accessMemGuide = "https://github.com/Jakegogo/goom_mocker"
 
 // WriteTo this function is super unsafe
 // aww yeah

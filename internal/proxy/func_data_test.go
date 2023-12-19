@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"runtime/debug"
 
-	"git.woa.com/goom/mocker/internal/logger"
+	"github.com/tencent/goom/internal/logger"
 )
 
 //go:noinline
@@ -139,6 +139,7 @@ type InnerField struct {
 }
 
 // nolint
+//
 //go:noinline
 func ForceStackExpand(i int) int {
 	if i <= 0 {

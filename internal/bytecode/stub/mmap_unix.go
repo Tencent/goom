@@ -7,7 +7,7 @@ import (
 	"syscall"
 	"unsafe"
 
-	"git.woa.com/goom/mocker/internal/logger"
+	"github.com/tencent/goom/internal/logger"
 )
 
 // acquireFromMMap enough executable space from holder

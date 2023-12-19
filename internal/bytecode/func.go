@@ -6,9 +6,9 @@ import (
 	"sync"
 	"unsafe"
 
-	"git.woa.com/goom/mocker/internal/bytecode/memory"
-	"git.woa.com/goom/mocker/internal/logger"
-	"git.woa.com/goom/mocker/internal/unexports"
+	"github.com/tencent/goom/internal/bytecode/memory"
+	"github.com/tencent/goom/internal/logger"
+	"github.com/tencent/goom/internal/unexports"
 )
 
 // 调试日志相关

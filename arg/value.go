@@ -7,23 +7,23 @@ import (
 	"strings"
 	"unsafe"
 
-	"git.woa.com/goom/mocker/internal/hack"
-	"git.woa.com/goom/mocker/internal/iface"
+	"github.com/tencent/goom/internal/hack"
+	"github.com/tencent/goom/internal/iface"
 )
 
-// I2V []interface convert to []reflect.Value
-func I2V(objs []interface{}, types []reflect.Type) []reflect.Value {
-	if len(objs) != len(types) {
-		panic(fmt.Sprintf("arg lenth mismatch,must: %d, actual: %d", len(types), len(objs)))
+// I2V []interface convert to []reflect.Value 将interface元素类型的数组，转换成reflect.Value元素类型的数组
+func I2V(params []interface{}, types []reflect.Type) []reflect.Value {
+	if len(params) != len(types) {
+		panic(fmt.Sprintf("param lenth mismatch,must: %d, actual: %d", len(types), len(params)))
 	}
-	values := make([]reflect.Value, len(objs))
-	for i, a := range objs {
+	values := make([]reflect.Value, len(params))
+	for i, a := range params {
 		values[i] = toValue(a, types[i])
 	}
 	return values
 }
 
-// toValue 转化为数值
+// toValue 将interface参数值转化为reflect.Value值
 func toValue(r interface{}, out reflect.Type) reflect.Value {
 	v := reflect.ValueOf(r)
 	if r != nil && v.Type() != out && (out.Kind() == reflect.Struct || out.Kind() == reflect.Ptr) {
@@ -49,7 +49,7 @@ func toValue(r interface{}, out reflect.Type) reflect.Value {
 	return v
 }
 
-// cast 类型强制转换
+// cast 将reflect.Value类型强制转换为执行type类型的reflect.Value
 func cast(v reflect.Value, typ reflect.Type) reflect.Value {
 	originV := (*hack.Value)(unsafe.Pointer(&v))
 	newV := reflect.NewAt(typ, originV.Ptr).Elem()
@@ -63,7 +63,7 @@ func cast(v reflect.Value, typ reflect.Type) reflect.Value {
 	return v
 }
 
-// V2I []reflect.Value convert to []interface
+// V2I []reflect.Value convert to []interface 将reflect.Value元素类型的数组，转换成interface元素类型的数组
 func V2I(params []reflect.Value, types []reflect.Type) []interface{} {
 	values := make([]interface{}, len(params))
 	for i, a := range params {
@@ -76,7 +76,7 @@ func V2I(params []reflect.Value, types []reflect.Type) []interface{} {
 	return values
 }
 
-// SprintV []reflect.Value print to string
+// SprintV []reflect.Value print to string 将[]reflect.Value参数列表转换为string用于打印输出
 func SprintV(params []reflect.Value) string {
 	s := make([]string, 0, len(params))
 	for _, a := range params {
@@ -89,14 +89,14 @@ func SprintV(params []reflect.Value) string {
 	return strings.Join(s, ",")
 }
 
-// ToExpr 将参数转换成[]Expr
-func ToExpr(args []interface{}, types []reflect.Type) ([]Expr, error) {
-	if len(args) != len(types) {
-		return nil, fmt.Errorf("arg lenth mismatch,must: %d, actual: %d", len(types), len(args))
+// ToExpr 将[]interface{}参数转换成[]Expr
+func ToExpr(params []interface{}, types []reflect.Type) ([]Expr, error) {
+	if len(params) != len(types) {
+		return nil, fmt.Errorf("param lenth mismatch,must: %d, actual: %d", len(types), len(params))
 	}
 	// TODO results check
-	expressions := make([]Expr, len(args))
-	for i, a := range args {
+	expressions := make([]Expr, len(params))
+	for i, a := range params {
 		if expr, ok := a.(Expr); ok {
 			expressions[i] = expr
 		} else {

@@ -9,9 +9,9 @@ import (
 	"runtime"
 	"unsafe"
 
-	"git.woa.com/goom/mocker/erro"
-	"git.woa.com/goom/mocker/internal/hack"
-	"git.woa.com/goom/mocker/internal/logger"
+	"github.com/tencent/goom/erro"
+	"github.com/tencent/goom/internal/hack"
+	"github.com/tencent/goom/internal/logger"
 )
 
 const ptrMax uintptr = (1<<31 - 1) * 100000

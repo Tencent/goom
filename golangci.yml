@@ -9,7 +9,7 @@ linters-settings:
   gocyclo:
     min-complexity: 20
   goimports:
-  #local-prefixes: git.woa.com
+  #local-prefixes: github.com/tencent/goom
   golint:
   #min-confidence: 0
   govet:

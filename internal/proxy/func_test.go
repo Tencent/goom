@@ -9,9 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"git.woa.com/goom/mocker/internal/proxy"
-
-	"git.woa.com/goom/mocker/internal/logger"
+	"github.com/tencent/goom/internal/logger"
+	"github.com/tencent/goom/internal/proxy"
 )
 
 // 测试用例数据

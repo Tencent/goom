@@ -7,11 +7,11 @@ import (
 	"fmt"
 	"syscall"
 
-	"git.woa.com/goom/mocker/internal/logger"
+	"github.com/tencent/goom/internal/logger"
 )
 
 // accessMemGuide access mem error solution guide
-const accessMemGuide = "https://iwiki.woa.com/pages/viewpage.action?pageId=1405108952"
+const accessMemGuide = "https://github.com/tencent/goom"
 
 // WriteTo this function is super unsafe
 // aww yeah

@@ -9,7 +9,7 @@ go_library(
         "pair.go",
         "value.go",
     ],
-    importpath = "git.woa.com/goom/mocker/arg",
+    importpath = "github.com/tencent/goom/arg",
     visibility = ["//visibility:public"],
     deps = [
         "//internal/hack:go_default_library",

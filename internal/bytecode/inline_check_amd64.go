@@ -3,9 +3,9 @@ package bytecode
 import (
 	"reflect"
 
-	"git.woa.com/goom/mocker/internal/arch/x86asm"
-	"git.woa.com/goom/mocker/internal/bytecode/memory"
-	"git.woa.com/goom/mocker/internal/logger"
+	"github.com/tencent/goom/internal/arch/x86asm"
+	"github.com/tencent/goom/internal/bytecode/memory"
+	"github.com/tencent/goom/internal/logger"
 )
 
 func init() {

@@ -9,12 +9,12 @@ import (
 	"runtime"
 	"strings"
 
-	"git.woa.com/goom/mocker/erro"
-	"git.woa.com/goom/mocker/internal/iface"
-	"git.woa.com/goom/mocker/internal/logger"
-	"git.woa.com/goom/mocker/internal/patch"
-	"git.woa.com/goom/mocker/internal/proxy"
-	"git.woa.com/goom/mocker/internal/unexports"
+	"github.com/tencent/goom/erro"
+	"github.com/tencent/goom/internal/iface"
+	"github.com/tencent/goom/internal/logger"
+	"github.com/tencent/goom/internal/patch"
+	"github.com/tencent/goom/internal/proxy"
+	"github.com/tencent/goom/internal/unexports"
 )
 
 // Mocker mock 接口, 所有类型(函数、方法、未导出函数、接口等)的 Mocker 的抽象

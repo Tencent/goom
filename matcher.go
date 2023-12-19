@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"sync/atomic"
 
-	"github.com/Jakegogo/goom_mocker/arg"
+	"github.com/tencent/goom/arg"
 )
 
 // BaseMatcher 参数匹配基类

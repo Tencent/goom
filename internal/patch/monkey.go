@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/Jakegogo/goom_mocker/internal/logger"
+	"github.com/tencent/goom/internal/logger"
 )
 
 // Patch 将函数调用指定代理函数

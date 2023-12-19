@@ -9,8 +9,8 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/Jakegogo/goom_mocker/internal/iface"
-	"github.com/Jakegogo/goom_mocker/internal/logger"
+	"github.com/tencent/goom/internal/iface"
+	"github.com/tencent/goom/internal/logger"
 )
 
 // Builder Mock 构建器, 负责创建一个链式构造器.

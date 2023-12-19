@@ -5,9 +5,9 @@ import (
 	"encoding/hex"
 	"strings"
 
-	"github.com/Jakegogo/goom_mocker/internal/arch/x86asm"
-	"github.com/Jakegogo/goom_mocker/internal/bytecode/memory"
-	"github.com/Jakegogo/goom_mocker/internal/logger"
+	"github.com/tencent/goom/internal/arch/x86asm"
+	"github.com/tencent/goom/internal/bytecode/memory"
+	"github.com/tencent/goom/internal/logger"
 )
 
 // defaultInsLen 默认一次解析指令的长度

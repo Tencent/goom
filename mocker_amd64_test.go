@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Jakegogo/goom_mocker/test"
 	"github.com/stretchr/testify/suite"
+	"github.com/tencent/goom/test"
 )
 
 // TestUnitAmd64TestSuite 测试入口

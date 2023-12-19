@@ -30,7 +30,7 @@ go_library(
     }),
     cdeps = [":libv8"],
     cgo = True,
-    importpath = "github.com/Jakegogo/goom_mocker/test",
+    importpath = "github.com/tencent/goom/test",
     visibility = ["//visibility:public"],
     deps = ["//internal/hack:go_default_library"],
 )

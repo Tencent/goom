@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Jakegogo/goom_mocker/internal/proxy"
+	"github.com/tencent/goom/internal/proxy"
 )
 
 // TestNetConnMock 测试 mock 网络连接

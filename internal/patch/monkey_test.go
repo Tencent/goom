@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Jakegogo/goom_mocker/internal/logger"
-	"github.com/Jakegogo/goom_mocker/internal/patch"
-	"github.com/Jakegogo/goom_mocker/internal/patch/test"
+	"github.com/tencent/goom/internal/logger"
+	"github.com/tencent/goom/internal/patch"
+	"github.com/tencent/goom/internal/patch/test"
 
 	"github.com/stretchr/testify/assert"
 )

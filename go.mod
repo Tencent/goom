@@ -1,4 +1,4 @@
-module github.com/Jakegogo/goom_mocker
+module github.com/tencent/goom
 
 go 1.13
 

@@ -7,8 +7,8 @@ package mocker
 import (
 	"reflect"
 
-	"github.com/Jakegogo/goom_mocker/arg"
-	"github.com/Jakegogo/goom_mocker/erro"
+	"github.com/tencent/goom/arg"
+	"github.com/tencent/goom/erro"
 )
 
 // Matcher 参数匹配接口

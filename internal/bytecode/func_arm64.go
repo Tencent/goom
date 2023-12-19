@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"encoding/hex"
 
-	"github.com/Jakegogo/goom_mocker/internal/arch/arm64asm"
-	"github.com/Jakegogo/goom_mocker/internal/bytecode/memory"
-	"github.com/Jakegogo/goom_mocker/internal/logger"
+	"github.com/tencent/goom/internal/arch/arm64asm"
+	"github.com/tencent/goom/internal/bytecode/memory"
+	"github.com/tencent/goom/internal/logger"
 )
 
 // defaultLength 默认指令长度

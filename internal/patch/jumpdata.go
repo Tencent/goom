@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"runtime/debug"
 
-	"github.com/Jakegogo/goom_mocker/internal/bytecode"
-	"github.com/Jakegogo/goom_mocker/internal/bytecode/memory"
-	"github.com/Jakegogo/goom_mocker/internal/logger"
+	"github.com/tencent/goom/internal/bytecode"
+	"github.com/tencent/goom/internal/bytecode/memory"
+	"github.com/tencent/goom/internal/logger"
 )
 
 const (

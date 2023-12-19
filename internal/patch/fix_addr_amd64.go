@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/Jakegogo/goom_mocker/internal/arch/x86asm"
-	"github.com/Jakegogo/goom_mocker/internal/bytecode"
-	"github.com/Jakegogo/goom_mocker/internal/logger"
+	"github.com/tencent/goom/internal/arch/x86asm"
+	"github.com/tencent/goom/internal/bytecode"
+	"github.com/tencent/goom/internal/logger"
 )
 
 // allowCopyCall 是否允许拷贝 Call 指令

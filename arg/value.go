@@ -7,8 +7,8 @@ import (
 	"strings"
 	"unsafe"
 
-	"github.com/Jakegogo/goom_mocker/internal/hack"
-	"github.com/Jakegogo/goom_mocker/internal/iface"
+	"github.com/tencent/goom/internal/hack"
+	"github.com/tencent/goom/internal/iface"
 )
 
 // I2V []interface convert to []reflect.Value 将interface元素类型的数组，转换成reflect.Value元素类型的数组

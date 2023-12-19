@@ -4,8 +4,8 @@ import (
 	"reflect"
 	"unsafe"
 
-	"github.com/Jakegogo/goom_mocker/internal/bytecode/stub"
-	"github.com/Jakegogo/goom_mocker/internal/hack"
+	"github.com/tencent/goom/internal/bytecode/stub"
+	"github.com/tencent/goom/internal/hack"
 )
 
 // IContext 接口 Mock 代码函数的接收体

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/Jakegogo/goom_mocker/internal/proxy"
+	"github.com/tencent/goom/internal/proxy"
 )
 
 // TestPrintMock 测试 mock fmt.Print

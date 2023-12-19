@@ -7,10 +7,10 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/Jakegogo/goom_mocker/internal/bytecode"
-	"github.com/Jakegogo/goom_mocker/internal/logger"
-	"github.com/Jakegogo/goom_mocker/internal/patch"
-	"github.com/Jakegogo/goom_mocker/internal/unexports"
+	"github.com/tencent/goom/internal/bytecode"
+	"github.com/tencent/goom/internal/logger"
+	"github.com/tencent/goom/internal/patch"
+	"github.com/tencent/goom/internal/unexports"
 )
 
 // Func 通过函数生成代理函数

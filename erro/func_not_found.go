@@ -3,7 +3,7 @@ package erro
 import (
 	"strings"
 
-	"github.com/Jakegogo/goom_mocker/internal/logger"
+	"github.com/tencent/goom/internal/logger"
 )
 
 const prefix = "func not found: "

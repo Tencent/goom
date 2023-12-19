@@ -6,9 +6,9 @@ import (
 	"reflect"
 	"testing"
 
-	mocker "github.com/Jakegogo/goom_mocker"
-	"github.com/Jakegogo/goom_mocker/arg"
 	"github.com/stretchr/testify/suite"
+	mocker "github.com/tencent/goom"
+	"github.com/tencent/goom/arg"
 )
 
 // TestUnitWhenTestSuite 测试入口

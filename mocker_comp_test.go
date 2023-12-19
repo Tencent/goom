@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Jakegogo/goom_mocker/test"
+	"github.com/tencent/goom/test"
 )
 
 // TestCompatibility 测试针对不同 go 版本的兼容情况

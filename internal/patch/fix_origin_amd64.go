@@ -4,9 +4,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/Jakegogo/goom_mocker/internal/bytecode"
-	"github.com/Jakegogo/goom_mocker/internal/bytecode/memory"
-	"github.com/Jakegogo/goom_mocker/internal/logger"
+	"github.com/tencent/goom/internal/bytecode"
+	"github.com/tencent/goom/internal/bytecode/memory"
+	"github.com/tencent/goom/internal/logger"
 )
 
 // fixOriginFuncToTrampoline 将原始函数 from 的指令到 trampoline 指向的地址(在 PlaceHolder 区内存区段内)

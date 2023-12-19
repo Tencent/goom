@@ -3,7 +3,7 @@ package stub
 import (
 	"fmt"
 
-	"github.com/Jakegogo/goom_mocker/internal/bytecode/memory"
+	"github.com/tencent/goom/internal/bytecode/memory"
 )
 
 const (
@@ -21,7 +21,7 @@ type Space struct {
 }
 
 // Acquire enough executable space
-//nolint
+// nolint
 func Acquire(spaceLen int) (*Space, error) {
 	if addr, space, err := acquireFromMMap(spaceLen); err == nil {
 		return &Space{

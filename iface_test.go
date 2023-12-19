@@ -5,9 +5,9 @@ package mocker_test
 import (
 	"testing"
 
-	mocker "github.com/Jakegogo/goom_mocker"
-	"github.com/Jakegogo/goom_mocker/erro"
 	"github.com/stretchr/testify/suite"
+	mocker "github.com/tencent/goom"
+	"github.com/tencent/goom/erro"
 )
 
 // TestUnitIFaceTestSuite 接口 Mock 测试入口

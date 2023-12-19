@@ -17,7 +17,7 @@ go_library(
         "icache_arm64_17.go",
         "icache_arm64_18.go",
     ],
-    importpath = "github.com/Jakegogo/goom_mocker/internal/bytecode/memory",
+    importpath = "github.com/tencent/goom/internal/bytecode/memory",
     visibility = ["//:__subpackages__"],
     deps = select({
         "@io_bazel_rules_go//go/platform:aix_ppc64": [

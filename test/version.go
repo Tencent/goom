@@ -26,7 +26,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Jakegogo/goom_mocker/internal/hack"
+	"github.com/tencent/goom/internal/hack"
 )
 
 const osWindows = "windows"
@@ -534,7 +534,7 @@ func dedupEnv(caseInsensitive bool, env []string) []string {
 	return out
 }
 
-//nolint
+// nolint
 func handleSignals() {
 	// Ensure that signals intended for the child process are not handled by
 	// this process' runtime (e.g. SIGQUIT). See issue #36976.

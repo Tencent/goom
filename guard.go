@@ -5,8 +5,8 @@
 package mocker
 
 import (
-	"github.com/Jakegogo/goom_mocker/internal/iface"
-	"github.com/Jakegogo/goom_mocker/internal/patch"
+	"github.com/tencent/goom/internal/iface"
+	"github.com/tencent/goom/internal/patch"
 )
 
 // MockGuard Mock 守卫

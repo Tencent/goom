@@ -7,8 +7,8 @@ import (
 	"sync/atomic"
 	"unsafe"
 
-	"git.woa.com/goom/mocker/internal/bytecode"
-	"git.woa.com/goom/mocker/internal/logger"
+	"github.com/tencent/goom/internal/bytecode"
+	"github.com/tencent/goom/internal/logger"
 )
 
 // placeHolderIns 占位实例
@@ -56,7 +56,7 @@ func init() {
 }
 
 // acquireFromHolder enough executable space from holder
-//nolint
+// nolint
 func acquireFromHolder(len int) (uintptr, *[]byte, error) {
 	placeholder := atomic.LoadUintptr(&placeHolderIns.off)
 	if placeholder+uintptr(len) > placeHolderIns.max {

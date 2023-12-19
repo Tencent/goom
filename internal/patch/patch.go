@@ -6,8 +6,8 @@ import (
 	"reflect"
 	"sync"
 
-	"git.woa.com/goom/mocker/internal/bytecode"
-	"git.woa.com/goom/mocker/internal/logger"
+	"github.com/tencent/goom/internal/bytecode"
+	"github.com/tencent/goom/internal/logger"
 )
 
 var (

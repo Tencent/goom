@@ -5,9 +5,8 @@ import (
 	"fmt"
 	"testing"
 
-	"git.woa.com/goom/mocker"
-
 	"github.com/stretchr/testify/suite"
+	mocker "github.com/tencent/goom"
 )
 
 // foo foo 测试函数

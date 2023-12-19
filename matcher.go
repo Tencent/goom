@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"sync/atomic"
 
-	"git.woa.com/goom/mocker/arg"
+	"github.com/tencent/goom/arg"
 )
 
 // BaseMatcher 参数匹配基类

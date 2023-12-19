@@ -8,8 +8,8 @@ import (
 	"reflect"
 	"unsafe"
 
-	"git.woa.com/goom/mocker/internal/iface"
-	"git.woa.com/goom/mocker/internal/logger"
+	"github.com/tencent/goom/internal/iface"
+	"github.com/tencent/goom/internal/logger"
 )
 
 // IContext 接口 mock 的接收体

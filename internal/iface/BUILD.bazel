@@ -8,7 +8,7 @@ go_library(
         "make_interface.go",
         "make_method.go",
     ],
-    importpath = "git.woa.com/goom/mocker/internal/iface",
+    importpath = "github.com/tencent/goom/internal/iface",
     visibility = ["//:__subpackages__"],
     deps = [
         "//internal/bytecode:go_default_library",

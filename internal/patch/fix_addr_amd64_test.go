@@ -3,10 +3,11 @@ package patch
 import (
 	"testing"
 
-	"git.woa.com/goom/mocker/internal/logger"
+	"github.com/tencent/goom/internal/logger"
 )
 
 // nolint
+//
 //go:noinline
 func Say() string {
 	return "say"

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"git.woa.com/goom/mocker/internal/logger"
+	"github.com/tencent/goom/internal/logger"
 )
 
 // VarMock 变量 mock

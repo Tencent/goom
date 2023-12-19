@@ -9,9 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"git.woa.com/goom/mocker"
-	"git.woa.com/goom/mocker/test"
 	"github.com/stretchr/testify/suite"
+	"github.com/tencent/goom/test"
 )
 
 // TestUnitAmd64TestSuite 测试入口

@@ -1,8 +1,8 @@
 package bytecode
 
 import (
-	"git.woa.com/goom/mocker/internal/arch/x86asm"
-	"git.woa.com/goom/mocker/internal/logger"
+	"github.com/tencent/goom/internal/arch/x86asm"
+	"github.com/tencent/goom/internal/logger"
 )
 
 // ParseIns parse instruction

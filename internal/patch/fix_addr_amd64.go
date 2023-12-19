@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 
-	"git.woa.com/goom/mocker/internal/arch/x86asm"
-	"git.woa.com/goom/mocker/internal/bytecode"
-	"git.woa.com/goom/mocker/internal/logger"
+	"github.com/tencent/goom/internal/arch/x86asm"
+	"github.com/tencent/goom/internal/bytecode"
+	"github.com/tencent/goom/internal/logger"
 )
 
 // allowCopyCall 是否允许拷贝 Call 指令

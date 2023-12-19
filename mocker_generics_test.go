@@ -9,8 +9,8 @@ import (
 	"fmt"
 	"testing"
 
-	"git.woa.com/goom/mocker"
 	"github.com/stretchr/testify/suite"
+	"github.com/tencent/goom"
 )
 
 type GT[T any] struct {

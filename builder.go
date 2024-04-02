@@ -35,7 +35,7 @@ func (b *Builder) PkgName() string {
 	return b.pkgName
 }
 
-// New 创建 Mock 构建器, 和Create()函数相同的
+// New 创建 Mock 构建器, 和Create()函数目的是相同的
 // 非线程安全的,不能在多协程中并发地 mock 或 reset 同一个函数
 func New() *Builder {
 	// callerDeps 当前的调用栈栈层次

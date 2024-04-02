@@ -32,7 +32,7 @@ func toValue(r interface{}, out reflect.Type) (reflect.Value, error) {
 	v := reflect.ValueOf(r)
 	if r != nil && v.Type() != out && (out.Kind() == reflect.Struct || out.Kind() == reflect.Ptr) {
 		if v.Type().Size() != out.Size() {
-			return reflect.Value{}, fmt.Errorf("The type of the args does not match,required: %s, actual: %v", v.Type(), out)
+			return reflect.Value{}, fmt.Errorf("The type of the args does not match, required: %s, actual: %v", v.Type(), out)
 		}
 		// 类型强制转换,适用于结构体 fake 场景
 		v = cast(v, out)
@@ -45,7 +45,6 @@ func toValue(r interface{}, out reflect.Type) (reflect.Value, error) {
 		v.Type() == reflect.TypeOf(&iface.IContext{}) {
 		panic("goom not support Return() API when returns mocked interface type, please use Apply() API instead.")
 	} else if r != nil && out.Kind() == reflect.Interface {
-
 		ptr := reflect.New(out)
 		ptr.Elem().Set(v)
 		v = ptr.Elem()

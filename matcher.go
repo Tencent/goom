@@ -24,7 +24,7 @@ func newBaseMatcher(results []interface{}, funTyp reflect.Type) *BaseMatcher {
 		// TODO results check
 		result, err := arg.I2V(results, outTypes(funTyp))
 		if err != nil {
-			panic("Call Return(...) error: " + err.Error())
+			panic("Return Value (" + fmt.Sprintf("%v", results) + ") error: " + err.Error())
 		}
 		resultVs = append(resultVs, result)
 	}
@@ -56,7 +56,7 @@ func (c *BaseMatcher) AddResult(results []interface{}) {
 	// TODO results check
 	result, err := arg.I2V(results, outTypes(c.funTyp))
 	if err != nil {
-		panic("Call Return(...) error: " + err.Error())
+		panic("Return Value (" + fmt.Sprintf("%v", results) + ") error: " + err.Error())
 	}
 	c.results = append(c.results, result)
 }
@@ -92,7 +92,7 @@ type DefaultMatcher struct {
 func newDefaultMatch(args []interface{}, results []interface{}, isMethod bool, funTyp reflect.Type) *DefaultMatcher {
 	e, err := arg.ToExpr(args, inTypes(isMethod, funTyp))
 	if err != nil {
-		panic(fmt.Sprintf("Call When(...) error in args: %v", err))
+		panic(fmt.Sprintf("Call When("+fmt.Sprintf("%v", args)+") error: %v", err))
 	}
 	return &DefaultMatcher{
 		exprs:       e,

@@ -52,7 +52,7 @@ func (s *mockerTestSuite) TestUnitFuncApply() {
 // TestClosureFuncApply 测试闭包函数 mock apply
 func (s *mockerTestSuite) TestClosureFuncApply() {
 	s.Run("success", func() {
-		mock := mocker.Create()
+		mock := mocker.New()
 		var r = 1
 		mock.Func(test.Foo).Apply(func(int) int {
 			return r
@@ -80,7 +80,7 @@ func (s *mockerTestSuite) TestUnitFuncReturn() {
 // TestUnitUnexportedFuncApply 测试未导出函数 mock apply
 func (s *mockerTestSuite) TestUnitUnexportedFuncApply() {
 	s.Run("success", func() {
-		mock := mocker.Create()
+		mock := mocker.New()
 		mock.Pkg("git.woa.com/goom/mocker/test").ExportFunc("foo").Apply(func(i int) int {
 			return i * 3
 		})

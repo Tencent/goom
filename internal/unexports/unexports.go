@@ -84,9 +84,12 @@ func FindFuncByPtr(ptr uintptr) (*runtime.Func, string, error) {
 			if f.Entry() > ptrMax {
 				continue
 			}
+			// check nameOff overflow
+			if hack.CheckNameOffOverflow(f, moduleData) {
+				continue
+			}
 
 			fName := funcName(f)
-
 			if f.Entry() == ptr {
 				return f, fName, nil
 			}

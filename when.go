@@ -201,7 +201,10 @@ func (w *When) invoke(args1 []reflect.Value) (results []reflect.Value) {
 
 // Eval 执行 when 子句
 func (w *When) Eval(args ...interface{}) []interface{} {
-	argVs := arg.I2V(args, inTypes(w.isMethod, w.funcTyp))
+	argVs, err := arg.I2V(args, inTypes(w.isMethod, w.funcTyp))
+	if err != nil {
+		panic("Call Eval(...) error: " + err.Error())
+	}
 	resultVs := w.invoke(argVs)
 	return arg.V2I(resultVs, outTypes(w.funcTyp))
 }

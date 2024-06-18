@@ -42,8 +42,9 @@ func (e *EqualsExpr) Resolve(types []reflect.Type) error {
 	if len(types) != 1 {
 		return fmt.Errorf("EqualsExpr.Resolve status error")
 	}
-	e.argV = toValue(e.arg, types[0])
-	return nil
+	var err error
+	e.argV, err = toValue(e.arg, types[0])
+	return err
 }
 
 // Eval 执行 EqualsExpr 表达式

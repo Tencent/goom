@@ -112,3 +112,8 @@ type Value struct {
 	Ptr  unsafe.Pointer
 	Flag uintptr
 }
+
+// CheckNameOffOverflow check nameOff overflow
+func CheckNameOffOverflow(f *runtime.Func, md *Moduledata) bool {
+	return false
+}

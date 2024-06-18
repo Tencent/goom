@@ -5,6 +5,7 @@
 package hack
 
 import (
+	"runtime"
 	"unsafe"
 	_ "unsafe" // 匿名引入
 )
@@ -21,7 +22,7 @@ var Firstmoduledata Moduledata
 // Moduledata keep async with runtime.Moduledata
 type Moduledata struct {
 	pcHeader     *uintptr
-	funcnametab  []byte
+	Funcnametab  []byte
 	cutab        []uint32
 	filetab      []byte
 	pctab        []byte
@@ -100,4 +101,20 @@ type Value struct {
 	Typ  *uintptr
 	Ptr  unsafe.Pointer
 	Flag uintptr
+}
+
+// CheckNameOffOverflow check nameOff overflow
+func CheckNameOffOverflow(f *runtime.Func, md *Moduledata) bool {
+	fc := (*FuncInfo)(unsafe.Pointer(f))
+	if fc.NameOff >= int32(len(md.Funcnametab)) {
+		return true
+	}
+	return false
+}
+
+// FuncInfo keep async with runtime2.go/type _func struct{}
+type FuncInfo struct {
+	EntryOff uint32 // start pc, as offset from moduledata.text/pcHeader.textStart
+	NameOff  int32  // function name, as index into moduledata.funcnametab.
+	// .....
 }

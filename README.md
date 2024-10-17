@@ -348,6 +348,7 @@ func TestUnitTestSuite(t *testing.T) {
 
 ## 联系答疑
 常见问题可参考: https://github.com/Tencent/goom/wiki
+
 或者提issue: https://github.com/Tencent/goom/issues
 
 

@@ -1,7 +1,6 @@
-//go:build go1.18 && !go1.22
-// +build go1.18,!go1.22
+//go:build go1.22
+// +build go1.22
 
-// Package hack 对 go 系统包的 hack, 包含一些系统结构体的 copy，需要和不同的 go 版本保持同步
 package hack
 
 import (
@@ -35,6 +34,7 @@ type Moduledata struct {
 	data, edata           uintptr
 	bss, ebss             uintptr
 	noptrbss, enoptrbss   uintptr
+	covctrs, ecovctrs     uintptr
 	end, gcdata, gcbss    uintptr
 	types, etypes         uintptr
 	rodata                uintptr
@@ -49,6 +49,10 @@ type Moduledata struct {
 	pluginpath string
 	pkghashes  []interface{}
 
+	// This slice records the initializing tasks that need to be
+	// done to start up the program. It is built by the linker.
+	inittasks []*uintptr
+
 	modulename   string
 	modulehashes []interface{}
 
@@ -56,16 +60,16 @@ type Moduledata struct {
 
 	gcdatamask, gcbssmask Bitvector
 
-	_ map[typeOff]*interface{} // typemap: offset to *_rtype in previous module
+	_ map[typeOff]*interface{} // offset to *_rtype in previous module
 
-	_ bool // bad: module failed to load and should be ignored
+	_ bool // module failed to load and should be ignored
 
 	Next *Moduledata
 }
 
 // Functab Functab
 type Functab struct {
-	Entry   uint32
+	Entry   uint32 // relative to runtime.text
 	Funcoff uint32
 }
 
@@ -73,15 +77,13 @@ type Functab struct {
 type textsect struct {
 	// nolint
 	vaddr    uintptr // prelinked section vaddr
-	length   uintptr // section length
+	end      uintptr // vaddr + section length
 	baseaddr uintptr // relocated section address
 }
 
 // Bitvector Bitvector
 type Bitvector struct {
-	// nolint
-	n int32 // # of bits
-	// nolint
+	n        int32 // # of bits
 	bytedata *uint8
 }
 

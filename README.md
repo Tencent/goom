@@ -350,6 +350,7 @@ func TestUnitTestSuite(t *testing.T) {
 ```shell
 -gcflags="all=-N -l" -ldflags=-checklinkname=0
 ```
+-gcflags="all=-N -l": 解决permission denied的问题
 -checklinkname=0: 关闭golinkname的标签检查，即继续允许go:linkname标签的使用    
 但在后续的go版本中，可能会被移除对go:linkname标签支持，    
 **!!!因此会导致将来的goom版本可能不支持未导出函数的mock**

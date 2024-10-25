@@ -346,7 +346,12 @@ func TestUnitTestSuite(t *testing.T) {
 }
 ```
 
-3. go 1.23以上版本需要加上以下构建参数才可以使用:
+3. go 1.23以上版本需要加上以下构建参数才可以使用    
+报错内容:
+```
+link: git.woa.com/goom/mocker/internal/hack: invalid reference to runtime.firstmoduledata
+```
+解决方案，添加构建参数:
 ```shell
 -gcflags="all=-N -l" -ldflags=-checklinkname=0
 ```

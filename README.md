@@ -355,7 +355,7 @@ link: git.woa.com/goom/mocker/internal/hack: invalid reference to runtime.firstm
 ```shell
 -gcflags="all=-N -l" -ldflags=-checklinkname=0
 ```
-> -gcflags="all=-N -l": 解决permission denied的问题    
+> -gcflags="all=-N -l": 解决被mock函数内联问题，和permission denied的问题(go1.23版本新增要求)  
 > -checklinkname=0: 关闭golinkname的标签检查，即继续允许go:linkname标签的使用   
 
 !!! 但在后续的go版本中，可能会被移除对go:linkname标签支持，    

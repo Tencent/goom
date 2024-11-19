@@ -4,7 +4,6 @@
 package unexports2
 
 import (
-	// "bytes"
 	"debug/gosym"
 	"debug/pe"
 	"fmt"

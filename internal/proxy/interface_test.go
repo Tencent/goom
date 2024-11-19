@@ -3,11 +3,11 @@ package proxy_test
 
 import (
 	"fmt"
+	"git.woa.com/goom/mocker/internal/unexports2"
 	"reflect"
 	"testing"
 	"unsafe"
 
-	"git.woa.com/goom/mocker/internal/bytecode/stub"
 	"git.woa.com/goom/mocker/internal/hack"
 	"git.woa.com/goom/mocker/internal/iface"
 	"git.woa.com/goom/mocker/internal/logger"
@@ -196,7 +196,7 @@ func dynamicGenImpl(t *testing.T, i interface{}) {
 	ifc := *(*uintptr)(gen)
 	fmt.Println(ifc)
 
-	callStub := reflect.ValueOf(stub.MakeFuncStub).Pointer()
+	callStub, err := unexports2.FindFuncByName("reflect.makeFuncStub")
 	mockFuncPtr := (*hack.Value)(unsafe.Pointer(&mockFunc)).Ptr
 	genStub, err := iface.MakeMethodCallerWithCtx(mockFuncPtr, callStub)
 

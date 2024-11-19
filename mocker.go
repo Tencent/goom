@@ -14,7 +14,6 @@ import (
 	"git.woa.com/goom/mocker/internal/logger"
 	"git.woa.com/goom/mocker/internal/patch"
 	"git.woa.com/goom/mocker/internal/proxy"
-	"git.woa.com/goom/mocker/internal/unexports"
 	"git.woa.com/goom/mocker/internal/unexports2"
 )
 
@@ -406,7 +405,7 @@ func (m *UnexportedMethodMocker) As(aFunc interface{}) ExportedMocker {
 	if err != nil {
 		panic(err)
 	}
-	newFunc := unexports.NewFuncWithCodePtr(reflect.TypeOf(aFunc), originFuncPtr)
+	newFunc := unexports2.NewFuncWithCodePtr(reflect.TypeOf(aFunc), originFuncPtr)
 	return &DefMocker{
 		baseMocker: m.baseMocker,
 		funcDef:    newFunc.Interface(),
@@ -462,7 +461,7 @@ func (m *UnexportedFuncMocker) As(funcDef interface{}) ExportedMocker {
 		panic(err)
 	}
 
-	newFunc := unexports.NewFuncWithCodePtr(reflect.TypeOf(funcDef), originFuncPtr)
+	newFunc := unexports2.NewFuncWithCodePtr(reflect.TypeOf(funcDef), originFuncPtr)
 	return &DefMocker{
 		baseMocker: m.baseMocker,
 		funcDef:    newFunc.Interface(),

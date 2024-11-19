@@ -2,12 +2,10 @@ package unexports2
 
 import (
 	"errors"
-	"fmt"
 	"reflect"
 	"unsafe"
 
 	"git.woa.com/goom/mocker/internal/hack"
-	"git.woa.com/goom/mocker/internal/unexports"
 )
 
 var alignment uintptr
@@ -28,9 +26,6 @@ func FindFuncByName(name string) (uintptr, error) {
 	if err != nil {
 		return 0, err
 	}
-
-	entry, _ := unexports.FindFuncByName(name)
-	fmt.Printf("%x, %x\n", entry, uintptr(fn.Entry)+alignment)
 	return uintptr(fn.Entry) + alignment, nil
 }
 

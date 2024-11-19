@@ -11,5 +11,5 @@ func initProcess() {
 	osInitProcess()
 	pageSize = osGetPageSize()
 	pageBeginMask = ^uintptr(pageSize - 1)
-	//processBaseAddress = osGetProcessBaseAddress()
+	processBaseAddress = osGetProcessBaseAddress()
 }

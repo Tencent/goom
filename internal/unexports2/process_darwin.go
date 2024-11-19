@@ -7,6 +7,11 @@ import (
 )
 
 func osGetProcessBaseAddress() (address uintptr) {
+	return 0
+}
+
+// TODO: 待修正
+func osGetProcessBaseAddress1() (address uintptr) {
 	defer func() {
 		if e := recover(); e != nil {
 			address = 0

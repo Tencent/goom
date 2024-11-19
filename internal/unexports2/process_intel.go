@@ -64,29 +64,3 @@ func initCallCache() (err error) {
 
 	return
 }
-
-func osRedirectCalls(src, dst uintptr) (err error) {
-	if err = initCallCache(); err != nil {
-		return
-	}
-
-	callLocations, ok := callLocations[src]
-	if !ok {
-		err = fmt.Errorf("Function is not referenced in this program")
-		return
-	}
-
-	for _, loc := range callLocations {
-		newCallArg := uint32(dst - loc - callOpArgLength)
-		bytes := SliceAtAddress(loc, callOpArgLength)
-
-		err = applyToProtectedMemory(GetSliceAddr(bytes), callOpArgLength, func() {
-			binary.LittleEndian.PutUint32(bytes, newCallArg)
-		})
-		if err != nil {
-			return
-		}
-	}
-
-	return
-}

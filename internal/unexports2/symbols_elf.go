@@ -4,21 +4,12 @@
 package unexports2
 
 import (
-	"bytes"
 	"debug/elf"
 	"debug/gosym"
 	"fmt"
 	"io"
 	"os"
 )
-
-func osReadSymbolsFromMemory() (symTable *gosym.Table, err error) {
-	if processBaseAddress == 0 {
-		return nil, fmt.Errorf("Base address not found")
-	}
-	reader := bytes.NewReader(SliceAtAddress(processBaseAddress, 0x10000000))
-	return osReadSymbols(reader)
-}
 
 func osReadSymbolsFromExeFile() (symTable *gosym.Table, err error) {
 	var exePath string

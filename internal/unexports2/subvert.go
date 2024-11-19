@@ -145,7 +145,6 @@ func AllFunctions() (functions map[string]bool, err error) {
 
 func init() {
 	initReflectValue()
-	initProcess()
 }
 
 const is64BitUintptr = uint64(^uintptr(0)) == ^uint64(0)

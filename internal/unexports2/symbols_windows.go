@@ -12,17 +12,6 @@ import (
 	"os"
 )
 
-func osReadSymbolsFromMemory() (symTable *gosym.Table, err error) {
-	if processBaseAddress == 0 {
-		return nil, fmt.Errorf("Base address not found")
-	}
-
-	return nil, fmt.Errorf("TODO: Fails with: fail to read string table: unexpected EOF")
-
-	// reader := bytes.NewReader(SliceAtAddress(processBaseAddress, 0x2c4000))
-	// return osReadSymbols(reader)
-}
-
 func osReadSymbolsFromExeFile() (symTable *gosym.Table, err error) {
 	var exePath string
 	if exePath, err = os.Executable(); err != nil {

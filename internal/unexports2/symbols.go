@@ -19,12 +19,6 @@ func loadSymbolTable() (table *gosym.Table, err error) {
 		return
 	}
 
-	table, err = osReadSymbolsFromMemory()
-	if err == nil && table != nil {
-		symTable = table
-		return
-	}
-
 	table, err = osReadSymbolsFromExeFile()
 	symTableLoadError = err
 	if err != nil {

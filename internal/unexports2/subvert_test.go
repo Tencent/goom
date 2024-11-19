@@ -12,8 +12,6 @@ type SubvertTester struct {
 	int
 }
 
-const constString = "testing"
-
 func TestExposeFunction(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		fmt.Printf("Skipping TestExposeFunction because it doesn't work in test binaries on this platform. Please run standalone_test.\n")
@@ -31,7 +29,7 @@ func TestExposeFunction(t *testing.T) {
 			return
 		}
 		f := exposed.(func() string)
-		expected := "github.com/kstenerud/go-subvert.getPanic"
+		expected := "git.woa.com/goom/mocker/internal/unexports2.getPanic"
 		actual := f()
 		if actual != expected {
 			t.Errorf("Expected [%v] but got [%v]", expected, actual)

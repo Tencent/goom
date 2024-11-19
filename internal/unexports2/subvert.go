@@ -12,83 +12,7 @@ package unexports2
 
 import (
 	"debug/gosym"
-	"fmt"
-	"reflect"
-	"syscall"
-	"unsafe"
 )
-
-// MakeWritable clears a value's RO flags. The RO flags are generally used to
-// determine whether a value is exported (and thus accessible) or not.
-func MakeWritable(v *reflect.Value) error {
-	if !rvFlagsFound {
-		return rvFlagsError
-	}
-	*getRVFlagPtr(v) &= ^rvFlagRO
-	return nil
-}
-
-// MakeAddressable adds the addressable flag to a value, allowing you to take
-// its address. The most common reason for making an object non-addressable is
-// because it's allocated on the stack or in read-only memory.
-//
-// Making a pointer to a stack value will cause undefined behavior if you
-// attempt to access it outside of the stack-allocated object's scope.
-//
-// Do not write to an object in read-only memory. It would be bad.
-func MakeAddressable(v *reflect.Value) error {
-	if !rvFlagsFound {
-		return rvFlagsError
-	}
-	*getRVFlagPtr(v) |= rvFlagAddr
-	return nil
-}
-
-// SliceAtAddress turns a memory range into a go slice.
-//
-// No checks are made as to whether the memory is writable or even readable.
-//
-// Do not append to the slice.
-func SliceAtAddress(address uintptr, length int) []byte {
-	pageSize := uintptr(syscall.Getpagesize())
-	dataSize := uintptr(length)
-	var (
-		errnoResult syscall.Errno
-		success     bool
-	)
-	for p := pageStart(address); p < address+dataSize; p += pageSize {
-		_, _, errno := syscall.Syscall(syscall.SYS_MPROTECT, p, pageSize, syscall.PROT_READ|syscall.PROT_EXEC)
-		if errno != 0 {
-			errnoResult = errno
-		}
-		if errno == 0 {
-			success = true
-		}
-	}
-	if !success {
-		panic(fmt.Errorf("access mem error: %w", errnoResult))
-	}
-	return rawAccess(address, length)
-}
-
-func rawAccess(addr uintptr, length int) []byte {
-	return *(*[]byte)(unsafe.Pointer(&reflect.SliceHeader{
-		Data: addr,
-		Len:  length,
-		Cap:  length,
-	}))
-}
-
-// pageStart page start of memory
-func pageStart(addr uintptr) uintptr {
-	return addr & ^(uintptr(syscall.Getpagesize() - 1))
-}
-
-// GetSliceAddr gets the address of a slice
-func GetSliceAddr(slice []byte) uintptr {
-	pSlice := (*unsafe.Pointer)((unsafe.Pointer)(&slice))
-	return uintptr(*pSlice)
-}
 
 // ExposeFunction exposes a function or method, allowing you to bypass export
 // restrictions. It looks for the symbol specified by funcSymName and returns a
@@ -115,7 +39,7 @@ func ExposeFunction(funcSymName string, templateFunc interface{}) (function inte
 	if err != nil {
 		return
 	}
-	return newFunctionWithImplementation(templateFunc, uintptr(fn.Entry))
+	return newFunctionWithImplementation(templateFunc, uintptr(fn.Entry)+alignment)
 }
 
 // GetSymbolTable loads (if necessary) and returns the symbol table for this process
@@ -142,9 +66,3 @@ func AllFunctions() (functions map[string]bool, err error) {
 	}
 	return
 }
-
-func init() {
-	initReflectValue()
-}
-
-const is64BitUintptr = uint64(^uintptr(0)) == ^uint64(0)

@@ -15,6 +15,7 @@ import (
 	"git.woa.com/goom/mocker/internal/patch"
 	"git.woa.com/goom/mocker/internal/proxy"
 	"git.woa.com/goom/mocker/internal/unexports"
+	"git.woa.com/goom/mocker/internal/unexports2"
 )
 
 // Mocker mock 接口, 所有类型(函数、方法、未导出函数、接口等)的 Mocker 的抽象
@@ -376,7 +377,7 @@ func (m *UnexportedMethodMocker) Apply(callback interface{}) {
 	}
 
 	if !strings.Contains(name, "*") {
-		_, _ = unexports.FindFuncByName(name)
+		_, _ = unexports2.FindFuncByName(name)
 	}
 
 	callback, _ = interceptDebugInfo(callback, nil, m)
@@ -401,7 +402,7 @@ func (m *UnexportedMethodMocker) As(aFunc interface{}) ExportedMocker {
 		err           error
 		originFuncPtr uintptr
 	)
-	originFuncPtr, err = unexports.FindFuncByName(name)
+	originFuncPtr, err = unexports2.FindFuncByName(name)
 	if err != nil {
 		panic(err)
 	}
@@ -455,13 +456,13 @@ func (m *UnexportedFuncMocker) Origin(originFunc interface{}) UnExportedMocker {
 }
 
 // As 将未导出函数(或方法)转换为导出函数(或方法)
-func (m *UnexportedFuncMocker) As(aFunc interface{}) ExportedMocker {
-	originFuncPtr, err := unexports.FindFuncByName(m.objName())
+func (m *UnexportedFuncMocker) As(funcDef interface{}) ExportedMocker {
+	originFuncPtr, err := unexports2.FindFuncByName(m.objName())
 	if err != nil {
 		panic(err)
 	}
 
-	newFunc := unexports.NewFuncWithCodePtr(reflect.TypeOf(aFunc), originFuncPtr)
+	newFunc := unexports.NewFuncWithCodePtr(reflect.TypeOf(funcDef), originFuncPtr)
 	return &DefMocker{
 		baseMocker: m.baseMocker,
 		funcDef:    newFunc.Interface(),

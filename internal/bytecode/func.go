@@ -3,12 +3,12 @@ package bytecode
 import (
 	"fmt"
 	"reflect"
+	"runtime"
 	"sync"
 	"unsafe"
 
 	"git.woa.com/goom/mocker/internal/bytecode/memory"
 	"git.woa.com/goom/mocker/internal/logger"
-	"git.woa.com/goom/mocker/internal/unexports"
 )
 
 // 调试日志相关
@@ -85,10 +85,8 @@ func IsValidPtr(value interface{}) bool {
 
 // PrintInst PrintInst 调试内存指令替换,对原指令、替换之后的指令进行输出对比
 func PrintInst(name string, from uintptr, size int, level int) {
-	if logger.LogLevel < level {
-		return
-	}
-	_, funcName, _ := unexports.FindFuncByPtr(from)
+	//_, funcName, _ := unexports.FindFuncByPtr(from)
+	funcName := runtime.FuncForPC(from).Name()
 	instBytes := memory.RawRead(from, size)
 	PrintInstf(fmt.Sprintf("show [%s = %s] inst>>: ", name, funcName), from, instBytes, level)
 }

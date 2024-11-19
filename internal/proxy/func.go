@@ -11,6 +11,7 @@ import (
 	"git.woa.com/goom/mocker/internal/logger"
 	"git.woa.com/goom/mocker/internal/patch"
 	"git.woa.com/goom/mocker/internal/unexports"
+	"git.woa.com/goom/mocker/internal/unexports2"
 )
 
 // Func 通过函数生成代理函数
@@ -54,7 +55,7 @@ func FuncName(funcName string, proxyFunc interface{}, trampolineFunc interface{}
 	if e := checkTrampolineFunc(trampolineFunc); e != nil {
 		return nil, e
 	}
-	originFuncPtr, err := unexports.FindFuncByName(funcName)
+	originFuncPtr, err := unexports2.FindFuncByName(funcName)
 	if err != nil {
 		return nil, err
 	}

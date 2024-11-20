@@ -4,38 +4,14 @@
 package unexports2
 
 import (
-	"bytes"
 	"debug/gosym"
 	"debug/pe"
 	"fmt"
 	"io"
-	"math"
 	"os"
-	"unsafe"
 )
 
-func osReadSymbolsFromMemory() (symTable *gosym.Table, err error) {
-	if processBaseAddress := osGetProcessBaseAddress(); processBaseAddress != 0 {
-		reader := bytes.NewReader(SliceAtAddress(processBaseAddress, 0x2c4000))
-		return osReadSymbols(reader)
-	}
-	return nil, fmt.Errorf("Base address not found")
-}
-
-// SliceAtAddress turns a memory range into a go slice.
-//
-// No checks are made as to whether the memory is writable or even readable.
-//
-// Do not append to the slice.
-func SliceAtAddress(address uintptr, length int) []byte {
-	return (*[math.MaxInt32]byte)(unsafe.Pointer(address))[:length:length]
-}
-
 func osReadSymbolsFromExeFile() (symTable *gosym.Table, err error) {
-	if symTable, err = osReadSymbolsFromMemory(); err == nil && symTable != nil {
-		return symTable, err
-	}
-
 	var exePath string
 	if exePath, err = os.Executable(); err != nil {
 		symTableLoadError = err

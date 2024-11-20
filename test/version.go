@@ -79,7 +79,6 @@ func runGo(root string, logHandler func(log string), args []string) error {
 	go func() {
 		for scanner.Scan() {
 			logs := scanner.Text()
-			fmt.Println(logs)
 			if logHandler != nil {
 				logHandler(logs)
 			}
@@ -534,7 +533,7 @@ func dedupEnv(caseInsensitive bool, env []string) []string {
 	return out
 }
 
-//nolint
+// nolint
 func handleSignals() {
 	// Ensure that signals intended for the child process are not handled by
 	// this process' runtime (e.g. SIGQUIT). See issue #36976.

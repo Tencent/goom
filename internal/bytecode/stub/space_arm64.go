@@ -3,6 +3,7 @@ package stub
 import (
 	"fmt"
 	"reflect"
+	_ "unsafe"
 
 	"git.woa.com/goom/mocker/internal/bytecode"
 	"git.woa.com/goom/mocker/internal/bytecode/memory"
@@ -31,6 +32,8 @@ func init() {
 }
 
 // WriteICacheFn 写入 icache clear 函数数据
+//
+//go:linkname WriteICacheFn
 func WriteICacheFn(data []byte) (uintptr, error) {
 	s, err := acquireICacheFn()
 	if err != nil {

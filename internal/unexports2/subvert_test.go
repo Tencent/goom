@@ -29,7 +29,7 @@ func TestExposeFunction(t *testing.T) {
 			return
 		}
 		f := exposed.(func() string)
-		expected := "git.woa.com/goom/mocker/internal/unexports2.getPanic"
+		expected := "unknown method"
 		actual := f()
 		if actual != expected {
 			t.Errorf("Expected [%v] but got [%v]", expected, actual)

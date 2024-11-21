@@ -8,6 +8,8 @@ package erro
 type Traceable interface {
 	// Cause 获取错误的原因
 	Cause() error
+	// StackTrace 获取错误的堆栈信息
+	StackTrace() []Frame
 }
 
 // Cause 获取错误原因，err对象需要实现Traceable接口才能获取并返回cause error, 否则一律返回false
@@ -31,4 +33,14 @@ func CauseBy(err error, traceAbleError Traceable) bool {
 		}
 	}
 	return false
+}
+
+// StackTrace returns stack trace of an error.
+// It will be empty if err is not of type Error.
+func StackTrace(err error) []Frame {
+	e, ok := err.(Traceable)
+	if !ok {
+		return nil
+	}
+	return e.StackTrace()
 }

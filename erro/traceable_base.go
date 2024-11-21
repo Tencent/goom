@@ -56,7 +56,7 @@ type Frame struct {
 
 // String formats Frame to string.
 func (f Frame) String() string {
-	return fmt.Sprintf("%s:\n%d %s()", f.Path, f.Line, f.Func)
+	return fmt.Sprintf("%s:%d\n%s()", f.Path, f.Line, f.Func)
 }
 
 // NewTraceableErrors 通过 string 描述创建可跟踪的错误

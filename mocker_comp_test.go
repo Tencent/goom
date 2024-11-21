@@ -47,7 +47,7 @@ func TestCompatibility(t *testing.T) {
 		if err := test.Run(v, logHandler, "mod", "edit", "-go="+vn); err != nil {
 			t.Errorf("[%s] run error: %v, see details in the log above.", v, err)
 		}
-		if err := test.Run(v, logHandler, "test", "-v", "-gcflags=all=-l", "."); err != nil {
+		if err := test.Run(v, logHandler, "test", "-v", "-gcflags=\"all=-l\"", "-ld=flags=\"-s=false\"", "."); err != nil {
 			t.Errorf("[%s] run error: %v, see details in the log above.", v, err)
 		}
 		if t.Failed() {

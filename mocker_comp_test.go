@@ -17,9 +17,9 @@ var versions = []string{
 	"go1.18",
 	"go1.19",
 	"go1.20",
-	"go1.21",
-	"go1.22",
-	"go1.23",
+	"go1.21.1",
+	"go1.22.1",
+	"go1.23.1",
 }
 
 const testEnv = "MOCKER_COMPATIBILITY_TEST"
@@ -43,11 +43,11 @@ func TestCompatibility(t *testing.T) {
 			}
 			fmt.Println(log)
 		}
-		vn := strings.Split(v, "go")[1]
+		vn := strings.Join(strings.Split(strings.Split(v, "go")[1], ".")[0:2], ".")
 		if err := test.Run(v, logHandler, "mod", "edit", "-go="+vn); err != nil {
-			t.Errorf("[%s] run error: %v, see details in the log above.", v, err)
+			t.Errorf("[%s] mod edit error: %v, see details in the log above.", v, err)
 		}
-		if err := test.Run(v, logHandler, "test", "-v", "-gcflags=\"all=-l\"", "-ldflags=\"-s=false\"", "."); err != nil {
+		if err := test.Run(v, logHandler, "test", "-v", "-gcflags=all=-l", "-ldflags=-s=false", "."); err != nil {
 			t.Errorf("[%s] run error: %v, see details in the log above.", v, err)
 		}
 		if t.Failed() {

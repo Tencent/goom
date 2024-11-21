@@ -21,7 +21,8 @@ func NewRequiredBuildFlagsError(flags ...string) *RequiredBuildFlags {
 	return &RequiredBuildFlags{
 		flags: flags,
 		TraceableError: TraceableError{
-			errStr: "required build flags in your test command: " + flagsString(flags),
+			errStr: "required build flags in your test command: " + flagsString(flags) + "\n" +
+				"for example: go test -gcflags=\"all=-l\" -ldflags=\"-s=false\" ./...",
 		},
 	}
 }

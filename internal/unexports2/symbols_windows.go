@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+
+	"git.woa.com/goom/mocker/erro"
 )
 
 func osReadSymbolsFromExeFile() (symTable *gosym.Table, err error) {
@@ -47,7 +49,7 @@ func osReadSymbols(reader io.ReaderAt) (symTable *gosym.Table, err error) {
 
 	sect := exe.Section(".text")
 	if sect == nil {
-		err = fmt.Errorf("Unable to find PE .text section")
+		err = erro.NewTraceableErrorc("Unable to find PE .text section", erro.LdFlags)
 		return
 	}
 	textStart := imageBase + uint64(sect.VirtualAddress)
@@ -64,7 +66,7 @@ func osReadSymbols(reader io.ReaderAt) (symTable *gosym.Table, err error) {
 	lineTableStart := findSymbol(exe.Symbols, "runtime.pclntab")
 	lineTableEnd := findSymbol(exe.Symbols, "runtime.epclntab")
 	if lineTableStart == nil || lineTableEnd == nil {
-		err = fmt.Errorf("Could not find PE runtime.pclntab or runtime.epclntab")
+		err = erro.NewTraceableErrorc("Could not find PE runtime.pclntab or runtime.epclntab", erro.LdFlags)
 		return
 	}
 	sectionIndex := lineTableStart.SectionNumber - 1

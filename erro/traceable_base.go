@@ -17,7 +17,7 @@ func (w *TraceableError) Error() string {
 		s += w.errStr
 	}
 	if w.cause != nil {
-		s = s + "\ncause: " + w.cause.Error()
+		s = s + "\ncause by: " + w.cause.Error()
 	}
 	return s
 }
@@ -27,18 +27,25 @@ func (w *TraceableError) Cause() error {
 	return w.cause
 }
 
-// NewTraceableError 创建可跟踪的错误
+// NewTraceableErrors 通过 string 描述创建可跟踪的错误
+func NewTraceableErrors(errStr string) error {
+	return &TraceableError{
+		errStr: errStr,
+	}
+}
+
+// NewTraceableErrorc 通过 string, cause 描述创建可跟踪的错误
+func NewTraceableErrorc(errStr string, cause error) error {
+	return &TraceableError{
+		errStr: errStr,
+		cause:  cause,
+	}
+}
+
+// NewTraceableError 通过 error, cause 描述创建可跟踪的错误
 func NewTraceableError(err error, cause error) error {
 	return &TraceableError{
 		err:   err,
 		cause: cause,
-	}
-}
-
-// NewTraceableErrorf 通过 string 描述创建可跟踪的错误
-func NewTraceableErrorf(errStr string, cause error) error {
-	return &TraceableError{
-		errStr: errStr,
-		cause:  cause,
 	}
 }

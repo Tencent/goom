@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"unsafe"
 
+	"git.woa.com/goom/mocker/erro"
 	"git.woa.com/goom/mocker/internal/hack"
 )
 
@@ -23,10 +24,13 @@ func init() {
 // FindFuncByName read the symbol table at runtime
 func FindFuncByName(name string) (uintptr, error) {
 	fn, err := getFunctionSymbolByName(name)
-	if err != nil {
-		return 0, err
+	if err == nil {
+		return uintptr(fn.Entry) + alignment, nil
 	}
-	return uintptr(fn.Entry) + alignment, nil
+	if erro.CauseBy(err, erro.LdFlags) {
+		panic(err)
+	}
+	return 0, err
 }
 
 // CreateFuncForCodePtr is given a code pointer and creates a function value

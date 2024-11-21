@@ -123,7 +123,7 @@ func (m *baseMocker) applyByIFaceMethod(ctx *iface.IContext, iFace interface{}, 
 
 	err := proxy.Interface(iFace, ctx, method, callback, implV)
 	if err != nil {
-		panic(erro.NewTraceableErrorf("interface mock apply error", err))
+		panic(erro.NewTraceableErrorc("interface mock apply error", err))
 	}
 
 	m.guard = newIFaceMockGuard(ctx)

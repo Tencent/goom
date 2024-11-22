@@ -345,6 +345,11 @@ func TestUnitTestSuite(t *testing.T) {
 	suite.Run(t, new(mockerTestSuite))
 }
 ```
+3. windows系统下,请加上构建参数以打开符号表编译: -ldflags="-s=false", 比如
+```shell
+go test -ldflags="-s=false" -gcflags "all=-N -l" ./...
+```
+
 
 3. go 1.23以上版本需要加上以下构建参数才可以使用    
 报错内容:
@@ -362,5 +367,5 @@ link: git.woa.com/goom/mocker/internal/hack: invalid reference to runtime.firstm
 **因此会导致将来的goom版本可能不支持未导出函数的mock**; 同时为了使代码更加规范，建议及时清理mock未导出函数的case
 
 ## Contributor
-@yongfuchen、@adrewchen、@ivyyi、@miliao
+@yongfuchen、@adrewchen、@bingjgyan、@mingjiehu、@ivyyi、@miliao
 

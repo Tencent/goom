@@ -22,7 +22,6 @@ type AnyExpr struct {
 
 // Resolve AnyExpr 表达式解析
 func (a *AnyExpr) Resolve(_ []reflect.Type) error {
-
 	return nil
 }
 
@@ -33,8 +32,8 @@ func (a *AnyExpr) Eval(_ []reflect.Value) (bool, error) {
 
 // EqualsExpr 表达式实现了两个参数是否相等的规则计算
 type EqualsExpr struct {
-	param  interface{}
-	paramV reflect.Value
+	arg  interface{}
+	argV reflect.Value
 }
 
 // Resolve EqualsExpr 表达式解析
@@ -43,8 +42,9 @@ func (e *EqualsExpr) Resolve(types []reflect.Type) error {
 	if len(types) != 1 {
 		return fmt.Errorf("EqualsExpr.Resolve status error")
 	}
-	e.paramV = toValue(e.param, types[0])
-	return nil
+	var err error
+	e.argV, err = toValue(e.arg, types[0])
+	return err
 }
 
 // Eval 执行 EqualsExpr 表达式
@@ -53,7 +53,7 @@ func (e *EqualsExpr) Eval(input []reflect.Value) (bool, error) {
 	if len(input) != 1 {
 		return false, fmt.Errorf("EqualsExpr.Resolve status error")
 	}
-	if equal(e.paramV, input[0]) {
+	if equal(e.argV, input[0]) {
 		return true, nil
 	}
 	return false, nil
@@ -61,14 +61,14 @@ func (e *EqualsExpr) Eval(input []reflect.Value) (bool, error) {
 
 // InExpr 包含表达式执行
 type InExpr struct {
-	params      []interface{}
+	args        []interface{}
 	expressions [][]Expr
 }
 
 // Resolve InExpr 表达式解析
 func (i *InExpr) Resolve(types []reflect.Type) error {
 	expressions := make([][]Expr, 0)
-	for _, v := range i.params {
+	for _, v := range i.args {
 		param, ok := v.([]interface{})
 		if !ok {
 			param = []interface{}{v}

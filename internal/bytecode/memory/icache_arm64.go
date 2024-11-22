@@ -5,7 +5,7 @@ import (
 	"unsafe"
 
 	"git.woa.com/goom/mocker/internal/logger"
-	"git.woa.com/goom/mocker/internal/unexports"
+	"git.woa.com/goom/mocker/internal/unexports2"
 )
 
 // 指令生成相关
@@ -66,7 +66,7 @@ func makeFunc() (func(uintptr), error) {
 		return nil, err
 	}
 	var f func(uintptr)
-	fn := unexports.NewFuncWithCodePtr(reflect.TypeOf(f), addr).Interface()
+	fn := unexports2.NewFuncWithCodePtr(reflect.TypeOf(f), addr).Interface()
 	return (fn).(func(uintptr)), nil
 }
 

@@ -22,7 +22,11 @@ func newBaseMatcher(results []interface{}, funTyp reflect.Type) *BaseMatcher {
 	resultVs := make([][]reflect.Value, 0)
 	if results != nil {
 		// TODO results check
-		resultVs = append(resultVs, arg.I2V(results, outTypes(funTyp)))
+		result, err := arg.I2V(results, outTypes(funTyp))
+		if err != nil {
+			panic("Return Value (" + fmt.Sprintf("%v", results) + ") error: " + err.Error())
+		}
+		resultVs = append(resultVs, result)
 	}
 	return &BaseMatcher{
 		results:    resultVs,
@@ -50,7 +54,11 @@ func (c *BaseMatcher) Result() []reflect.Value {
 // AddResult 添加结果
 func (c *BaseMatcher) AddResult(results []interface{}) {
 	// TODO results check
-	c.results = append(c.results, arg.I2V(results, outTypes(c.funTyp)))
+	result, err := arg.I2V(results, outTypes(c.funTyp))
+	if err != nil {
+		panic("Return Value (" + fmt.Sprintf("%v", results) + ") error: " + err.Error())
+	}
+	c.results = append(c.results, result)
 }
 
 // EmptyMatch 没有返回参数的匹配器
@@ -81,10 +89,10 @@ type DefaultMatcher struct {
 }
 
 // newDefaultMatch 创建新参数匹配
-func newDefaultMatch(params []interface{}, results []interface{}, isMethod bool, funTyp reflect.Type) *DefaultMatcher {
-	e, err := arg.ToExpr(params, inTypes(isMethod, funTyp))
+func newDefaultMatch(args []interface{}, results []interface{}, isMethod bool, funTyp reflect.Type) *DefaultMatcher {
+	e, err := arg.ToExpr(args, inTypes(isMethod, funTyp))
 	if err != nil {
-		panic(fmt.Sprintf("create matcher fail: %v", err))
+		panic(fmt.Sprintf("Call When("+fmt.Sprintf("%v", args)+") error: %v", err))
 	}
 	return &DefaultMatcher{
 		exprs:       e,
@@ -125,9 +133,9 @@ type ContainsMatcher struct {
 }
 
 // newContainsMatch 创建新的包含类型的参数匹配
-func newContainsMatch(params []interface{}, results []interface{}, isMethod bool,
+func newContainsMatch(args []interface{}, results []interface{}, isMethod bool,
 	funTyp reflect.Type) *ContainsMatcher {
-	in := arg.In(params...)
+	in := arg.In(args...)
 	err := in.Resolve(inTypes(isMethod, funTyp))
 	if err != nil {
 		// TODO add mocker and method name to message

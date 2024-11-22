@@ -165,15 +165,15 @@ func (s *WhenTestSuite) TestMatches() {
 	s.Run("success", func() {
 		when := mocker.NewWhen(reflect.TypeOf(simple))
 		when.Return(-1).Matches(
-			arg.Pair{Params: 1, Return: 5},
-			arg.Pair{Params: 2, Return: 5},
-			arg.Pair{Params: 3, Return: 6})
+			arg.Pair{Args: 1, Return: 5},
+			arg.Pair{Args: 2, Return: 5},
+			arg.Pair{Args: 3, Return: 6})
 
 		s.Equal(5, when.Eval(1)[0], "when result check")
 		s.Equal(5, when.Eval(2)[0], "when result check")
 		s.Equal(6, when.Eval(3)[0], "when result check")
 
-		when.Matches(arg.Pair{Params: arg.Any(), Return: 100})
+		when.Matches(arg.Pair{Args: arg.Any(), Return: 100})
 		s.Equal(100, when.Eval(4)[0], "when result check")
 	})
 }
@@ -262,8 +262,8 @@ func (s *WhenTestSuite) TestMethodMultiIn() {
 		s.Equal(101, structOuter.Compute(5, -1), "method when check")
 
 		when.Matches(
-			arg.Pair{Params: []interface{}{6, arg.Any()}, Return: []interface{}{101}},
-			arg.Pair{Params: []interface{}{7, arg.Any()}, Return: []interface{}{102}},
+			arg.Pair{Args: []interface{}{6, arg.Any()}, Return: []interface{}{101}},
+			arg.Pair{Args: []interface{}{7, arg.Any()}, Return: []interface{}{102}},
 		)
 		s.Equal(101, structOuter.Compute(6, -1), "method when check")
 		s.Equal(102, structOuter.Compute(7, -1), "method when check")

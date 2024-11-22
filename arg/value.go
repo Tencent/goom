@@ -12,23 +12,27 @@ import (
 )
 
 // I2V []interface convert to []reflect.Value
-func I2V(params []interface{}, types []reflect.Type) []reflect.Value {
-	if len(params) != len(types) {
-		panic(fmt.Sprintf("param lenth mismatch,must: %d, actual: %d", len(types), len(params)))
+func I2V(objs []interface{}, types []reflect.Type) ([]reflect.Value, error) {
+	if len(objs) != len(types) {
+		return nil, fmt.Errorf("The number of args does not match, required: %d, actual: %d", len(types), len(objs))
 	}
-	values := make([]reflect.Value, len(params))
-	for i, a := range params {
-		values[i] = toValue(a, types[i])
+	values := make([]reflect.Value, len(objs))
+	var e error
+	for i, a := range objs {
+		values[i], e = toValue(a, types[i])
+		if e != nil {
+			return nil, e
+		}
 	}
-	return values
+	return values, nil
 }
 
 // toValue 转化为数值
-func toValue(r interface{}, out reflect.Type) reflect.Value {
+func toValue(r interface{}, out reflect.Type) (reflect.Value, error) {
 	v := reflect.ValueOf(r)
 	if r != nil && v.Type() != out && (out.Kind() == reflect.Struct || out.Kind() == reflect.Ptr) {
 		if v.Type().Size() != out.Size() {
-			panic(fmt.Sprintf("type mismatch,must: %s, actual: %v", v.Type(), out))
+			return reflect.Value{}, fmt.Errorf("The type of the args does not match, required: %s, actual: %v", out, v.Type())
 		}
 		// 类型强制转换,适用于结构体 fake 场景
 		v = cast(v, out)
@@ -39,14 +43,15 @@ func toValue(r interface{}, out reflect.Type) reflect.Value {
 		v = reflect.Zero(reflect.SliceOf(out).Elem())
 	} else if v.Type().Kind() == reflect.Ptr &&
 		v.Type() == reflect.TypeOf(&iface.IContext{}) {
-		panic("goom not support Return() API when returns mocked interface type, use Apply() API instead.")
+		panic("goom not support Return() API when returns mocked interface type, please use Apply() API instead.")
 	} else if r != nil && out.Kind() == reflect.Interface {
-
 		ptr := reflect.New(out)
 		ptr.Elem().Set(v)
 		v = ptr.Elem()
+	} else if v.Type().Size() != out.Size() {
+		return reflect.Value{}, fmt.Errorf("The type of the args does not match, required: %s, actual: %v", out, v.Type())
 	}
-	return v
+	return v, nil
 }
 
 // cast 类型强制转换
@@ -90,13 +95,13 @@ func SprintV(params []reflect.Value) string {
 }
 
 // ToExpr 将参数转换成[]Expr
-func ToExpr(params []interface{}, types []reflect.Type) ([]Expr, error) {
-	if len(params) != len(types) {
-		return nil, fmt.Errorf("param lenth mismatch,must: %d, actual: %d", len(types), len(params))
+func ToExpr(args []interface{}, types []reflect.Type) ([]Expr, error) {
+	if len(args) != len(types) {
+		return nil, fmt.Errorf("The number of args does not match, required: %d, actual: %d", len(types), len(args))
 	}
 	// TODO results check
-	expressions := make([]Expr, len(params))
-	for i, a := range params {
+	expressions := make([]Expr, len(args))
+	for i, a := range args {
 		if expr, ok := a.(Expr); ok {
 			expressions[i] = expr
 		} else {

@@ -6,7 +6,7 @@ go_library(
         "builder.go",
         "equals.go",
         "expr.go",
-        "params.go",
+        "pair.go",
         "value.go",
     ],
     importpath = "git.woa.com/goom/mocker/arg",

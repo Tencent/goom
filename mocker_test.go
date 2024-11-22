@@ -152,6 +152,8 @@ func (s *mockerTestSuite) TestUnitUnExportedMethodApply() {
 
 		mock.Reset()
 		s.Equal(1, f.Invokecall(1), "call mock reset check")
+
+		//fmt.Println(reflect.TypeOf(&test.Fake{}).(reflect.UncommonType).MethodByName("call").Pointer())
 	})
 }
 

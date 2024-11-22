@@ -79,7 +79,6 @@ func runGo(root string, logHandler func(log string), args []string) error {
 	go func() {
 		for scanner.Scan() {
 			logs := scanner.Text()
-			fmt.Println(logs)
 			if logHandler != nil {
 				logHandler(logs)
 			}

@@ -1,11 +1,12 @@
 package iface
 
 import (
+	"fmt"
 	"reflect"
 	"unsafe"
 
-	"github.com/tencent/goom/internal/bytecode/stub"
 	"github.com/tencent/goom/internal/hack"
+	"github.com/tencent/goom/internal/unexports2"
 )
 
 // IContext 接口 Mock 代码函数的接收体
@@ -118,7 +119,10 @@ func GenCallableMethod(ctx *IContext, apply interface{}, proxy PFunc) uintptr {
 		// 生成桩代码,rdx 寄存器还原, 生成的调用将跳转到 proxy 函数
 		methodTyp := reflect.TypeOf(apply)
 		mockFunc := reflect.MakeFunc(methodTyp, proxy)
-		callStub := reflect.ValueOf(stub.MakeFuncStub).Pointer()
+		callStub, err := unexports2.FindFuncByName("reflect.makeFuncStub")
+		if err != nil {
+			panic(fmt.Sprintf("make interface err: %v", err))
+		}
 		mockFuncPtr := (*hack.Value)(unsafe.Pointer(&mockFunc)).Ptr
 		methodCaller, err = MakeMethodCallerWithCtx(mockFuncPtr, callStub)
 		ctx.p.proxyFunc = mockFunc

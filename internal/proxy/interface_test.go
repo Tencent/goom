@@ -7,11 +7,11 @@ import (
 	"testing"
 	"unsafe"
 
-	"github.com/tencent/goom/internal/bytecode/stub"
 	"github.com/tencent/goom/internal/hack"
 	"github.com/tencent/goom/internal/iface"
 	"github.com/tencent/goom/internal/logger"
 	"github.com/tencent/goom/internal/proxy"
+	"github.com/tencent/mocker/internal/unexports2"
 )
 
 // I 接口测试
@@ -196,7 +196,7 @@ func dynamicGenImpl(t *testing.T, i interface{}) {
 	ifc := *(*uintptr)(gen)
 	fmt.Println(ifc)
 
-	callStub := reflect.ValueOf(stub.MakeFuncStub).Pointer()
+	callStub, err := unexports2.FindFuncByName("reflect.makeFuncStub")
 	mockFuncPtr := (*hack.Value)(unsafe.Pointer(&mockFunc)).Ptr
 	genStub, err := iface.MakeMethodCallerWithCtx(mockFuncPtr, callStub)
 

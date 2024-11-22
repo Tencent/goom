@@ -345,6 +345,11 @@ func TestUnitTestSuite(t *testing.T) {
 	suite.Run(t, new(mockerTestSuite))
 }
 ```
+3. windows系统下,请加上构建参数以打开符号表编译: -ldflags="-s=false", 比如
+```shell
+go test -ldflags="-s=false" -gcflags "all=-N -l" ./...
+```
+
 
 ## Contributor
 @yongfuchen、@adrewchen、@ivyyi、@miliao

@@ -3,12 +3,12 @@ package bytecode
 import (
 	"fmt"
 	"reflect"
+	"runtime"
 	"sync"
 	"unsafe"
 
 	"github.com/tencent/goom/internal/bytecode/memory"
 	"github.com/tencent/goom/internal/logger"
-	"github.com/tencent/goom/internal/unexports"
 )
 
 // 调试日志相关
@@ -88,7 +88,7 @@ func PrintInst(name string, from uintptr, size int, level int) {
 	if logger.LogLevel < level {
 		return
 	}
-	_, funcName, _ := unexports.FindFuncByPtr(from)
+	funcName := runtime.FuncForPC(from).Name()
 	instBytes := memory.RawRead(from, size)
 	PrintInstf(fmt.Sprintf("show [%s = %s] inst>>: ", name, funcName), from, instBytes, level)
 }

@@ -29,8 +29,8 @@ type InterfaceMocker interface {
 	Method(name string) InterfaceMocker
 	// As 将接口方法应用为函数类型
 	// As 调用之后,请使用 Return 或 When API 的方式来指定 mock 返回。
-	// imp 函数的第一个参数必须为*mocker.IContext, 作用是指定接口实现的接收体; 后续的参数原样照抄。
-	As(imp interface{}) InterfaceMocker
+	// aFunc 函数的第一个参数必须为*mocker.IContext, 作用是指定接口实现的接收体; 后续的参数原样照抄。
+	As(aFunc interface{}) InterfaceMocker
 	// Inject 将 mock 设置到变量
 	Inject(iFace interface{}) InterfaceMocker
 }
@@ -84,38 +84,38 @@ func (m *DefaultInterfaceMocker) checkMethod(name string) {
 }
 
 // Apply 应用接口方法 mock 为实际的接收体方法
-// imp 函数的第一个参数必须为*mocker.IContext, 作用是指定接口实现的接收体; 后续的参数原样照抄。
-func (m *DefaultInterfaceMocker) Apply(imp interface{}) {
+// callback 函数的第一个参数必须为*mocker.IContext, 作用是指定接口实现的接收体; 后续的参数原样照抄。
+func (m *DefaultInterfaceMocker) Apply(callback interface{}) {
 	if m.method == "" {
 		panic("method is empty")
 	}
-	m.applyByIFaceMethod(m.ctx, m.iFace, m.method, imp, nil)
+	m.applyByIFaceMethod(m.ctx, m.iFace, m.method, callback, nil)
 }
 
 // As 将接口方法 mock 为实际的接收体方法
-// imp 函数的第一个参数必须为*mocker.IContext, 作用是指定接口实现的接收体; 后续的参数原样照抄。
-func (m *DefaultInterfaceMocker) As(imp interface{}) InterfaceMocker {
+// aFunc 函数的第一个参数必须为*mocker.IContext, 作用是指定接口实现的接收体; 后续的参数原样照抄。
+func (m *DefaultInterfaceMocker) As(aFunc interface{}) InterfaceMocker {
 	if m.method == "" {
 		panic("method is empty")
 	}
-	m.funcDef = imp
+	m.funcDef = aFunc
 	return m
 }
 
 // When 执行参数匹配时的返回值
-func (m *DefaultInterfaceMocker) When(args ...interface{}) *When {
+func (m *DefaultInterfaceMocker) When(specArg ...interface{}) *When {
 	if m.method == "" {
 		panic("method is empty")
 	}
 	if m.when != nil {
-		return m.when.When(args...)
+		return m.when.When(specArg...)
 	}
 
 	var (
 		when *When
 		err  error
 	)
-	if when, err = CreateWhen(m, m.funcDef, args, nil, true); err != nil {
+	if when, err = CreateWhen(m, m.funcDef, specArg, nil, true); err != nil {
 		panic(err)
 	}
 	m.applyByIFaceMethod(m.ctx, m.iFace, m.method, m.funcDef, m.callback)
@@ -124,7 +124,7 @@ func (m *DefaultInterfaceMocker) When(args ...interface{}) *When {
 }
 
 // Return 指定返回值
-func (m *DefaultInterfaceMocker) Return(returns ...interface{}) *When {
+func (m *DefaultInterfaceMocker) Return(value ...interface{}) *When {
 	if m.funcDef == nil {
 		panic("must use As() API before call Return()")
 	}
@@ -132,14 +132,14 @@ func (m *DefaultInterfaceMocker) Return(returns ...interface{}) *When {
 		panic("method is empty")
 	}
 	if m.when != nil {
-		return m.when.Return(returns...)
+		return m.when.Return(value...)
 	}
 
 	var (
 		when *When
 		err  error
 	)
-	if when, err = CreateWhen(m, m.funcDef, nil, returns, true); err != nil {
+	if when, err = CreateWhen(m, m.funcDef, nil, value, true); err != nil {
 		panic(err)
 	}
 	m.applyByIFaceMethod(m.ctx, m.iFace, m.method, m.funcDef, m.callback)
@@ -148,7 +148,7 @@ func (m *DefaultInterfaceMocker) Return(returns ...interface{}) *When {
 }
 
 // Returns 指定返回多个值
-func (m *DefaultInterfaceMocker) Returns(returns ...interface{}) *When {
+func (m *DefaultInterfaceMocker) Returns(values ...interface{}) *When {
 	if m.funcDef == nil {
 		panic("must use As() API before call Return()")
 	}
@@ -156,7 +156,7 @@ func (m *DefaultInterfaceMocker) Returns(returns ...interface{}) *When {
 		panic("method is empty")
 	}
 	if m.when != nil {
-		return m.when.Returns(returns...)
+		return m.when.Returns(values...)
 	}
 
 	var (
@@ -166,7 +166,7 @@ func (m *DefaultInterfaceMocker) Returns(returns ...interface{}) *When {
 	if when, err = CreateWhen(m, m.funcDef, nil, nil, true); err != nil {
 		panic(err)
 	}
-	when.Returns(returns...)
+	when.Returns(values...)
 	m.applyByIFaceMethod(m.ctx, m.iFace, m.method, m.funcDef, m.callback)
 	m.when = when
 	return when
@@ -184,8 +184,8 @@ func (m *DefaultInterfaceMocker) Inject(interface{}) InterfaceMocker {
 
 // applyByIFaceMethod 根据接口方法应用 mock
 func (m *DefaultInterfaceMocker) applyByIFaceMethod(ctx *iface.IContext, iFace interface{},
-	method string, imp interface{}, implV iface.PFunc) {
-	imp, implV = interceptDebugInfo(imp, implV, m)
-	m.baseMocker.applyByIFaceMethod(ctx, iFace, method, imp, implV)
+	method string, callback interface{}, implV iface.PFunc) {
+	callback, implV = interceptDebugInfo(callback, implV, m)
+	m.baseMocker.applyByIFaceMethod(ctx, iFace, method, callback, implV)
 	logger.Consolefc(logger.DebugLevel, "mocker [%s] apply.", logger.Caller(6), m.String())
 }

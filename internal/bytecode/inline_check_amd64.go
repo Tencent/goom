@@ -39,8 +39,10 @@ func checkInlineDisable() {
 	}
 
 	if !existsCallIns {
-		logger.Warningf("go inline is not disable, please use the build param: -gcflags=all=-l")
-		logger.Consolef(logger.WarningLevel, "go inline is not disable, please use the build param: -gcflags=all=-l")
+		logger.Warningf("required build flags in your test command: -gcflags=\"all=-l\"\n" +
+			"for example: go test -gcflags=\"all=-l\" -ldflags=\"-s=false\" ./...")
+		logger.Consolef(logger.WarningLevel, "required build flags in your test command: -gcflags=\"all=-l\"\n"+
+			"for example: go test -gcflags=\"all=-l\" -ldflags=\"-s=false\" ./...")
 	}
 }
 

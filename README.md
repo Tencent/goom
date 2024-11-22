@@ -352,5 +352,5 @@ go test -ldflags="-s=false" -gcflags "all=-N -l" ./...
 
 
 ## Contributor
-@yongfuchen、@adrewchen、@ivyyi、@miliao
+@yongfuchen、@adrewchen、@bingjgyan、@mingjiehu、@ivyyi、@miliao
 

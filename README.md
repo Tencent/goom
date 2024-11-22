@@ -349,6 +349,24 @@ func TestUnitTestSuite(t *testing.T) {
 go test -ldflags="-s=false" -gcflags "all=-N -l" ./...
 ```
 
+4. go 1.23以上版本需要加上以下构建参数才可以使用    
+   报错内容:
+```
+link: git.woa.com/goom/mocker/internal/hack: invalid reference to runtime.firstmoduledata
+```
+解决方案1，添加构建参数:
+```shell
+-gcflags="all=-N -l" -ldflags=-checklinkname=0
+```
+> -gcflags="all=-N -l": 解决被mock函数内联问题，和permission denied的问题(go1.23版本新增要求)  
+> -checklinkname=0: 关闭golinkname的标签检查，即继续允许go:linkname标签的使用
+
+解决方案2: 升级到最新版本:
+v1.0.4-rc1
+此版本处于公测阶段，目前自测在windows、mac、mac(ARM)、linux，go1.16-go1.23版本均可使用
+未来更高的go版本，理论上也能较好支持
+
+
 
 ## 联系答疑
 常见问题可参考: https://github.com/Tencent/goom/wiki

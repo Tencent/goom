@@ -319,7 +319,6 @@ s.Equal(101, foo1(1), "call origin result check")
 ```
 
 ## 问题答疑
-[问题答疑记录wiki地址](https://github.com/tencent/goom)
 常见问题:
 1. 如果是M1-MAC(arm CPU)机型, 可以尝试以下两种方案
 
@@ -346,6 +345,13 @@ func TestUnitTestSuite(t *testing.T) {
 }
 ```
 
+## 联系答疑
+常见问题可参考: https://github.com/Tencent/goom/wiki
+
+或者提issue: https://github.com/Tencent/goom/issues
+
+
 ## Contributor
 @yongfuchen、@adrewchen、@ivyyi、@miliao
+
 

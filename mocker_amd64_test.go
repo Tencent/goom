@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/suite"
+	mocker "github.com/tencent/goom"
 	"github.com/tencent/goom/test"
 )
 

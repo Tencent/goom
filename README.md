@@ -1,7 +1,7 @@
 # GOOM单测Mock框架
 ## 介绍
 ### 背景
-1. 基于公司目前内部没有一款自己维护的适合公司业务迭代速度和稳定性要求的mock框架，众多项目采用外界开源的gomonkey框架进行函数的mock，因其存在较一些的bug，不支持异包未导出函数mock，同包未导出方法mock等等问题, 加上团队目前实现一款改进版-无需unpath即可在mock过程中调用原函数的特性，可以支持到延迟模拟，参数更改，mock数据录制等功能，因此建立此项目
+1. 基于目前腾讯内部需要一款适合公司业务迭代速度和稳定性要求的mock库，国内众多项目采用外界开源的gomonkey框架进行函数的mock，因其版本更新不及时, 加上团队目前实现一款改进版-支持异包未导出函数mock，同包未导出方法mock，无需unpath即可在mock过程中调用原函数的特性，可以支持到延迟模拟，参数更改，mock数据录制等功能，因此建立此项目
 2. 目前有一半以上方案是基于gomock类似的实现方案, 此mock方案需要要求业务代码具备良好的接口设计，才能顺利生成mock代码，而goom只需要指定函数名称或函数定义，就能支持到任意函数的mock，任意函数异常注入，延时模拟等扩展性功能
 
 ### 功能特性
@@ -20,14 +20,14 @@
 
 > [1.千万不要过度依赖于mock](https://mp.weixin.qq.com/s?__biz=MzA5MTAzNjU1OQ==&mid=2454780683&idx=1&sn=aabc85f3bd2cfa21b8b806bad581f0c5)
 >
-> 2.对于正规的第三方库，比如mysql、gorm的库本身会提供mock能力, 可参考[sql_test.go](https://github.com/Jakegogo/goom_best_practices/blob/master/example/sql_test.go)
+> 2.对于正规的第三方库，比如mysql、gorm的库本身会提供mock能力, 可参考[sql_test.go](https://git.woa.com/goom/best_practices/blob/master/example/sql_test.go)
 >
 > 3.对于自建的内部依赖库, 建议由库的提供方编写mock(1.使用方无需关心提供方的实现细节、2.由库提供方负责版本升级时mock实现逻辑的更新)
 
 ## Install
 ```bash
 # 支持的golang版本: go1.11-go1.18
-go get github.com/tencent/goom
+go get git.woa.com/goom/mocker
 ```
 
 ## Tips
@@ -39,7 +39,7 @@ go get github.com/tencent/goom
 ## Getting Start
 ```golang
 // 在需要使用mock的测试文件import
-import "github.com/tencent/goom"
+import "git.woa.com/goom/mocker"
 ```
 ### 1. 基本使用
 #### 1.1. 函数mock
@@ -220,7 +220,7 @@ s.Equal(nil, i, "interface mock reset check")
 mock := mocker.Create()
 
 // mock函数foo1并设置其回调函数
-mock.Pkg("github.com/tencent/goom_test").ExportFunc("foo1").Apply(func(i int) int {
+mock.Pkg("git.woa.com/goom/mocker_test").ExportFunc("foo1").Apply(func(i int) int {
     return i * 3
 })
 
@@ -234,7 +234,7 @@ mock.ExportFunc("foo1").As(func(i int) int {
 #### 3.2. 外部package的未导出结构体的mock(一般不建议对不同包下的未导出结构体进行mock)
 ```golang
 // 针对其它包的mock示例
-package https://github.com/tencent/goom/a
+package git.woa.com/goom/a
 
 // struct2 要mock的目标结构体
 type struct2 struct {
@@ -246,7 +246,7 @@ type struct2 struct {
 
 Mock代码示例:
 ```golang
-package https://github.com/tencent/goom/b
+package git.woa.com/goom/b
 
 // fake fake一个结构体, 用于作为回调函数的Receiver
 type fake struct {
@@ -263,7 +263,7 @@ mock := mocker.Create()
 // mock其它包的未导出结构体struct2的未导出方法call，并设置其回调函数
 // 如果参数是未导出的，那么需要在当前包fake一个同等结构的struct(只需要fake结构体，方法不需要fake)，fake结构体要和原未导出结构体struct2的内存结构对齐
 // 注意: 如果方法是指针方法，那么需要给struct加上*，比如:ExportStruct("*struct2")
-mock.Pkg("https://github.com/tencent/goom/a").ExportStruct("struct2").Method("call").Apply(func(_ *fake, i int) int {
+mock.Pkg("git.woa.com/goom/a").ExportStruct("struct2").Method("call").Apply(func(_ *fake, i int) int {
     return 1
 })
 s.Equal(1, struct2Wrapper.call(0), "unexported struct mock check")
@@ -319,12 +319,13 @@ s.Equal(101, foo1(1), "call origin result check")
 ```
 
 ## 问题答疑
+[问题答疑记录wiki地址](https://iwiki.woa.com/pages/viewpage.action?pageId=263748529)
 常见问题:
 1. 如果是M1-MAC(arm CPU)机型, 可以尝试以下两种方案
 
 a. 尝试使用权限修复工具,在项目根目录执行以下指令:
 ```shell
-MOCKER_DIR=$(go list -m -f '{{.Dir}}' github.com/tencent/goom)
+MOCKER_DIR=$(go list -m -f '{{.Dir}}' git.woa.com/goom/mocker)
 ${MOCKER_DIR}/tool/permission_denied.sh -i
 ```
 
@@ -349,6 +350,7 @@ func TestUnitTestSuite(t *testing.T) {
 go test -ldflags="-s=false" -gcflags "all=-N -l" ./...
 ```
 
+
 4. go 1.23以上版本需要加上以下构建参数才可以使用    
    报错内容:
 ```
@@ -366,15 +368,6 @@ v1.0.4-rc1
 此版本处于公测阶段，目前自测在windows、mac、mac(ARM)、linux，go1.16-go1.23版本均可使用
 未来更高的go版本，理论上也能较好支持
 
-
-
-## 联系答疑
-常见问题可参考: https://github.com/Tencent/goom/wiki
-
-或者提issue: https://github.com/Tencent/goom/issues
-
-
 ## Contributor
 @yongfuchen、@adrewchen、@bingjgyan、@mingjiehu、@ivyyi、@miliao
-
 

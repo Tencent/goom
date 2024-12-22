@@ -36,7 +36,7 @@ func (s *ueVarMockerTestSuite) TestNewUeVarMock() {
 		s.T().Log(os.Args[i], " ")
 	}
 	s.Run("success", func() {
-		mocker := mocker.NewUnExportVarMocker("git.woa.com/goom/mocker/test.unexportedGlobalIntVar", reflect.TypeOf(0))
+		mocker := mocker.Create().UnExportedVar("git.woa.com/goom/mocker/test.unexportedGlobalIntVar", reflect.TypeOf(0))
 		s.Equal(1, test.UnexportedGlobalIntVar(), "unexported global int var result check")
 		mocker.Set(3)
 		//fmt.Println(test.UnexportedGlobalIntVar())
@@ -80,7 +80,7 @@ func (s *ueVarMockerTestSuite) TestNewUeComplexVarMock() {
 
 	for _, tc := range testCases {
 		s.Run(tc.path, func() {
-			m := mocker.NewUnExportVarMocker(tc.path, tc.typ)
+			m := mocker.Create().UnExportedVar(tc.path, tc.typ)
 			s.Equal(tc.initial, tc.getter(), "unexported global var result check")
 			m.Set(tc.modified)
 			s.Equal(tc.modified, tc.getter(), "unexported global var result check")
@@ -96,7 +96,7 @@ func (s *ueVarMockerTestSuite) TestNewUeConstMock() {
 		s.T().Log(os.Args[i], " ")
 	}
 	s.Run("success", func() {
-		mocker.NewUnExportVarMocker("git.woa.com/goom/mocker/test.unexportedGlobalIntConst", reflect.TypeOf(1))
+		mocker.Create().UnExportedVar("git.woa.com/goom/mocker/test.unexportedGlobalIntConst", reflect.TypeOf(1))
 		fmt.Println("unexportedGlobalIntConst: ", test.UnexportedGlobalIntConst())
 	})
 }

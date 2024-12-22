@@ -68,5 +68,5 @@ func osReadSymbols(reader io.ReaderAt) (*gosym.Table, error) {
 		})
 	}
 	symTable.Syms = syms
-	return symTable, err
+	return symTable, nil
 }

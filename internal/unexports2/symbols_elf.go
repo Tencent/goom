@@ -58,18 +58,24 @@ func osReadSymbols(reader io.ReaderAt) (*gosym.Table, error) {
 	}
 
 	// 进一步查找.gosymtab，用于变量表获取
-	sect = exe.Section(".gosymtab")
-	if sect == nil {
-		err = fmt.Errorf("Unable to find ELF .gosymtab section")
-		return nil, err
-	}
-	goSymTabData, err := sect.Data()
-	if goSymTabData == nil || err != nil {
+	symbols, err := exe.Symbols()
+	if symbols == nil || err != nil {
 		// 查找失败, 返回已有的symTable
 		if symTable != nil {
 			return symTable, nil
 		}
+		err = fmt.Errorf("Unable to resolve ELF symbols: %v", err)
 		return nil, err
 	}
-	return gosym.NewTable(goSymTabData, lineTable)
+
+	syms := make([]gosym.Sym, 0, len(symbols))
+	for i := range symbols {
+		syms = append(syms, gosym.Sym{
+			Name:  symbols[i].Name,
+			Value: symbols[i].Value,
+			Type:  symbols[i].Info,
+		})
+	}
+	symTable.Syms = syms
+	return symTable, nil
 }

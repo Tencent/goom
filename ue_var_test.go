@@ -39,8 +39,10 @@ func (s *ueVarMockerTestSuite) TestNewUeVarMock() {
 		mocker := mocker.NewUnExportVarMocker("git.woa.com/goom/mocker/test.unexportedGlobalIntVar", reflect.TypeOf(0))
 		s.Equal(1, test.UnexportedGlobalIntVar(), "unexported global int var result check")
 		mocker.Set(3)
+		//fmt.Println(test.UnexportedGlobalIntVar())
 		s.Equal(3, test.UnexportedGlobalIntVar(), "unexported global int var result check")
 		mocker.Cancel()
+		//fmt.Println(test.UnexportedGlobalIntVar())
 		s.Equal(1, test.UnexportedGlobalIntVar(), "unexported global int var result check")
 	})
 }

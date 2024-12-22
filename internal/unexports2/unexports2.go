@@ -9,23 +9,36 @@ import (
 	"git.woa.com/goom/mocker/internal/hack"
 )
 
-var alignment uintptr
+var (
+	funcAlignment uintptr
+	varAlignment  uintptr
+)
 
+var stubVar int = 0
+
+// TODO 使用按需初始化
 func init() {
 	fn, err := getFunctionSymbolByName("git.woa.com/goom/mocker/internal/unexports2.FindFuncByName")
 	if err != nil {
 		return
 	}
-	symTabAddress := uintptr(fn.Entry)
-	memAddress := reflect.ValueOf(FindFuncByName).Pointer()
-	alignment = memAddress - symTabAddress
+	fnSymTabAddress := uintptr(fn.Entry)
+	fnMemAddress := reflect.ValueOf(FindFuncByName).Pointer()
+	funcAlignment = fnMemAddress - fnSymTabAddress
+
+	varSymTabAddress, err := FindVarByName("git.woa.com/goom/mocker/internal/unexports2.stubVar")
+	if err != nil {
+		return
+	}
+	varMemAddress := reflect.ValueOf(&stubVar).Pointer()
+	varAlignment = varMemAddress - varSymTabAddress
 }
 
 // FindFuncByName read the symbol table at runtime
 func FindFuncByName(name string) (uintptr, error) {
 	fn, err := getFunctionSymbolByName(name)
 	if err == nil {
-		return uintptr(fn.Entry) + alignment, nil
+		return uintptr(fn.Entry) + funcAlignment, nil
 	}
 	if erro.CauseBy(err, erro.LdFlags) {
 		panic(err)
@@ -37,7 +50,7 @@ func FindFuncByName(name string) (uintptr, error) {
 func FindVarByName(name string) (uintptr, error) {
 	fn, err := getVarSymbolByName(name)
 	if err == nil {
-		return uintptr(fn.Value) + alignment, nil
+		return uintptr(fn.Value) + varAlignment, nil
 	}
 	if erro.CauseBy(err, erro.LdFlags) {
 		panic(err)

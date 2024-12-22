@@ -3,6 +3,7 @@ package unexports2
 import (
 	"errors"
 	"reflect"
+	"sync"
 	"unsafe"
 
 	"git.woa.com/goom/mocker/erro"
@@ -15,9 +16,10 @@ var (
 )
 
 var stubVar int = 0
+var initAlignment sync.Once
 
-// TODO 使用按需初始化
-func init() {
+// initAlignmentFunc 内存虚拟表地址和二进制表地址偏差计算 按需初始化
+func initAlignmentFunc() {
 	fn, err := getFunctionSymbolByName("git.woa.com/goom/mocker/internal/unexports2.FindFuncByName")
 	if err != nil {
 		return
@@ -26,16 +28,20 @@ func init() {
 	fnMemAddress := reflect.ValueOf(FindFuncByName).Pointer()
 	funcAlignment = fnMemAddress - fnSymTabAddress
 
-	varSymTabAddress, err := FindVarByName("git.woa.com/goom/mocker/internal/unexports2.stubVar")
+	var1, err := getVarSymbolByName("git.woa.com/goom/mocker/internal/unexports2.stubVar")
 	if err != nil {
 		return
 	}
+	varSymTabAddress := uintptr(var1.Value)
 	varMemAddress := reflect.ValueOf(&stubVar).Pointer()
 	varAlignment = varMemAddress - varSymTabAddress
+
+	GetSymbolTable()
 }
 
 // FindFuncByName read the symbol table at runtime
 func FindFuncByName(name string) (uintptr, error) {
+	initAlignment.Do(initAlignmentFunc)
 	fn, err := getFunctionSymbolByName(name)
 	if err == nil {
 		return uintptr(fn.Entry) + funcAlignment, nil
@@ -48,6 +54,7 @@ func FindFuncByName(name string) (uintptr, error) {
 
 // FindVarByName read the var address at runtime
 func FindVarByName(name string) (uintptr, error) {
+	initAlignment.Do(initAlignmentFunc)
 	fn, err := getVarSymbolByName(name)
 	if err == nil {
 		return uintptr(fn.Value) + varAlignment, nil

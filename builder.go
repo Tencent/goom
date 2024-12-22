@@ -171,19 +171,19 @@ func (b *Builder) Var(v interface{}) VarMock {
 
 // UnExportedVar 未导出变量 mock
 // path 变量路径, package + name 组成, 比如 "github.com/xxx/yyy.varName"
-// typ 变量类型:
-//	比如int类型可以传递: reflect.TypeOf(0),
-//	map类型可以传递: reflect.TypeOf(map[string]int{}),
-//	结构体类型可以传递: reflect.TypeOf(struct A{})
-//	指针类型可以传递: reflect.TypeOf(&struct A{})
-// 必须和变量指针指向的值的类型一致，否则会出现不可预测的异常行为
-func (b *Builder) UnExportedVar(path string, typ reflect.Type) UnExportedVarMock {
+// 变量类型支持:
+//	比如int类型，比如0,
+//	map类型比如: map[string]int{}
+//	结构体类型比如: struct A{}
+//	指针类型比如: &struct A{}
+// Set(value)时, value类型必须和变量原值的类型一致，否则会出现不可预测的异常行为
+func (b *Builder) UnExportedVar(path string) UnExportedVarMock {
 	cacheKey := fmt.Sprintf("ue_var_%s", path)
 	if mocker, ok := b.mockers[cacheKey]; ok && !mocker.Canceled() {
 		return mocker.(UnExportedVarMock)
 	}
 
-	mocker := NewUnExportedVarMocker(path, typ)
+	mocker := NewUnExportedVarMocker(path)
 	b.cache(cacheKey, mocker)
 	return mocker
 }

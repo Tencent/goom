@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"reflect"
 	"testing"
 
 	"git.woa.com/goom/mocker"
@@ -36,7 +35,7 @@ func (s *ueVarMockerTestSuite) TestNewUeVarMock() {
 		s.T().Log(os.Args[i], " ")
 	}
 	s.Run("success", func() {
-		mocker := mocker.Create().UnExportedVar("git.woa.com/goom/mocker/test.unexportedGlobalIntVar", reflect.TypeOf(0))
+		mocker := mocker.Create().UnExportedVar("git.woa.com/goom/mocker/test.unexportedGlobalIntVar")
 		s.Equal(1, test.UnexportedGlobalIntVar(), "unexported global int var result check")
 		mocker.Set(3)
 		//fmt.Println(test.UnexportedGlobalIntVar())
@@ -50,42 +49,36 @@ func (s *ueVarMockerTestSuite) TestNewUeVarMock() {
 func (s *ueVarMockerTestSuite) TestNewUeComplexVarMock() {
 	testCases := []struct {
 		path     string
-		typ      reflect.Type
 		initial  interface{}
 		modified interface{}
 		getter   func() interface{}
 	}{
 		{
 			path:     "git.woa.com/goom/mocker/test.unexportedGlobalStrVar",
-			typ:      reflect.TypeOf(""),
 			initial:  "str",
 			modified: "str1",
 			getter:   func() interface{} { return test.UnexportedGlobalStrVar() },
 		},
 		{
 			path:     "git.woa.com/goom/mocker/test.unexportedGlobalMapVar",
-			typ:      reflect.TypeOf(map[string]int{}),
 			initial:  map[string]int{"key": 1},
 			modified: map[string]int{"key": 2},
 			getter:   func() interface{} { return test.UnexportedGlobalMapVar() },
 		},
 		{
 			path:     "git.woa.com/goom/mocker/test.unexportedGlobalArrVar",
-			typ:      reflect.TypeOf([]int{}),
 			initial:  []int{1, 2, 3},
 			modified: []int{1, 2, 4},
 			getter:   func() interface{} { return test.UnexportedGlobalArrVar() },
 		},
 		{
 			path:     "git.woa.com/goom/mocker/test.unexportedGlobalStructVar",
-			typ:      reflect.TypeOf(test.Struct{}),
 			initial:  test.Struct{Field1: "1"},
 			modified: test.Struct{Field1: "2"},
 			getter:   func() interface{} { return test.UnexportedGlobalStructVar() },
 		},
 		{
 			path:     "git.woa.com/goom/mocker/test.unexportedGlobalStructPointerVar",
-			typ:      reflect.TypeOf(&test.Struct{}),
 			initial:  &test.Struct{Field1: "p1"},
 			modified: &test.Struct{Field1: "p2"},
 			getter:   func() interface{} { return test.UnexportedGlobalStructPointerVar() },
@@ -94,7 +87,7 @@ func (s *ueVarMockerTestSuite) TestNewUeComplexVarMock() {
 
 	for _, tc := range testCases {
 		s.Run(tc.path, func() {
-			m := mocker.Create().UnExportedVar(tc.path, tc.typ)
+			m := mocker.Create().UnExportedVar(tc.path)
 			s.Equal(tc.initial, tc.getter(), "unexported global var result check")
 			m.Set(tc.modified)
 			s.Equal(tc.modified, tc.getter(), "unexported global var result check")
@@ -110,7 +103,7 @@ func (s *ueVarMockerTestSuite) TestNewUeConstMock() {
 		s.T().Log(os.Args[i], " ")
 	}
 	s.Run("success", func() {
-		mocker.Create().UnExportedVar("git.woa.com/goom/mocker/test.unexportedGlobalIntConst", reflect.TypeOf(1))
+		mocker.Create().UnExportedVar("git.woa.com/goom/mocker/test.unexportedGlobalIntConst")
 		fmt.Println("unexportedGlobalIntConst: ", test.UnexportedGlobalIntConst())
 	})
 }

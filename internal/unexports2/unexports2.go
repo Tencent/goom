@@ -33,6 +33,18 @@ func FindFuncByName(name string) (uintptr, error) {
 	return 0, err
 }
 
+// FindVarByName read the var address at runtime
+func FindVarByName(name string) (uintptr, error) {
+	fn, err := getVarSymbolByName(name)
+	if err == nil {
+		return uintptr(fn.Value) + alignment, nil
+	}
+	if erro.CauseBy(err, erro.LdFlags) {
+		panic(err)
+	}
+	return 0, err
+}
+
 // CreateFuncForCodePtr is given a code pointer and creates a function value
 // that uses that pointer. The outFun argument should be a pointer to a function
 // of the proper type (e.g. the address of a local variable), and will be set to

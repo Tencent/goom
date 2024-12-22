@@ -63,3 +63,29 @@ func getFunctionSymbolByName(name string) (symbol *gosym.Func, err error) {
 	}
 	return
 }
+
+func getVarSymbolByName(name string) (symbol *gosym.Sym, err error) {
+	var table *gosym.Table
+	if table, err = GetSymbolTable(); err != nil {
+		return
+	}
+
+	symbol = lookupSym(table, name)
+	if symbol == nil {
+		err = fmt.Errorf("%v: variable symbol not found", name)
+	}
+	return
+}
+
+// LookupSym returns the text, data, or bss symbol with the given name,
+// or nil if no such symbol is found.
+func lookupSym(t *gosym.Table, name string) *gosym.Sym {
+	// TODO(austin) Maybe make a map
+	for i := range t.Syms {
+		s := &t.Syms[i]
+		if s.Name == name {
+			return s
+		}
+	}
+	return nil
+}

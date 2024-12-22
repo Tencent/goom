@@ -76,6 +76,20 @@ func (s *ueVarMockerTestSuite) TestNewUeComplexVarMock() {
 			modified: []int{1, 2, 4},
 			getter:   func() interface{} { return test.UnexportedGlobalArrVar() },
 		},
+		{
+			path:     "git.woa.com/goom/mocker/test.unexportedGlobalStructVar",
+			typ:      reflect.TypeOf(test.Struct{}),
+			initial:  test.Struct{Field1: "1"},
+			modified: test.Struct{Field1: "2"},
+			getter:   func() interface{} { return test.UnexportedGlobalStructVar() },
+		},
+		{
+			path:     "git.woa.com/goom/mocker/test.unexportedGlobalStructPointerVar",
+			typ:      reflect.TypeOf(&test.Struct{}),
+			initial:  &test.Struct{Field1: "p1"},
+			modified: &test.Struct{Field1: "p2"},
+			getter:   func() interface{} { return test.UnexportedGlobalStructPointerVar() },
+		},
 	}
 
 	for _, tc := range testCases {

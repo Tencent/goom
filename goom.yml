@@ -1,0 +1,16 @@
+tosr_no: TOSR-1-202311161709566184                 # 单据号码
+
+account_mappings:
+  # 开源平台用户账户对应的内部企微账户,一人一行，必填项
+  Jakegogo: yongfuchen
+
+opensource_repository_information:
+  # 每个仓库的对应信息
+  tencentopen_url: https://github.com/Tencent/goom      # 提供gitgub,gitee, Atomgit等代码托管平台 或 huggingface等开源模型库平台地址，必填项
+  tencentopen_name: goom      # 提供外部开源项目名称，必填项
+  status: ongoing                # ongoing\closed\other 当前外部仓库状态三选一 “维护中\不再维护\其他”，必填项
+  owner: yongfuchen                 # 内部用户名，多人使用“,”分隔，必填项
+  follower: adrewchen              # 仓库关注人内部用户名，多人使用“,”分隔，必填项
+  internal_id: goom/mocker          # 工蜂仓库id, 若已归档或已无内网repo请为空
+  internal_url: https://git.woa.com/goom/mocker         # 工蜂仓库url, 若已归档或已无内网repo请为空
+

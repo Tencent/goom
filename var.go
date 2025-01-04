@@ -18,7 +18,7 @@ type VarMock interface {
 
 // defaultVarMocker 默认变量 mock 实现
 type defaultVarMocker struct {
-	target      interface{}
+	targetValue reflect.Value
 	mockValue   interface{}
 	originValue interface{}
 	canceled    bool // canceled 是否被取消
@@ -26,7 +26,7 @@ type defaultVarMocker struct {
 
 // String mock 的名称或描述, 方便调试和问题排查
 func (m *defaultVarMocker) String() string {
-	return fmt.Sprintf("var at[%d]", reflect.ValueOf(m.target).Pointer())
+	return fmt.Sprintf("var at[%d]", m.targetValue.Pointer())
 }
 
 // NewVarMocker 创建 VarMock
@@ -35,9 +35,13 @@ func NewVarMocker(target interface{}) VarMock {
 	if t.Type().Kind() != reflect.Ptr {
 		panic("VarMock target must be a pointer.")
 	}
+	return newVarMocker(t)
+}
+
+func newVarMocker(targetValue reflect.Value) *defaultVarMocker {
 	return &defaultVarMocker{
-		target:   target,
-		canceled: false,
+		targetValue: targetValue,
+		canceled:    false,
 	}
 }
 
@@ -59,8 +63,7 @@ func (m *defaultVarMocker) Apply(callback interface{}) {
 
 // Cancel 取消 mock
 func (m *defaultVarMocker) Cancel() {
-	t := reflect.ValueOf(m.target)
-	t.Elem().Set(reflect.ValueOf(m.originValue))
+	m.targetValue.Elem().Set(reflect.ValueOf(m.originValue))
 	m.canceled = true
 }
 
@@ -77,9 +80,8 @@ func (m *defaultVarMocker) Set(value interface{}) {
 }
 
 func (m *defaultVarMocker) doSet(value interface{}) {
-	t := reflect.ValueOf(m.target)
-	m.originValue = t.Elem().Interface()
+	m.originValue = m.targetValue.Elem().Interface()
 	d := reflect.ValueOf(value)
-	t.Elem().Set(d)
+	m.targetValue.Elem().Set(d)
 	m.mockValue = value
 }

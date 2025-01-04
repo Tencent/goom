@@ -1,6 +1,6 @@
 module github.com/tencent/goom
 
-go 1.16
+go 1.20
 
 require github.com/stretchr/testify v1.4.0
 

@@ -3,29 +3,61 @@ package unexports2
 import (
 	"errors"
 	"reflect"
+	"sync"
 	"unsafe"
 
 	"github.com/tencent/goom/erro"
 	"github.com/tencent/goom/internal/hack"
 )
 
-var alignment uintptr
+var (
+	funcAlignment uintptr
+	varAlignment  uintptr
+)
 
-func init() {
+var stubVar int = 0
+var initAlignment sync.Once
+
+// initAlignmentFunc 内存虚拟表地址和二进制表地址偏差计算 按需初始化
+func initAlignmentFunc() {
 	fn, err := getFunctionSymbolByName("github.com/tencent/goom/internal/unexports2.FindFuncByName")
 	if err != nil {
 		return
 	}
-	symTabAddress := uintptr(fn.Entry)
-	memAddress := reflect.ValueOf(FindFuncByName).Pointer()
-	alignment = memAddress - symTabAddress
+	fnSymTabAddress := uintptr(fn.Entry)
+	fnMemAddress := reflect.ValueOf(FindFuncByName).Pointer()
+	funcAlignment = fnMemAddress - fnSymTabAddress
+
+	var1, err := getVarSymbolByName("github.com/tencent/goom/internal/unexports2.stubVar")
+	if err != nil {
+		return
+	}
+	varSymTabAddress := uintptr(var1.Value)
+	varMemAddress := reflect.ValueOf(&stubVar).Pointer()
+	varAlignment = varMemAddress - varSymTabAddress
+
+	GetSymbolTable()
 }
 
 // FindFuncByName read the symbol table at runtime
 func FindFuncByName(name string) (uintptr, error) {
+	initAlignment.Do(initAlignmentFunc)
 	fn, err := getFunctionSymbolByName(name)
 	if err == nil {
-		return uintptr(fn.Entry) + alignment, nil
+		return uintptr(fn.Entry) + funcAlignment, nil
+	}
+	if erro.CauseBy(err, erro.LdFlags) {
+		panic(err)
+	}
+	return 0, err
+}
+
+// FindVarByName read the var address at runtime
+func FindVarByName(name string) (uintptr, error) {
+	initAlignment.Do(initAlignmentFunc)
+	fn, err := getVarSymbolByName(name)
+	if err == nil {
+		return uintptr(fn.Value) + varAlignment, nil
 	}
 	if erro.CauseBy(err, erro.LdFlags) {
 		panic(err)

@@ -11,6 +11,7 @@ import (
 
 	"github.com/tencent/goom/internal/iface"
 	"github.com/tencent/goom/internal/logger"
+	"github.com/tencent/goom/internal/patch"
 )
 
 // Builder Mock 构建器, 负责创建一个链式构造器.
@@ -32,6 +33,17 @@ func (b *Builder) Pkg(name string) *Builder {
 // Deprecated: 对于跨包目录的私有函数的 mock 通常都是因为代码设计可能有问题
 func (b *Builder) PkgName() string {
 	return b.pkgName
+}
+
+// New 创建 Mock 构建器, 和Create()函数目的是相同的
+// 非线程安全的,不能在多协程中并发地 mock 或 reset 同一个函数
+func New() *Builder {
+	// callerDeps 当前的调用栈栈层次
+	const callerDeps = 2
+	return &Builder{
+		pkgName: currentPkg(callerDeps),
+		mockers: make(map[interface{}]Mocker, 30),
+	}
 }
 
 // Create 创建 Mock 构建器
@@ -68,16 +80,16 @@ func (b *Builder) cache(mKey interface{}, cachedMocker Mocker) {
 	b.mockers[mKey] = cachedMocker
 }
 
-// Struct 指定结构体名称
+// Struct 指定结构体实例
 // 比如需要 mock 结构体函数 (*conn).Write(b []byte)，则 name="conn"
-func (b *Builder) Struct(obj interface{}) *CachedMethodMocker {
-	mKey := reflect.ValueOf(obj).Type().String()
+func (b *Builder) Struct(instance interface{}) *CachedMethodMocker {
+	mKey := reflect.ValueOf(instance).Type().String()
 	if mocker, ok := b.mockers[mKey]; ok && !mocker.Canceled() {
 		b.reset2CurPkg()
 		return mocker.(*CachedMethodMocker)
 	}
 
-	mocker := NewMethodMocker(b.pkgName, obj)
+	mocker := NewMethodMocker(b.pkgName, instance)
 	cachedMocker := NewCachedMethodMocker(mocker)
 	b.cache(mKey, cachedMocker)
 	b.reset2CurPkg()
@@ -87,14 +99,19 @@ func (b *Builder) Struct(obj interface{}) *CachedMethodMocker {
 // Func 指定函数定义
 // funcDef 函数，比如 foo
 // 方法的 mock, 比如 &Struct{}.method
-func (b *Builder) Func(obj interface{}) *DefMocker {
-	var key = runtime.FuncForPC(reflect.ValueOf(obj).Pointer()).Name()
+func (b *Builder) Func(funcDef interface{}) *DefMocker {
+	funcPointer := reflect.ValueOf(funcDef).Pointer()
+	key := runtime.FuncForPC(funcPointer).Name()
+	// 对于包含泛型参数的函数,可以附加函数指针作为key来区分不同泛型变量类型的函数
+	if patch.IsGenericsFunc(key) {
+		key = key + fmt.Sprintf("-%x", funcPointer)
+	}
 	if mocker, ok := b.mockers[key]; ok && !mocker.Canceled() {
 		b.reset2CurPkg()
 		return mocker.(*DefMocker)
 	}
 
-	mocker := NewDefMocker(b.pkgName, obj)
+	mocker := NewDefMocker(b.pkgName, funcDef)
 	b.cache(key, mocker)
 	b.reset2CurPkg()
 	return mocker
@@ -141,13 +158,32 @@ func (b *Builder) ExportFunc(name string) *UnexportedFuncMocker {
 }
 
 // Var 变量 mock, target 类型必须传递指针类型
-func (b *Builder) Var(target interface{}) VarMock {
-	cacheKey := fmt.Sprintf("var_%d", reflect.ValueOf(target).Pointer())
+func (b *Builder) Var(v interface{}) VarMock {
+	cacheKey := fmt.Sprintf("var_%d", reflect.ValueOf(v).Pointer())
 	if mocker, ok := b.mockers[cacheKey]; ok && !mocker.Canceled() {
 		return mocker.(VarMock)
 	}
 
-	mocker := NewVarMocker(target)
+	mocker := NewVarMocker(v)
+	b.cache(cacheKey, mocker)
+	return mocker
+}
+
+// UnExportedVar 未导出变量 mock
+// path 变量路径, package + name 组成, 比如 "github.com/xxx/yyy.varName"
+// 变量类型支持:
+//	比如int类型，比如0,
+//	map类型比如: map[string]int{}
+//	结构体类型比如: struct A{}
+//	指针类型比如: &struct A{}
+// Set(value)时, value类型必须和变量原值的类型一致，否则会出现不可预测的异常行为
+func (b *Builder) UnExportedVar(path string) UnExportedVarMock {
+	cacheKey := fmt.Sprintf("ue_var_%s", path)
+	if mocker, ok := b.mockers[cacheKey]; ok && !mocker.Canceled() {
+		return mocker.(UnExportedVarMock)
+	}
+
+	mocker := NewUnExportedVarMocker(path)
 	b.cache(cacheKey, mocker)
 	return mocker
 }

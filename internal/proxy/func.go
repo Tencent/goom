@@ -10,7 +10,7 @@ import (
 	"github.com/tencent/goom/internal/bytecode"
 	"github.com/tencent/goom/internal/logger"
 	"github.com/tencent/goom/internal/patch"
-	"github.com/tencent/goom/internal/unexports"
+	"github.com/tencent/goom/internal/unexports2"
 )
 
 // Func 通过函数生成代理函数
@@ -34,7 +34,7 @@ func Func(funcDef interface{}, proxyFunc, trampolineFunc interface{}) (*patch.Gu
 	// 构造原先方法实例值
 	logger.Debug("origin ptr is:", fmt.Sprintf("0x%x", patchGuard.FixOriginFunc()))
 	if bytecode.IsValidPtr(trampolineFunc) {
-		_, err = unexports.CreateFuncForCodePtr(trampolineFunc, patchGuard.FixOriginFunc())
+		_, err = unexports2.CreateFuncForCodePtr(trampolineFunc, patchGuard.FixOriginFunc())
 		if err != nil {
 			logger.Error("func proxy fail funcDef=", funcDef, ":", err)
 			patchGuard.Unpatch()
@@ -54,7 +54,7 @@ func FuncName(funcName string, proxyFunc interface{}, trampolineFunc interface{}
 	if e := checkTrampolineFunc(trampolineFunc); e != nil {
 		return nil, e
 	}
-	originFuncPtr, err := unexports.FindFuncByName(funcName)
+	originFuncPtr, err := unexports2.FindFuncByName(funcName)
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +95,7 @@ func Method(target reflect.Type, methodName string, proxyFunc,
 	// 构造原先方法实例值
 	logger.Debug("origin ptr is:", fmt.Sprintf("0x%x", patchGuard.FixOriginFunc()))
 	if bytecode.IsValidPtr(trampolineFunc) {
-		_, err = unexports.CreateFuncForCodePtr(trampolineFunc, patchGuard.FixOriginFunc())
+		_, err = unexports2.CreateFuncForCodePtr(trampolineFunc, patchGuard.FixOriginFunc())
 		if err != nil {
 			logger.Error("method proxy fail method=", target, ".", methodName, ":", err)
 			patchGuard.Unpatch()

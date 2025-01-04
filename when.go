@@ -106,53 +106,53 @@ func NewWhen(funTyp reflect.Type) *When {
 //
 //	In(3, 4), // 第一个参数是 In
 //	Any()) // 第二个参数是 Any
-func (w *When) When(args ...interface{}) *When {
-	w.curMatch = newDefaultMatch(args, nil, w.isMethod, w.funcTyp)
+func (w *When) When(specArgOrExpr ...interface{}) *When {
+	w.curMatch = newDefaultMatch(specArgOrExpr, nil, w.isMethod, w.funcTyp)
 	return w
 }
 
 // In 当参数包含其中之一, 使用 ContainsMatcher
 // 当参数为多个时, In 的每个条件各使用一个数组表示:
 // .In([]interface{}{3, Any()}, []interface{}{4, Any()})
-func (w *When) In(slices ...interface{}) *When {
-	w.curMatch = newContainsMatch(slices, nil, w.isMethod, w.funcTyp)
+func (w *When) In(specArgsOrExprs ...interface{}) *When {
+	w.curMatch = newContainsMatch(specArgsOrExprs, nil, w.isMethod, w.funcTyp)
 	return w
 }
 
 // Return 指定返回值
-func (w *When) Return(results ...interface{}) *When {
+func (w *When) Return(value ...interface{}) *When {
 	if w.curMatch != nil {
-		w.curMatch.AddResult(results)
+		w.curMatch.AddResult(value)
 		w.matches = append(w.matches, w.curMatch)
 		return w
 	}
 
 	if w.defaultReturns == nil {
-		w.defaultReturns = newAlwaysMatch(results, w.funcTyp)
+		w.defaultReturns = newAlwaysMatch(value, w.funcTyp)
 	} else {
-		w.defaultReturns.AddResult(results)
+		w.defaultReturns.AddResult(value)
 	}
 	return w
 }
 
 // AndReturn 指定第二次调用返回值,之后的调用以最后一个指定的值返回
-func (w *When) AndReturn(results ...interface{}) *When {
+func (w *When) AndReturn(value ...interface{}) *When {
 	if w.curMatch == nil {
-		return w.Return(results...)
+		return w.Return(value...)
 	}
-	w.curMatch.AddResult(results)
+	w.curMatch.AddResult(value)
 	return w
 }
 
 // Matches 多个条件匹配
-func (w *When) Matches(matches ...arg.Pair) *When {
-	if len(matches) == 0 {
+func (w *When) Matches(argAndRet ...arg.Pair) *When {
+	if len(argAndRet) == 0 {
 		return w
 	}
-	for _, v := range matches {
-		args, ok := v.Params.([]interface{})
+	for _, v := range argAndRet {
+		args, ok := v.Args.([]interface{})
 		if !ok {
-			args = []interface{}{v.Params}
+			args = []interface{}{v.Args}
 		}
 
 		results, ok := v.Return.([]interface{})
@@ -168,12 +168,12 @@ func (w *When) Matches(matches ...arg.Pair) *When {
 }
 
 // Returns 按顺序依次返回值
-func (w *When) Returns(rets ...interface{}) *When {
-	if len(rets) == 0 {
+func (w *When) Returns(values ...interface{}) *When {
+	if len(values) == 0 {
 		return w
 	}
 
-	for i, v := range rets {
+	for i, v := range values {
 		ret, ok := v.([]interface{})
 		if !ok {
 			ret = []interface{}{v}
@@ -200,8 +200,11 @@ func (w *When) invoke(args1 []reflect.Value) (results []reflect.Value) {
 }
 
 // Eval 执行 when 子句
-func (w *When) Eval(params ...interface{}) []interface{} {
-	argVs := arg.I2V(params, inTypes(w.isMethod, w.funcTyp))
+func (w *When) Eval(args ...interface{}) []interface{} {
+	argVs, err := arg.I2V(args, inTypes(w.isMethod, w.funcTyp))
+	if err != nil {
+		panic("Call Eval(...) error: " + err.Error())
+	}
 	resultVs := w.invoke(argVs)
 	return arg.V2I(resultVs, outTypes(w.funcTyp))
 }

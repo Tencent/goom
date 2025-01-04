@@ -15,8 +15,12 @@ const defaultLength = 4
 // funcPrologue 函数的开头指纹,用于不同OS获取不同的默认值
 var funcPrologue = armFuncPrologue64
 
-// CallInsName call 指令名称
-const CallInsName = "B"
+const (
+	// CallInsName call 指令名称
+	CallInsName = "B"
+	// CallInsName1 call 指令名称
+	CallInsName1 = "BL"
+)
 
 // GetFuncSize get func binary size
 // not absolutely safe
@@ -121,21 +125,25 @@ func GetInnerFunc(mode int, start uintptr) (uintptr, error) {
 			return 0, nil
 		}
 
-		if inst.Op.String() == CallInsName {
+		if inst.Op.String() == CallInsName || inst.Op.String() == CallInsName1 {
 			rAddr, ok := (inst.Args[0]).(arm64asm.PCRel)
-			if !ok {
-				return 0, nil
+			if ok {
+				if rAddr >= 0 {
+					return start + uintptr(curLen) + uintptr(rAddr), nil
+				}
+				if curLen+int(rAddr) < 0 {
+					return start + uintptr(curLen) - uintptr(-rAddr), nil
+				}
 			}
-			if rAddr >= 0 {
-				return start + uintptr(curLen) + uintptr(rAddr), nil
-			}
-			return start + uintptr(curLen) - uintptr(-rAddr), nil
 		}
 
 		curLen += defaultLength
 		code = memory.RawRead(start+uintptr(curLen), 16) // instruction takes at most 16 bytes
 
 		if bytes.Equal(funcPrologue, code[:prologueLen]) {
+			return 0, nil
+		}
+		if curLen > 4096 {
 			return 0, nil
 		}
 	}

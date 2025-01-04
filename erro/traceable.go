@@ -4,16 +4,43 @@
 package erro
 
 // Traceable 带原因的异常类型
-// TODO later 可以使用go自带的 %w 功能替代
+// TODO later 可以使用go自带的 %w 功能替代?
 type Traceable interface {
 	// Cause 获取错误的原因
 	Cause() error
+	// StackTrace 获取错误的堆栈信息
+	StackTrace() []Frame
 }
 
-// CauseOf 获取错误原因
-func CauseOf(err error) error {
+// Cause 获取错误原因，err对象需要实现Traceable接口才能获取并返回cause error, 否则一律返回false
+func Cause(err error) error {
 	if c, ok := err.(Traceable); ok {
 		return c.Cause()
 	}
 	return nil
+}
+
+// CauseBy 判断错误是否由指定的异常引起,err对象需要实现Traceable接口才能被追踪, 否则一律返回false
+// err 判断目标异常
+// traceAbleError 指定的异常原因
+func CauseBy(err error, traceAbleError Traceable) bool {
+	for c := err; c != nil; c = Cause(c) {
+		if c == nil {
+			return false
+		}
+		if t, ok := c.(Traceable); ok && t == traceAbleError {
+			return true
+		}
+	}
+	return false
+}
+
+// StackTrace returns stack trace of an error.
+// It will be empty if err is not of type Error.
+func StackTrace(err error) []Frame {
+	e, ok := err.(Traceable)
+	if !ok {
+		return nil
+	}
+	return e.StackTrace()
 }

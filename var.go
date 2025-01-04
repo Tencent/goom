@@ -18,7 +18,7 @@ type VarMock interface {
 
 // defaultVarMocker 默认变量 mock 实现
 type defaultVarMocker struct {
-	target      interface{}
+	targetValue reflect.Value
 	mockValue   interface{}
 	originValue interface{}
 	canceled    bool // canceled 是否被取消
@@ -26,7 +26,7 @@ type defaultVarMocker struct {
 
 // String mock 的名称或描述, 方便调试和问题排查
 func (m *defaultVarMocker) String() string {
-	return fmt.Sprintf("var at[%d]", reflect.ValueOf(m.target).Pointer())
+	return fmt.Sprintf("var at[%d]", m.targetValue.Pointer())
 }
 
 // NewVarMocker 创建 VarMock
@@ -35,22 +35,26 @@ func NewVarMocker(target interface{}) VarMock {
 	if t.Type().Kind() != reflect.Ptr {
 		panic("VarMock target must be a pointer.")
 	}
+	return newVarMocker(t)
+}
+
+func newVarMocker(targetValue reflect.Value) *defaultVarMocker {
 	return &defaultVarMocker{
-		target:   target,
-		canceled: false,
+		targetValue: targetValue,
+		canceled:    false,
 	}
 }
 
 // Apply 变量取值回调函数, 只会执行一次
 // 注意: Apply 会覆盖之前设定 Set 的值
-func (m *defaultVarMocker) Apply(valueCallback interface{}) {
-	f := reflect.ValueOf(valueCallback)
+func (m *defaultVarMocker) Apply(callback interface{}) {
+	f := reflect.ValueOf(callback)
 	if f.Kind() != reflect.Func {
-		panic("VarMock Apply argument(valueCallback) must be a func.")
+		panic("VarMock Apply argument(callback) must be a func.")
 	}
 	ret := f.Call([]reflect.Value{})
 	if ret == nil || len(ret) != 1 {
-		panic("VarMock Apply valueCallback's returns length must be 1.")
+		panic("VarMock Apply callback's returns length must be 1.")
 	}
 
 	m.doSet(ret[0].Interface())
@@ -59,8 +63,7 @@ func (m *defaultVarMocker) Apply(valueCallback interface{}) {
 
 // Cancel 取消 mock
 func (m *defaultVarMocker) Cancel() {
-	t := reflect.ValueOf(m.target)
-	t.Elem().Set(reflect.ValueOf(m.originValue))
+	m.targetValue.Elem().Set(reflect.ValueOf(m.originValue))
 	m.canceled = true
 }
 
@@ -71,15 +74,14 @@ func (m *defaultVarMocker) Canceled() bool {
 
 // Set 设置变量值
 // 注意: Set 会覆盖之前设定 Apply 的值
-func (m *defaultVarMocker) Set(val interface{}) {
-	m.doSet(val)
+func (m *defaultVarMocker) Set(value interface{}) {
+	m.doSet(value)
 	logger.Consolefc(logger.DebugLevel, "mocker [%s] apply.", logger.Caller(5), m.String())
 }
 
-func (m *defaultVarMocker) doSet(val interface{}) {
-	t := reflect.ValueOf(m.target)
-	m.originValue = t.Elem().Interface()
-	d := reflect.ValueOf(val)
-	t.Elem().Set(d)
-	m.mockValue = val
+func (m *defaultVarMocker) doSet(value interface{}) {
+	m.originValue = m.targetValue.Elem().Interface()
+	d := reflect.ValueOf(value)
+	m.targetValue.Elem().Set(d)
+	m.mockValue = value
 }

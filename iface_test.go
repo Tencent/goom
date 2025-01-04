@@ -171,7 +171,7 @@ func (s *ifaceMockerTestSuite) TestUnitArgsNotMatch() {
 			})
 		}()
 
-		s.IsType(&erro.IllegalParam{}, erro.CauseOf(expectErr), "param check fail test")
+		s.IsType(&erro.IllegalParam{}, erro.Cause(expectErr), "param check fail test")
 	})
 }
 

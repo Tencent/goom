@@ -7,12 +7,11 @@ import (
 	"testing"
 	"unsafe"
 
-	"github.com/tencent/goom/internal/bytecode/stub"
 	"github.com/tencent/goom/internal/hack"
 	"github.com/tencent/goom/internal/iface"
 	"github.com/tencent/goom/internal/logger"
 	"github.com/tencent/goom/internal/proxy"
-	"github.com/tencent/goom/internal/unexports2"
+	"github.com/tencent/mocker/internal/unexports2"
 )
 
 // I 接口测试

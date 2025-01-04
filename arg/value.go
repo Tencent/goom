@@ -11,7 +11,7 @@ import (
 	"github.com/tencent/goom/internal/iface"
 )
 
-// I2V []interface convert to []reflect.Value
+// I2V []interface convert to []reflect.Value 将interface元素类型的数组，转换成reflect.Value元素类型的数组
 func I2V(objs []interface{}, types []reflect.Type) ([]reflect.Value, error) {
 	if len(objs) != len(types) {
 		return nil, fmt.Errorf("The number of args does not match, required: %d, actual: %d", len(types), len(objs))
@@ -27,7 +27,7 @@ func I2V(objs []interface{}, types []reflect.Type) ([]reflect.Value, error) {
 	return values, nil
 }
 
-// toValue 转化为数值
+// toValue 将interface参数值转化为reflect.Value值
 func toValue(r interface{}, out reflect.Type) (reflect.Value, error) {
 	v := reflect.ValueOf(r)
 	if r != nil && v.Type() != out && (out.Kind() == reflect.Struct || out.Kind() == reflect.Ptr) {
@@ -54,7 +54,7 @@ func toValue(r interface{}, out reflect.Type) (reflect.Value, error) {
 	return v, nil
 }
 
-// cast 类型强制转换
+// cast 将reflect.Value类型强制转换为执行type类型的reflect.Value
 func cast(v reflect.Value, typ reflect.Type) reflect.Value {
 	originV := (*hack.Value)(unsafe.Pointer(&v))
 	newV := reflect.NewAt(typ, originV.Ptr).Elem()
@@ -94,7 +94,7 @@ func SprintV(params []reflect.Value) string {
 	return strings.Join(s, ",")
 }
 
-// ToExpr 将参数转换成[]Expr
+// ToExpr 将[]interface{}参数转换成[]Expr
 func ToExpr(args []interface{}, types []reflect.Type) ([]Expr, error) {
 	if len(args) != len(types) {
 		return nil, fmt.Errorf("The number of args does not match, required: %d, actual: %d", len(types), len(args))

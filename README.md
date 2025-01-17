@@ -1,4 +1,8 @@
 # GOOM单测Mock框架
+## 动态
+- 开源版本将持续进行维护，欢迎提交issue
+- 或者加入QQ群沟通
+
 ## 介绍
 ### 背景
 1. 基于目前腾讯内部需要一款适合公司业务迭代速度和稳定性要求的mock库，国内众多项目采用外界开源的gomonkey框架进行函数的mock，因其版本更新不及时, 加上团队目前实现一款改进版-支持异包未导出函数mock，同包未导出方法mock，无需unpath即可在mock过程中调用原函数的特性，可以支持到延迟模拟，参数更改，mock数据录制等功能，因此建立此项目
@@ -379,4 +383,8 @@ v1.0.4-rc1
 ## Contributor
 @yongfuchen、@adrewchen、@bingjgyan、@mingjiehu、@ivyyi、@miliao
 
+
+# QQ群
+
+![IMG_7091](https://github.com/user-attachments/assets/ae5fc289-f47c-45c8-b8c2-688cffe8eda0)
 

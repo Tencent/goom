@@ -1,7 +1,7 @@
 # GOOM单测Mock框架
 ## 动态
-将与外网开源版本保持同步: https://github.com/Tencent/goom
-如果未及时响应, 可联系外网的作者进行同步
+- 将与外网开源版本保持同步: https://github.com/Tencent/goom
+- 如果未及时响应, 可联系外网的作者进行同步
 
 ## 介绍
 ### 背景

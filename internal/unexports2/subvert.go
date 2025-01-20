@@ -39,7 +39,7 @@ func ExposeFunction(funcSymName string, templateFunc interface{}) (function inte
 	if err != nil {
 		return
 	}
-	return newFunctionWithImplementation(templateFunc, uintptr(fn.Entry)+alignment)
+	return newFunctionWithImplementation(templateFunc, uintptr(fn.Entry)+funcAlignment)
 }
 
 // GetSymbolTable loads (if necessary) and returns the symbol table for this process

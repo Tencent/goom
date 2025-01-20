@@ -385,6 +385,4 @@ v1.0.4-rc1
 
 
 # QQ群
-
-![IMG_7091](https://github.com/user-attachments/assets/ae5fc289-f47c-45c8-b8c2-688cffe8eda0 | width=350)
-
+<img src="https://github.com/user-attachments/assets/ae5fc289-f47c-45c8-b8c2-688cffe8eda0" alt="扫码加QQ群" width="350" />

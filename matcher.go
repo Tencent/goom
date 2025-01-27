@@ -22,7 +22,7 @@ func newBaseMatcher(results []interface{}, funTyp reflect.Type) *BaseMatcher {
 	resultVs := make([][]reflect.Value, 0)
 	if results != nil {
 		// TODO results check
-		result, err := arg.I2V(results, outTypes(funTyp))
+		result, err := arg.I2V(results, outTypes(funTyp), false)
 		if err != nil {
 			panic("Return Value (" + fmt.Sprintf("%v", results) + ") error: " + err.Error())
 		}
@@ -54,7 +54,7 @@ func (c *BaseMatcher) Result() []reflect.Value {
 // AddResult 添加结果
 func (c *BaseMatcher) AddResult(results []interface{}) {
 	// TODO results check
-	result, err := arg.I2V(results, outTypes(c.funTyp))
+	result, err := arg.I2V(results, outTypes(c.funTyp), false)
 	if err != nil {
 		panic("Return Value (" + fmt.Sprintf("%v", results) + ") error: " + err.Error())
 	}
@@ -90,7 +90,8 @@ type DefaultMatcher struct {
 
 // newDefaultMatch 创建新参数匹配
 func newDefaultMatch(args []interface{}, results []interface{}, isMethod bool, funTyp reflect.Type) *DefaultMatcher {
-	e, err := arg.ToExpr(args, inTypes(isMethod, funTyp))
+	argsTypes, isVariadic := inTypes(isMethod, funTyp)
+	e, err := arg.ToExpr(args, argsTypes, isVariadic)
 	if err != nil {
 		panic(fmt.Sprintf("Call When("+fmt.Sprintf("%v", args)+") error: %v", err))
 	}
@@ -135,8 +136,23 @@ type ContainsMatcher struct {
 // newContainsMatch 创建新的包含类型的参数匹配
 func newContainsMatch(args []interface{}, results []interface{}, isMethod bool,
 	funTyp reflect.Type) *ContainsMatcher {
+
+	argsTypes, isVariadic := inTypes(isMethod, funTyp)
+	// 可变参数需要展开参数数组, 为每个参数元素生成独立表达式
+	if isVariadic {
+		expandArgs := make([]interface{}, 0)
+		for i, v := range args {
+			if i >= len(argsTypes)-1 {
+				rv := reflect.ValueOf(v)
+				for j := 0; j < rv.Len(); j++ {
+					expandArgs = append(expandArgs, rv.Index(j).Interface())
+				}
+			}
+		}
+		args = expandArgs
+	}
 	in := arg.In(args...)
-	err := in.Resolve(inTypes(isMethod, funTyp))
+	err := in.Resolve(argsTypes, isVariadic)
 	if err != nil {
 		// TODO add mocker and method name to message
 		panic(fmt.Sprintf("create param match fail: %v", err))

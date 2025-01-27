@@ -106,6 +106,9 @@ func NewWhen(funTyp reflect.Type) *When {
 //
 //	In(3, 4), // 第一个参数是 In
 //	Any()) // 第二个参数是 Any
+//
+// 如何是可变参数, 则使用 When(3[可变参数第一个], 4[可变参数第二个])
+// 或者等价于 When(arg.In(3), arg.In(4))
 func (w *When) When(specArgOrExpr ...interface{}) *When {
 	w.curMatch = newDefaultMatch(specArgOrExpr, nil, w.isMethod, w.funcTyp)
 	return w
@@ -114,6 +117,9 @@ func (w *When) When(specArgOrExpr ...interface{}) *When {
 // In 当参数包含其中之一, 使用 ContainsMatcher
 // 当参数为多个时, In 的每个条件各使用一个数组表示:
 // .In([]interface{}{3, Any()}, []interface{}{4, Any()})
+//
+//	如果是可变参数, 则使用 w.In([]interface{}{3, 4, N}, []interface{}{5, 6, N})
+//	或者等价于 w.When(arg.In(3, 5), arg.In(4, 6), N)
 func (w *When) In(specArgsOrExprs ...interface{}) *When {
 	w.curMatch = newContainsMatch(specArgsOrExprs, nil, w.isMethod, w.funcTyp)
 	return w
@@ -201,7 +207,8 @@ func (w *When) invoke(args1 []reflect.Value) (results []reflect.Value) {
 
 // Eval 执行 when 子句
 func (w *When) Eval(args ...interface{}) []interface{} {
-	argVs, err := arg.I2V(args, inTypes(w.isMethod, w.funcTyp))
+	argsTypes, isVariadic := inTypes(w.isMethod, w.funcTyp)
+	argVs, err := arg.I2V(args, argsTypes, isVariadic)
 	if err != nil {
 		panic("Call Eval(...) error: " + err.Error())
 	}

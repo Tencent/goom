@@ -13,7 +13,7 @@ type Expr interface {
 	// input 表达式执行时的入参
 	Eval(input []reflect.Value) (bool, error)
 	// Resolve 解析参数类型
-	Resolve(types []reflect.Type) error
+	Resolve(types []reflect.Type, isVariadic bool) error
 }
 
 // AnyExpr 和任意参数值比较
@@ -21,7 +21,7 @@ type AnyExpr struct {
 }
 
 // Resolve AnyExpr 表达式解析
-func (a *AnyExpr) Resolve(_ []reflect.Type) error {
+func (a *AnyExpr) Resolve(_ []reflect.Type, isVariadic bool) error {
 	return nil
 }
 
@@ -37,13 +37,13 @@ type EqualsExpr struct {
 }
 
 // Resolve EqualsExpr 表达式解析
-func (e *EqualsExpr) Resolve(types []reflect.Type) error {
+func (e *EqualsExpr) Resolve(types []reflect.Type, isVariadic bool) error {
 	// types 只会有一个元素
 	if len(types) != 1 {
 		return fmt.Errorf("EqualsExpr.Resolve status error")
 	}
 	var err error
-	e.argV, err = toValue(e.arg, types[0])
+	e.argV, err = toValue(e.arg, types[0], isVariadic)
 	return err
 }
 
@@ -66,15 +66,14 @@ type InExpr struct {
 }
 
 // Resolve InExpr 表达式解析
-func (i *InExpr) Resolve(types []reflect.Type) error {
+func (i *InExpr) Resolve(types []reflect.Type, isVariadic bool) error {
 	expressions := make([][]Expr, 0)
 	for _, v := range i.args {
 		param, ok := v.([]interface{})
 		if !ok {
 			param = []interface{}{v}
 		}
-
-		expr, err := ToExpr(param, types)
+		expr, err := ToExpr(param, types, isVariadic)
 		if err != nil {
 			return err
 		}

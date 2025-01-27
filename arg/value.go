@@ -12,27 +12,46 @@ import (
 )
 
 // I2V []interface convert to []reflect.Value
-func I2V(objs []interface{}, types []reflect.Type) ([]reflect.Value, error) {
-	if len(objs) != len(types) {
-		return nil, fmt.Errorf("The number of args does not match, required: %d, actual: %d", len(types), len(objs))
+func I2V(objs []interface{}, types []reflect.Type, isVariadic bool) ([]reflect.Value, error) {
+	if isVariadic {
+		if len(objs) < len(types)-1 {
+			return nil, fmt.Errorf("the number of args does not match, required: %d, actual: %d", len(types), len(objs))
+		}
+	} else {
+		if len(objs) != len(types) {
+			return nil, fmt.Errorf("the number of args does not match, required: %d, actual: %d", len(types), len(objs))
+		}
 	}
+
 	values := make([]reflect.Value, len(objs))
 	var e error
+	var typ reflect.Type
 	for i, a := range objs {
-		values[i], e = toValue(a, types[i])
+		if i < len(types)-1 {
+			typ = types[i]
+		} else {
+			typ = types[len(types)-1]
+			// 兼容可变参数
+			if isVariadic {
+				typ = typ.Elem()
+			}
+		}
+		values[i], e = toValue(a, typ, isVariadic)
 		if e != nil {
 			return nil, e
 		}
 	}
+
 	return values, nil
 }
 
 // toValue 转化为数值
-func toValue(r interface{}, out reflect.Type) (reflect.Value, error) {
+// toValue 转化为数值
+func toValue(r interface{}, out reflect.Type, isVariadic bool) (reflect.Value, error) {
 	v := reflect.ValueOf(r)
 	if r != nil && v.Type() != out && (out.Kind() == reflect.Struct || out.Kind() == reflect.Ptr) {
 		if v.Type().Size() != out.Size() {
-			return reflect.Value{}, fmt.Errorf("The type of the args does not match, required: %s, actual: %v", out, v.Type())
+			return reflect.Value{}, fmt.Errorf("the type of the args does not match, required: %s, actual: %v", out, v.Type())
 		}
 		// 类型强制转换,适用于结构体 fake 场景
 		v = cast(v, out)
@@ -49,7 +68,7 @@ func toValue(r interface{}, out reflect.Type) (reflect.Value, error) {
 		ptr.Elem().Set(v)
 		v = ptr.Elem()
 	} else if v.Type().Size() != out.Size() {
-		return reflect.Value{}, fmt.Errorf("The type of the args does not match, required: %s, actual: %v", out, v.Type())
+		return reflect.Value{}, fmt.Errorf("the type of the args does not match, required: %s, actual: %v", out, v.Type())
 	}
 	return v, nil
 }
@@ -95,21 +114,38 @@ func SprintV(params []reflect.Value) string {
 }
 
 // ToExpr 将参数转换成[]Expr
-func ToExpr(args []interface{}, types []reflect.Type) ([]Expr, error) {
-	if len(args) != len(types) {
-		return nil, fmt.Errorf("The number of args does not match, required: %d, actual: %d", len(types), len(args))
+func ToExpr(args []interface{}, types []reflect.Type, isVariadic bool) ([]Expr, error) {
+	if isVariadic {
+		if len(args) < len(types)-1 {
+			return nil, fmt.Errorf("the number of args does not match, required: %d, actual: %d", len(types), len(args))
+		}
+	} else {
+		if len(args) != len(types) {
+			return nil, fmt.Errorf("the number of args does not match, required: %d, actual: %d", len(types), len(args))
+		}
 	}
 	// TODO results check
 	expressions := make([]Expr, len(args))
 	for i, a := range args {
+		var typ reflect.Type
+		if i < len(types)-1 {
+			typ = types[i]
+		} else {
+			typ = types[len(types)-1]
+		}
+
 		if expr, ok := a.(Expr); ok {
 			expressions[i] = expr
 		} else {
+			// 兼容可变参数
+			if isVariadic {
+				typ = typ.Elem()
+			}
 			// 默认使用 equals 表达式
 			expressions[i] = Equals(a)
 		}
-		err := expressions[i].Resolve([]reflect.Type{types[i]})
-		if err != nil {
+
+		if err := expressions[i].Resolve([]reflect.Type{typ}, isVariadic); err != nil {
 			return nil, err
 		}
 	}

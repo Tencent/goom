@@ -138,19 +138,6 @@ func newContainsMatch(args []interface{}, results []interface{}, isMethod bool,
 	funTyp reflect.Type) *ContainsMatcher {
 
 	argsTypes, isVariadic := inTypes(isMethod, funTyp)
-	// 可变参数需要展开参数数组, 为每个参数元素生成独立表达式
-	if isVariadic {
-		expandArgs := make([]interface{}, 0)
-		for i, v := range args {
-			if i >= len(argsTypes)-1 {
-				rv := reflect.ValueOf(v)
-				for j := 0; j < rv.Len(); j++ {
-					expandArgs = append(expandArgs, rv.Index(j).Interface())
-				}
-			}
-		}
-		args = expandArgs
-	}
 	in := arg.In(args...)
 	err := in.Resolve(argsTypes, isVariadic)
 	if err != nil {

@@ -66,27 +66,38 @@ type InExpr struct {
 }
 
 // Resolve InExpr 表达式解析
-func (i *InExpr) Resolve(types []reflect.Type, isVariadic bool) error {
+func (in *InExpr) Resolve(types []reflect.Type, isVariadic bool) error {
 	expressions := make([][]Expr, 0)
-	for _, v := range i.args {
+	for i, v := range in.args {
 		param, ok := v.([]interface{})
-		if !ok {
+		if ok {
+
+		} else if isVariadic && i >= len(types)-1 {
+			// 可变参数需要展开参数数组, 为每个参数元素生成独立表达式
+			expandArgs := make([]interface{}, 0)
+			rv := reflect.ValueOf(param)
+			for j := 0; j < rv.Len(); j++ {
+				expandArgs = append(expandArgs, rv.Index(j).Interface())
+			}
+			param = expandArgs
+		} else {
 			param = []interface{}{v}
 		}
+
 		expr, err := ToExpr(param, types, isVariadic)
 		if err != nil {
 			return err
 		}
 		expressions = append(expressions, expr)
 	}
-	i.expressions = expressions
+	in.expressions = expressions
 	return nil
 }
 
 // Eval InExpr 表达式执行
-func (i *InExpr) Eval(input []reflect.Value) (bool, error) {
+func (in *InExpr) Eval(input []reflect.Value) (bool, error) {
 outer:
-	for _, one := range i.expressions {
+	for _, one := range in.expressions {
 		if len(input) != len(one) {
 			return false, nil
 		}

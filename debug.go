@@ -38,8 +38,14 @@ func interceptDebugInfo(imp interface{}, pFunc iface.PFunc, mocker Mocker) (inte
 
 	if imp != nil {
 		originImp := imp
-		imp = reflect.MakeFunc(reflect.TypeOf(imp), func(params []reflect.Value) []reflect.Value {
-			results := reflect.ValueOf(originImp).Call(params)
+		impType := reflect.TypeOf(imp)
+		imp = reflect.MakeFunc(impType, func(params []reflect.Value) []reflect.Value {
+			var results []reflect.Value
+			if impType.IsVariadic() {
+				results = reflect.ValueOf(originImp).CallSlice(params)
+			} else {
+				results = reflect.ValueOf(originImp).Call(params)
+			}
 			// 日志打印用到了 time.Now,避免递归死循环
 			if mocker.String() == excludeFunc {
 				return results

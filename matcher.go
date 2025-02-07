@@ -84,14 +84,22 @@ func (c *EmptyMatch) Result() []reflect.Value {
 //	Any()) // 第二个参数是 Any
 type DefaultMatcher struct {
 	*BaseMatcher
-	isMethod bool
-	exprs    []arg.Expr
+	isMethod   bool
+	exprs      []arg.Expr
+	isVariadic bool
 }
 
 // newDefaultMatch 创建新参数匹配
 func newDefaultMatch(args []interface{}, results []interface{}, isMethod bool, funTyp reflect.Type) *DefaultMatcher {
 	argsTypes, isVariadic := inTypes(isMethod, funTyp)
-	e, err := arg.ToExpr(args, argsTypes, isVariadic)
+	if isVariadic {
+		expandType := funTyp.In(funTyp.NumIn() - 1).Elem()
+		argsTypes = argsTypes[:len(argsTypes)-1]
+		for len(argsTypes) < len(args) {
+			argsTypes = append(argsTypes, expandType)
+		}
+	}
+	e, err := arg.ToExpr(args, argsTypes, false)
 	if err != nil {
 		panic(fmt.Sprintf("Call When("+fmt.Sprintf("%v", args)+") error: %v", err))
 	}
@@ -99,6 +107,7 @@ func newDefaultMatch(args []interface{}, results []interface{}, isMethod bool, f
 		exprs:       e,
 		BaseMatcher: newBaseMatcher(results, funTyp),
 		isMethod:    isMethod,
+		isVariadic:  isVariadic,
 	}
 }
 
@@ -107,12 +116,23 @@ func (c *DefaultMatcher) Match(args []reflect.Value) bool {
 	if c.isMethod {
 		args = args[1:]
 	}
+	if c.isVariadic {
+		// 可变参数需要展开参数数组
+		expandArgs := make([]reflect.Value, 0)
+		for _, v := range args {
+			rv := reflect.ValueOf(v.Interface())
+			for i := 0; i < rv.Len(); i++ {
+				expandArgs = append(expandArgs, rv.Index(i))
+			}
+		}
+		args = expandArgs
+	}
 	if len(args) != len(c.exprs) {
 		return false
 	}
 
 	for i, expr := range c.exprs {
-		v, err := expr.Eval([]reflect.Value{args[i]})
+		v, err := expr.Eval([]reflect.Value{args[i]}, false)
 		if err != nil {
 			// TODO add mocker and method name to message
 			panic(fmt.Sprintf("param[%d] match fail: %v", i, err))
@@ -129,8 +149,9 @@ func (c *DefaultMatcher) Match(args []reflect.Value) bool {
 // .In([]interface{}{3, Any()}, []interface{}{4, Any()})
 type ContainsMatcher struct {
 	*BaseMatcher
-	expr     *arg.InExpr
-	isMethod bool
+	expr       *arg.InExpr
+	isMethod   bool
+	isVariadic bool
 }
 
 // newContainsMatch 创建新的包含类型的参数匹配
@@ -148,6 +169,7 @@ func newContainsMatch(args []interface{}, results []interface{}, isMethod bool,
 		expr:        in,
 		BaseMatcher: newBaseMatcher(results, funTyp),
 		isMethod:    isMethod,
+		isVariadic:  isVariadic,
 	}
 }
 
@@ -156,7 +178,7 @@ func (c *ContainsMatcher) Match(args []reflect.Value) bool {
 	if c.isMethod {
 		args = args[1:]
 	}
-	v, err := c.expr.Eval(args)
+	v, err := c.expr.Eval(args, c.isVariadic)
 	if err != nil {
 		// TODO add mocker and method name to message
 		panic(fmt.Sprintf("param match fail: %v", err))

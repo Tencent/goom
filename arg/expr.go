@@ -11,7 +11,7 @@ type Expr interface {
 	// Eval 执行一个表达式,
 	// 一般地, 如果执行结果是 true, 则参数 Match 成功
 	// input 表达式执行时的入参
-	Eval(input []reflect.Value) (bool, error)
+	Eval(input []reflect.Value, isVariadic bool) (bool, error)
 	// Resolve 解析参数类型
 	Resolve(types []reflect.Type, isVariadic bool) error
 }
@@ -26,7 +26,7 @@ func (a *AnyExpr) Resolve(_ []reflect.Type, isVariadic bool) error {
 }
 
 // Eval 执行 AnyExpr 表达式
-func (a *AnyExpr) Eval(_ []reflect.Value) (bool, error) {
+func (a *AnyExpr) Eval(_ []reflect.Value, isVariadic bool) (bool, error) {
 	return true, nil
 }
 
@@ -48,7 +48,7 @@ func (e *EqualsExpr) Resolve(types []reflect.Type, isVariadic bool) error {
 }
 
 // Eval 执行 EqualsExpr 表达式
-func (e *EqualsExpr) Eval(input []reflect.Value) (bool, error) {
+func (e *EqualsExpr) Eval(input []reflect.Value, isVariadic bool) (bool, error) {
 	// input 只会有一个元素
 	if len(input) != 1 {
 		return false, fmt.Errorf("EqualsExpr.Resolve status error")
@@ -75,7 +75,7 @@ func (in *InExpr) Resolve(types []reflect.Type, isVariadic bool) error {
 		} else if isVariadic && i >= len(types)-1 {
 			// 可变参数需要展开参数数组, 为每个参数元素生成独立表达式
 			expandArgs := make([]interface{}, 0)
-			rv := reflect.ValueOf(param)
+			rv := reflect.ValueOf(v)
 			for j := 0; j < rv.Len(); j++ {
 				expandArgs = append(expandArgs, rv.Index(j).Interface())
 			}
@@ -95,14 +95,25 @@ func (in *InExpr) Resolve(types []reflect.Type, isVariadic bool) error {
 }
 
 // Eval InExpr 表达式执行
-func (in *InExpr) Eval(input []reflect.Value) (bool, error) {
+func (in *InExpr) Eval(input []reflect.Value, isVariadic bool) (bool, error) {
+	if isVariadic {
+		// 可变参数需要展开参数数组
+		expandArgs := make([]reflect.Value, 0)
+		for _, v := range input {
+			rv := reflect.ValueOf(v.Interface())
+			for i := 0; i < rv.Len(); i++ {
+				expandArgs = append(expandArgs, rv.Index(i))
+			}
+		}
+		input = expandArgs
+	}
 outer:
 	for _, one := range in.expressions {
 		if len(input) != len(one) {
 			return false, nil
 		}
 		for i, param := range one {
-			v, err := param.Eval([]reflect.Value{input[i]})
+			v, err := param.Eval([]reflect.Value{input[i]}, isVariadic)
 			if err != nil {
 				return false, err
 			}

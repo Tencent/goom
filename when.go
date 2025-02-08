@@ -102,18 +102,41 @@ func NewWhen(funTyp reflect.Type) *When {
 
 // When 当参数符合一定的条件, 使用 DefaultMatcher
 // 入参个数必须和函数或方法参数个数一致,
-// 比如: When(
+// 比如:
+// 例子1:
 //
-//	In(3, 4), // 第一个参数是 In
-//	Any()) // 第二个参数是 Any
+//	When(3, 4).Return(5) // 第一个参数是3，且第二个参数是4时，返回5
+//
+// 例子2:
+//
+//	 When(
+//
+//		In(3, 4), // 第一个参数是 In
+//		Any()) // 第二个参数是 Any
+//
+// 如何是可变参数,
+// 例子3:
+//
+//	When(3, 4, N).Return(5), // 第一个参数是3，且第二个参数是4时, 第N个参数是N时，返回5
 func (w *When) When(specArgOrExpr ...interface{}) *When {
 	w.curMatch = newDefaultMatch(specArgOrExpr, nil, w.isMethod, w.funcTyp)
 	return w
 }
 
 // In 当参数包含其中之一, 使用 ContainsMatcher
-// 当参数为多个时, In 的每个条件各使用一个数组表示:
+//
+// 例子1:
+// .In(3, 4).Return(5) // 第一个参数是3或者4时, 返回5
+//
+// 当参数为多个时, In 的每个条件各使用一个数组表示,
+// 例子2:
 // .In([]interface{}{3, Any()}, []interface{}{4, Any()})
+//
+// 如果是可变参数, 则使用,
+// 例子3:
+// .In([]interface{}{3, 4, N}, []interface{}{5, 6, N}).Return(9) // 当参数为 (3, 4, N) 或者 (5, 6, N) 时, 返回9
+//
+//	等价于 w.When(arg.In(3, 5), arg.In(4, 6), arg.In(N))
 func (w *When) In(specArgsOrExprs ...interface{}) *When {
 	w.curMatch = newContainsMatch(specArgsOrExprs, nil, w.isMethod, w.funcTyp)
 	return w
@@ -201,7 +224,8 @@ func (w *When) invoke(args1 []reflect.Value) (results []reflect.Value) {
 
 // Eval 执行 when 子句
 func (w *When) Eval(args ...interface{}) []interface{} {
-	argVs, err := arg.I2V(args, inTypes(w.isMethod, w.funcTyp))
+	argsTypes, isVariadic := inTypes(w.isMethod, w.funcTyp)
+	argVs, err := arg.I2V(args, argsTypes, isVariadic)
 	if err != nil {
 		panic("Call Eval(...) error: " + err.Error())
 	}

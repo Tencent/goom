@@ -71,19 +71,20 @@ func init() {
 		OpenDebug()
 	}
 
-	loggerPath, err := loggerPath()
+	loggerDir, err := loggerPath()
 	if err != nil {
-		fmt.Println("loggerPath error:", err)
+		fmt.Println("loggerDir error:", err)
 		return
 	}
 
-	logFile, err = os.OpenFile(filepath.Join(loggerPath, "goom-mocker.log"),
-		os.O_RDWR|os.O_CREATE|os.O_APPEND, 0766)
+	loggerPath := filepath.Join(loggerDir, "goom-mocker.log")
+	logFile, err = os.OpenFile(loggerPath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0766)
 	if err != nil {
 		fmt.Println("init log file error:", err)
 		return
 	}
 	Logger = logFile
+	fmt.Println("goom-mocker logFileLocation:", loggerPath)
 }
 
 // OpenDebug 开启 debug 模式
@@ -308,6 +309,10 @@ func loggerPath() (string, error) {
 	var logFileLocation = "."
 	// 获取当前目录
 	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	homeDir, err := Dir()
+	if err == nil {
+		dir = homeDir
+	}
 	if err == nil && "/" != dir {
 		logFileLocation = filepath.Join(dir, "logs")
 	}
@@ -325,7 +330,6 @@ func loggerPath() (string, error) {
 			return ".", err
 		}
 	}
-	fmt.Println("goom-mocker logFileLocation:", logFileLocation)
 	return logFileLocation, err
 }
 

@@ -32,7 +32,7 @@ func packageName(def interface{}) string {
 }
 
 // inTypes 获取类型
-func inTypes(isMethod bool, funTyp reflect.Type) []reflect.Type {
+func inTypes(isMethod bool, funTyp reflect.Type) ([]reflect.Type, bool) {
 	numIn := funTyp.NumIn()
 	skip := 0
 	if isMethod {
@@ -42,7 +42,7 @@ func inTypes(isMethod bool, funTyp reflect.Type) []reflect.Type {
 	for i := 0; i < numIn-skip; i++ {
 		typeList[i] = funTyp.In(i + skip)
 	}
-	return typeList
+	return typeList, funTyp.IsVariadic()
 }
 
 // outTypes 获取类型

@@ -144,6 +144,13 @@ func isNum(v reflect.Value) bool {
 	return false
 }
 
+func isFunc(v reflect.Value) bool {
+	if v.Kind() == reflect.Func {
+		return true
+	}
+	return false
+}
+
 // tryToNumber tryToInt64 or tryToFloat64
 // errors if fail
 func tryToNumber(v reflect.Value) (reflect.Value, error) {
@@ -194,6 +201,9 @@ func equal(lhsV, rhsV reflect.Value) bool {
 		return r
 	}
 
+	if isFunc(lhsV) && isFunc(rhsV) {
+		return lhsV.Pointer() == rhsV.Pointer()
+	}
 	return reflect.DeepEqual(lhsV.Interface(), rhsV.Interface())
 }
 

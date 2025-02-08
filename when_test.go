@@ -149,7 +149,7 @@ func (s *WhenTestSuite) TestWhenContains() {
 		when.Return(-1).In(1, 2).Return(5)
 
 		s.Equal(5, when.Eval(1)[0], "when result check")
-		s.Equal(5, when.Eval(1)[0], "when result check")
+		s.Equal(5, when.Eval(2)[0], "when result check")
 		s.Equal(-1, when.Eval(0)[0], "when result check")
 
 		when.Return(-1).When(arg.In(3, 4)).Return(6)

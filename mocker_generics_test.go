@@ -74,6 +74,9 @@ func (s *mockerTestGenericsSuite) TestGenericsMethodFunc() {
 
 		s.Equal("hello", hello1(), "foo mock check")
 		s.Equal(1, hello2(), "foo mock check")
+
+		g := &GT[string]{}
+		s.NotEqual("hello", g.Hello(), "foo mock check")
 	})
 }
 
